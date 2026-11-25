@@ -11,7 +11,7 @@ from .helper import assert_image_equal
 TEST_FILE = "Tests/images/iptc.jpg"
 
 
-def create_iptc_image(info: dict[str, int] = {}) -> BytesIO:
+def create_iptc_image(info: dict[str, int] = {}, image: bytes = b"\x00") -> BytesIO:
     def field(tag: tuple[int, int], value: bytes) -> bytes:
         return bytes((0x1C,) + tag + (0, len(value))) + value
 
@@ -21,10 +21,7 @@ def create_iptc_image(info: dict[str, int] = {}) -> BytesIO:
         data += field((3, 65), bytes((info["band"] + 1,)))
     data += field((3, 20), b"\x01")  # width
     data += field((3, 30), b"\x01")  # height
-    data += field(
-        (8, 10),
-        bytes((info.get("data", 0),)),
-    )
+    data += field((8, 10), image)
 
     return BytesIO(data)
 
@@ -53,16 +50,25 @@ def test_field_length() -> None:
 @pytest.mark.parametrize("layers, mode", ((3, "RGB"), (4, "CMYK")))
 def test_layers(layers: int, mode: str) -> None:
     for band in range(-1, layers):
-        info = {"layers": layers, "component": 1, "data": 5}
+        info = {"layers": layers, "component": 1}
         if band != -1:
             info["band"] = band
-        f = create_iptc_image(info)
+        f = create_iptc_image(info, b"\x05")
         with Image.open(f) as im:
             assert im.mode == mode
 
             data = [0] * layers
             data[max(band, 0)] = 5
             assert im.getpixel((0, 0)) == tuple(data)
+
+
+def test_unexpected_image_format() -> None:
+    with open("Tests/images/hopper_mask.png", "rb") as fp:
+        data = fp.read()
+    f = create_iptc_image({"compression": 5}, data)
+    with Image.open(f) as im:
+        with pytest.raises(Image.UnidentifiedImageError):
+            im.load()
 
 
 def test_unknown_compression() -> None:

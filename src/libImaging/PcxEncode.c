@@ -35,7 +35,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
     if (!state->state) {
         /* sanity check */
-        if (state->xsize <= 0 || state->ysize <= 0) {
+        if (state->xsize == 0 || state->ysize == 0) {
             state->errcode = IMAGING_CODEC_END;
             return 0;
         }

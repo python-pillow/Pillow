@@ -124,6 +124,9 @@ _encode_cleanup(ImagingEncoderObject *encoder, PyObject *args) {
  *
  * Python arguments:
  * - bufsize (int, optional): The size of the buffer to use for encoding.
+ *                            If -1, allow the raw encoder to calculate
+ *                            the optimal buffer size to encode the image
+ *                            in one shot. This is used by `tobytes()`.
  *
  * @return A tuple containing the number of bytes written, an error code if any, and the
  *         encoded bytes object. NULL if an error occurred, with a Python exception set.
@@ -140,14 +143,26 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
+    ImagingCodecState state = &encoder->state;
+    if (bufsize == -1 && encoder->encode == ImagingRawEncode) {
+        Py_ssize_t row = state->count > 0 ? state->count : state->bytes;
+        bufsize = row * state->ysize;
+
+        // Cap the size to the whole number of rows that fits in an `int`.
+        // If encoders' buffer sizes become `ssize_t`,
+        // like decoder buffer sizes did in #3791, then this will need to be updated
+        if (bufsize > INT_MAX) {
+            bufsize = INT_MAX - (INT_MAX % row);
+        }
+    }
+
     PyBytesWriter *writer = PyBytesWriter_Create(bufsize);
     if (writer == NULL) {
         return NULL;
     }
 
-    bytes_consumed = encoder->encode(
-        encoder->im, &encoder->state, PyBytesWriter_GetData(writer), bufsize
-    );
+    bytes_consumed =
+        encoder->encode(encoder->im, state, PyBytesWriter_GetData(writer), bufsize);
     /* adjust string length to avoid slicing in encoder */
     buf =
         PyBytesWriter_FinishWithSize(writer, (bytes_consumed > 0) ? bytes_consumed : 0);
@@ -155,7 +170,7 @@ _encode(ImagingEncoderObject *encoder, PyObject *args) {
         return NULL;
     }
 
-    result = Py_BuildValue("iiO", bytes_consumed, encoder->state.errcode, buf);
+    result = Py_BuildValue("iiO", bytes_consumed, state->errcode, buf);
 
     Py_DECREF(buf); /* must release buffer!!! */
 
@@ -1389,7 +1404,6 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
     if (qarrays == NULL && PyErr_Occurred()) {
         Py_DECREF(encoder);
@@ -1398,7 +1412,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (comment && comment_size > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
+        char *p = malloc(comment_size);
         if (!p) {
             goto memory_error;
         }
@@ -1410,7 +1424,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (extra && extra_size > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
+        char *p = malloc(extra_size);
         if (!p) {
             goto memory_error;
         }
@@ -1422,7 +1436,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (rawExif && rawExifLen > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
+        char *pp = malloc(rawExifLen);
         if (!pp) {
             goto memory_error;
         }
@@ -1433,6 +1447,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->encode = ImagingJpegEncode;
+    encoder->cleanup = ImagingJpegEncodeCleanup;
 
     JPEGENCODERSTATE *jpeg_encoder_state = (JPEGENCODERSTATE *)encoder->state.context;
     jpeg_encoder_state->rawmode = rawmode;
@@ -1632,7 +1647,7 @@ PyImaging_Jpeg2KEncoderNew(PyObject *self, PyObject *args) {
     }
 
     if (comment && comment_size > 0) {
-        /* Size is stored as as an uint16, subtract 4 bytes for the header */
+        /* Size is stored as an uint16, subtract 4 bytes for the header */
         if (comment_size >= 65532) {
             PyErr_SetString(PyExc_ValueError, "JPEG 2000 comment is too long");
             Py_DECREF(encoder);

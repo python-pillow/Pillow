@@ -65,6 +65,16 @@ User code may set this to another number.
 """
 
 SAFEBLOCK = 1024 * 1024
+"""
+When a plugin reads a chunk of data whose size is given by the image file itself,
+Pillow does not trust that size.
+
+If it is greater than this number of bytes, the data is read in blocks of this size
+instead of all at once. This stops a malicious file from causing a large allocation
+by claiming more data than it contains.
+
+User code may set this to another number.
+"""
 
 LOAD_TRUNCATED_IMAGES = False
 """Whether or not to load truncated image files. User code may change this."""
@@ -135,8 +145,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         self, fp: StrOrBytesPath | IO[bytes], filename: str | bytes | None = None
     ) -> None:
         super().__init__()
-
-        self._min_frame = 0
 
         self.custom_mimetype: str | None = None
 
@@ -239,7 +247,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     subifd_offsets = (subifd_offsets,)
                 ifds = [
                     (exif._get_ifd_dict(subifd_offset), subifd_offset)
-                    for subifd_offset in subifd_offsets
+                    for subifd_offset in set(subifd_offsets)
                 ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
@@ -271,7 +279,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 if thumbnail_offset is None and isinstance(
                     im, TiffImagePlugin.TiffImageFile
                 ):
-                    im._frame_pos = [ifd_offset]
+                    im._frame_pos = {ifd_offset: None}
                     im._seek(0)
                 im.load()
                 child_images.append(im)
@@ -308,6 +316,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
+
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
+
+            self.tile = []
+            self.readonly = 0
 
         if not self.tile:
             if self._im is None:
@@ -486,12 +500,12 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
 
     def _seek_check(self, frame: int) -> bool:
         if (
-            frame < self._min_frame
+            frame < 0
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= getattr(self, "n_frames") + self._min_frame
+                and frame >= getattr(self, "n_frames")
             )
         ):
             msg = "attempt to seek outside sequence"

@@ -284,6 +284,14 @@ class GifImageFile(ImageFile.ImageFile):
                     size = max(x1, self.size[0]), max(y1, self.size[1])
                     Image._decompression_bomb_check(size)
                     self._size = size
+
+                    if self._im is not None and update_image:
+                        expanded_im = Image.core.fill(self.im.mode, self.size)
+                        if self.mode == "P":
+                            expanded_im.putpalette("RGB", "RGB", self.im.getpalette())
+                        expanded_im.paste(self.im, (0, 0, *self.im.size))
+
+                        self.im = expanded_im
                 frame_dispose_extent = x0, y0, x1, y1
                 flags = s[8]
 
@@ -447,13 +455,6 @@ class GifImageFile(ImageFile.ImageFile):
                 self.im.putpalette("RGB", *self._frame_palette.getdata())
             else:
                 self._im = None
-        if not self._prev_im and self._im is not None and self.size != self.im.size:
-            expanded_im = Image.core.fill(self.im.mode, self.size)
-            if self._frame_palette:
-                expanded_im.putpalette("RGB", *self._frame_palette.getdata())
-            expanded_im.paste(self.im, (0, 0, *self.im.size))
-
-            self.im = expanded_im
         self._mode = temp_mode
         self._frame_palette = None
 
@@ -750,9 +751,12 @@ def _write_multiple_frames(
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 
     if len(im_frames) == 1:
-        if "duration" in im_frames[0].encoderinfo:
+        encoderinfo = im_frames[0].encoderinfo
+        if "duration" in encoderinfo:
             # Since multiple frames will not be written, use the combined duration
-            im.encoderinfo["duration"] = im_frames[0].encoderinfo["duration"]
+            im.encoderinfo["duration"] = encoderinfo["duration"]
+        if "disposal" in encoderinfo:
+            im.encoderinfo["disposal"] = encoderinfo["disposal"]
         return False
 
     for frame_data in im_frames:

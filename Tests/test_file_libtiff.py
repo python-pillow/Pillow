@@ -11,6 +11,7 @@ from typing import NamedTuple
 import pytest
 
 from PIL import (
+    ExifTags,
     Image,
     ImageFile,
     ImageFilter,
@@ -709,6 +710,10 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression="jpeg", quality="good")
         im.save(out, compression="jpeg", quality=0)
         im.save(out, compression="jpeg", quality=100)
+
+    def test_l_ycbcr(self) -> None:
+        with Image.open("Tests/images/l_ycbcr.tif") as im:
+            assert im.mode == "L"
 
     def test_cmyk_save(self, tmp_path: Path) -> None:
         im = hopper("CMYK")
@@ -1478,6 +1483,22 @@ class TestFileLibTiff(LibTiffTestCase):
             with pytest.raises(OSError, match="decoder error -9"):
                 im.load()
 
+    def test_rgba_rows_per_strip_greater_than_height(self) -> None:
+        # 1000x1 Deflate YCbCr strip with RowsPerStrip of 1,000,000
+        data = (
+            b"SUkqAAgAAAALAAABBAABAAAA6AMAAAEBBAABAAAAAQAAAAIBAwADAAAAkgAA"
+            b"AAMBAwABAAAACAAAAAYBAwABAAAABgAAABEBBAABAAAAmAAAABUBAwABAAAA"
+            b"AwAAABYBBAABAAAAQEIPABcBBAABAAAAGgAAABwBAwABAAAAAQAAABICAwAC"
+            b"AAAAAQABAAAAAAAIAAgACAB42u3BMQEAAADCoOqLbg0PoAAAgHcDDP7cTA=="
+        )
+        with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert im.tag_v2[TiffImagePlugin.ROWSPERSTRIP] == 1_000_000
+
+            # The decoding buffer is limited to the image height
+            im.load()
+            assert im.getpixel((0, 0)) == (128, 128, 128)
+
     def test_unpacker_row_wider_than_libtiff_row(self) -> None:
         for data in (
             # 16x16 8-bit greyscale tile, with a PhotometricInterpretation tag that
@@ -1607,3 +1628,12 @@ class TestFileLibTiff(LibTiffTestCase):
             w = sizes[i]
             expected = Image.new("RGB", (w, w), "#f00")
             assert_image_similar(im, expected, 1)
+
+    def test_get_child_images_duplicate_offsets(self) -> None:
+        with Image.open("Tests/images/child_ifd.tiff") as im:
+            exif = im.getexif()
+            first_subifd_offset = exif[ExifTags.Base.SubIFDs][0]
+            exif[ExifTags.Base.SubIFDs] = (first_subifd_offset,) * 2
+
+            ims = im.get_child_images()
+        assert len(ims) == 1

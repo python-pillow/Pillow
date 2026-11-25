@@ -59,3 +59,13 @@ def test_alpha(op: str) -> None:
             op,
             amount,
         )
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16B", "I;16L", "I;16N"))
+def test_i16(mode: str) -> None:
+    im = Image.new(mode, (1, 1), 1000)
+    assert_image_equal(ImageEnhance.Color(im).enhance(0.5), im)
+
+    for size in ((0, 0), (1, 1)):
+        im = Image.new(mode, size, 1000)
+        assert_image_equal(ImageEnhance.Contrast(im).enhance(0.5), im)
