@@ -104,19 +104,18 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # color mode data
 
-        size = i32(read(4))
-        if size:
-            data = read(size)
+        if size := i32(read(4)):
             if mode == "P" and size == 768:
-                self.palette = ImagePalette.raw("RGB;L", data)
+                self.palette = ImagePalette.raw("RGB;L", read(768))
+            else:
+                self.fp.seek(size, io.SEEK_CUR)
 
         #
         # image resources
 
         self.resources = []
 
-        size = i32(read(4))
-        if size:
+        if size := i32(read(4)):
             # load resources
             end = self.fp.tell() + size
             while self.fp.tell() < end:
@@ -137,8 +136,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
         self._layers_position = None
 
-        size = i32(read(4))
-        if size:
+        if size := i32(read(4)):
             end = self.fp.tell() + size
             size = i32(read(4))
             if size:
