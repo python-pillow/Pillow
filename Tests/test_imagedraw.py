@@ -2010,3 +2010,20 @@ def test_rectangle_negative_half_pixel() -> None:
     im = Image.new("L", (1, 1))
     ImageDraw.Draw(im).rectangle((-1, -1, 0, 0), 255)
     assert im.getpixel((0, 0)) == 255
+
+
+def test_shape_curve_translation_invariant() -> None:
+    # Curves are flattened in double precision, so that moving one by a whole
+    # number of pixels moves the drawn pixels by the same amount
+    def draw(shift: int) -> Image.Image:
+        outline = ImageDraw.Outline()
+        outline.move(28 + shift, 16 + shift)
+        outline.curve(
+            35 + shift, -14 + shift, 9 + shift, 22 + shift, 33 + shift, 42 + shift
+        )
+        outline.close()
+        im = Image.new("L", (48 + shift, 48 + shift))
+        ImageDraw.Draw(im).shape(outline, 255)
+        return im.crop((shift, shift, shift + 48, shift + 48))
+
+    assert_image_equal(draw(0), draw(1000))
