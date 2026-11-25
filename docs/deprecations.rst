@@ -55,8 +55,9 @@ Image.putpixel 'value' lists
 
 .. deprecated:: 13.1.0
 
-Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
-been deprecated. Use tuples instead.
+:py:meth:`~PIL.Image.Image.putpixel` accepted lists to the ``value`` parameter, only
+for assigning RGB and RGBA values to ``P`` and ``PA`` images. This has been deprecated,
+and will be removed in Pillow 15 (2028-10-15). Use tuples instead.
 
 Removed features
 ----------------
