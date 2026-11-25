@@ -424,9 +424,9 @@ def pad(
     :param centering: Control the position of the original image within the
                       padded version.
 
-                      * (0.5, 0.5) will keep the image centered
-                      * (0, 0) will keep the image aligned to the top left
-                      * (1, 1) will keep the image aligned to the bottom right
+                      * (0.5, 0.5) centers the image
+                      * (0, 0) aligns the image to the top left
+                      * (1, 1) aligns the image to the bottom right
     :return: An image.
     """
 

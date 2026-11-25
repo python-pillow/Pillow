@@ -210,10 +210,10 @@ class Text(Generic[AnyStr]):
                         integer limit to stop scaling at.
 
         :returns: A :py:class:`.Text` object, or None.
-        :raises ValueError: If the font is a
-                            :py:class:`~PIL.ImageFont.TransposedFont`, the
-                            direction is not "ltr", or the text cannot be scaled
-                            as requested.
+        :exception ValueError: If the font is a
+                               :py:class:`~PIL.ImageFont.TransposedFont`, the
+                               direction is not "ltr", or the text cannot be
+                               scaled as requested.
         """
         if isinstance(self.font, ImageFont.TransposedFont):
             msg = "TransposedFont not supported"
