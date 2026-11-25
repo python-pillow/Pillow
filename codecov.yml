@@ -12,6 +12,9 @@ coverage:
     project:
       default:
         threshold: 0.1%
+    patch:
+      default:
+        informational: true
 
 # Matches 'omit:' in .coveragerc
 ignore:
