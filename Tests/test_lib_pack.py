@@ -858,3 +858,26 @@ class TestLibUnpack:
         im = Image.new("P", (9, 1))
         with pytest.raises(ValueError, match="not enough image data"):
             im.frombytes(data, decoder_name, rawmode)
+
+    @pytest.mark.parametrize(
+        "w, rawmode, size, stride",
+        (
+            (9, "P;2L", 3, 3),  # packed size 3, planar size 4
+            (17, "P;4L", 10, 9),  # packed size 9, planar size 12
+        ),
+    )
+    def test_pcx_pXl_decoder_buffer_size(
+        self, w: int, rawmode: str, size: int, stride: int
+    ) -> None:
+        # The PCX decoder takes its buffer size from the stride argument,
+        # so it must check against the planar row size itself
+        im = Image.new("P", (w, 1))
+        data = bytes(range(1, size))
+        with pytest.raises(ValueError, match="cannot decode image data"):
+            im.frombytes(data, "pcx", rawmode, stride)
+
+    @pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+    def test_zip_pXl_interlaced(self, rawmode: str) -> None:
+        im = Image.new("P", (1, 1))
+        with pytest.raises(ValueError, match="invalid raw mode for interlaced"):
+            im.frombytes(b"", "zip", rawmode, 1)
