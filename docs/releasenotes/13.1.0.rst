@@ -250,3 +250,31 @@ rectangle. Previously, if ``width`` was more than the size of the rectangle, the
 outline could extend outside it, drawing a larger rectangle than requested. The
 rectangle is now filled with the outline color instead. Wide outlines are also drawn
 faster.
+
+Drawing at negative coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:mod:`~PIL.ImageDraw` converted fractional coordinates to integers by truncating
+towards zero, and rounded halves away from zero. Both treat the origin differently to
+every other position, so a shape that extended past the left or top edge of an image
+was drawn differently from the same shape moved by a whole number of pixels and then
+cropped.
+
+Coordinates are now converted by rounding down, and halves are rounded towards positive
+infinity, so that moving a shape by a whole number of pixels moves the drawn pixels by
+the same amount. This includes lines and outlines drawn with ``dash``.
+
+Lines of width 1, including dashed lines, and dashed rectangle outlines that reach
+outside the image are first restricted to it, which moves their end points, so they can
+still differ from the same line moved by a whole number of pixels.
+
+This changes the output of all :py:mod:`~PIL.ImageDraw` methods for fractional
+coordinates that are less than zero, including where a scanline meets an edge halfway
+between two pixels. For coordinates greater than or equal to zero, the output only
+changes for
+
+* :py:meth:`~PIL.ImageDraw.ImageDraw.rounded_rectangle` with a coordinate halfway
+  between two integers, such as 2.5. Its corners were rounded half to even, and are
+  now rounded half up.
+* edges of polygons, regular polygons, wide lines and outlines that were previously
+  placed on the wrong side of a pixel by floating point error.
