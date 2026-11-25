@@ -42,7 +42,7 @@ without any changes to Pillow itself. To write your own, see
     * - :pypi:`pillow-zx-spectrum`
       - Loading SCREEN$ images from ZX Spectrum tapes, disks and memory snapshots.
     * - :pypi:`pylibheif`
-      - Python bindings for libheif, with a plugin for HEIC, HEIF and AVIF images.
+      - Python bindings for libheif, to support HEIC, HEIF and AVIF images.
     * - :pypi:`wsq`
       - Adds support for WSQ fingerprint images, based on the NBIS library.
 
