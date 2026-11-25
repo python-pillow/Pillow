@@ -413,6 +413,11 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
+            fp_length = None
+            if not hasattr(self, "load_seek"):
+                # Some file objects allocate the requested size before reading,
+                # so reads are limited to the length of the file
+                fp_length = self._get_fp_length()
             for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
@@ -431,6 +436,8 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                                 next_offset = self.tile[i + 1].offset
                                 if next_offset > offset:
                                     read_bytes = next_offset - offset
+                            if fp_length is not None:
+                                read_bytes = min(read_bytes, max(fp_length - offset, 0))
                             try:
                                 s = read(read_bytes)
                             except (IndexError, struct.error) as e:

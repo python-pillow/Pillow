@@ -155,11 +155,14 @@ class TestImageFile:
         fp = FP(data)
         with Image.open(fp) as im:
             assert len(im.tile) == 7
+            last_offset = max(tile.offset for tile in im.tile)
 
             im.load()
 
-        # Despite multiple tiles, assert only one tile caused a read of maxblock size
-        assert reads.count(im.decodermaxblock) == 1
+        # Despite multiple tiles, no more than one should cause a read of maxblock size
+        assert reads.count(im.decodermaxblock) <= 1
+        # Assert the last tile only tried to read until the end of the file
+        assert reads.count(len(data) - last_offset) == 1
 
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
