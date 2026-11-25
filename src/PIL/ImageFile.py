@@ -978,9 +978,9 @@ class PyEncoder(PyCodec):
         :param fh: File handle.
         :param bufsize: Buffer size.
 
-        :returns: If finished successfully, return 0.
-            Otherwise, return an error code. Err codes are from
-            :data:`.ImageFile.ERRORS`.
+        :returns: If finished successfully, return 1.
+            Otherwise, return a negative integer from :data:`.ImageFile.ERRORS`
+            as an error code.
         """
         errcode = 0
         while errcode == 0:

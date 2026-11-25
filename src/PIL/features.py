@@ -30,7 +30,7 @@ def check_module(feature: str) -> bool:
 
     :param feature: The module to check for.
     :returns: ``True`` if available, ``False`` otherwise.
-    :raises ValueError: If the module is not defined in this version of Pillow.
+    :exception ValueError: If the module is not defined in this version of Pillow.
     """
     if feature not in modules:
         msg = f"Unknown module {feature}"
@@ -53,7 +53,7 @@ def version_module(feature: str) -> str | None:
     :param feature: The module to check for.
     :returns:
         The loaded version number as a string, or ``None`` if unknown or not available.
-    :raises ValueError: If the module is not defined in this version of Pillow.
+    :exception ValueError: If the module is not defined in this version of Pillow.
     """
     if not check_module(feature):
         return None
@@ -84,7 +84,7 @@ def check_codec(feature: str) -> bool:
 
     :param feature: The codec to check for.
     :returns: ``True`` if available, ``False`` otherwise.
-    :raises ValueError: If the codec is not defined in this version of Pillow.
+    :exception ValueError: If the codec is not defined in this version of Pillow.
     """
     if feature not in codecs:
         msg = f"Unknown codec {feature}"
@@ -101,7 +101,7 @@ def version_codec(feature: str) -> str | None:
     :returns:
         The version number as a string, or ``None`` if not available.
         Checked at compile time for ``jpg``, run-time otherwise.
-    :raises ValueError: If the codec is not defined in this version of Pillow.
+    :exception ValueError: If the codec is not defined in this version of Pillow.
     """
     if not check_codec(feature):
         return None
@@ -141,7 +141,7 @@ def check_feature(feature: str) -> bool | None:
 
     :param feature: The feature to check for.
     :returns: ``True`` if available, ``False`` if unavailable, ``None`` if unknown.
-    :raises ValueError: If the feature is not defined in this version of Pillow.
+    :exception ValueError: If the feature is not defined in this version of Pillow.
     """
     if feature not in features:
         msg = f"Unknown feature {feature}"
@@ -163,7 +163,7 @@ def version_feature(feature: str) -> str | None:
     """
     :param feature: The feature to check for.
     :returns: The version number as a string, or ``None`` if not available.
-    :raises ValueError: If the feature is not defined in this version of Pillow.
+    :exception ValueError: If the feature is not defined in this version of Pillow.
     """
     if not check_feature(feature):
         return None

@@ -914,7 +914,7 @@ class Image:
 
         :param name: The name prefix to use for the bitmap variables.
         :returns: A bytes object containing an X11 bitmap.
-        :raises ValueError: If the mode is not "1"
+        :exception ValueError: If the mode is not "1"
         """
 
         self.load()
