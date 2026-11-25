@@ -295,6 +295,14 @@ class TestImage:
         # seek() has cleared the core image, because the original image was readonly
         assert im._im is None
 
+    def test_deprecation(self) -> None:
+        im = Image.new("1", (1, 1))
+        im._mode = "L"
+        with pytest.warns(
+            DeprecationWarning, match="Clearing core image in Image.Image.seek()"
+        ):
+            im.seek(0)
+
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))

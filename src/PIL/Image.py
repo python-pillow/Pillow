@@ -2818,6 +2818,17 @@ class Image:
             msg = "no more images in file"
             raise EOFError(msg)
 
+        if self._im is not None and (
+            self.im.size != self.size
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (getattr(self, "tile", None) and self.readonly)
+        ):
+            deprecate(
+                "Clearing core image in Image.Image.seek()", 15, "SeekableImageFile"
+            )
+            self._im = None
+
     def show(self, title: str | None = None) -> None:
         """
         Displays this image. This method is mainly intended for debugging purposes.

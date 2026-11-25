@@ -181,21 +181,22 @@ class TestImageFile:
 
     @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
     def test_zero_dimension_seek(self, size: tuple[int, int]) -> None:
-        class ZeroImageFile(ImageFile.ImageFile):
+        class ZeroImageFile(ImageFile.SeekableImageFile):
             def _open(self) -> None:
                 self._mode = "1"
                 self._size = (1, 1)
+                self._frame = 0
+                self.n_frames = 2
                 self._im = Image.core.fill(self.mode, self.size)
 
-            def seek(self, frame: int) -> None:
+            def _seek_to(self, frame: int) -> None:
                 self._size = (0, 0)
                 self.tile = [ImageFile._Tile("raw")]
 
-                self.frame = frame
-                Image.Image.seek(self, frame)
+                self._frame = frame
 
             def tell(self) -> int:
-                return self.frame
+                return self._frame
 
         im = ZeroImageFile(BytesIO(b""))
         im.seek(1)
