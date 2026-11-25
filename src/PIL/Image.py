@@ -1323,7 +1323,8 @@ class Image:
         :param kmeans: Integer greater than or equal to zero.
         :param palette: Quantize to the palette of given
                         :py:class:`PIL.Image.Image`.
-        :param dither: Dithering method, used when ``palette`` is given.
+        :param dither: Dithering method, used when converting from
+           mode "RGB" to "P" or from "RGB" or "L" to "1".
            Available methods are :data:`Dither.NONE` or :data:`Dither.FLOYDSTEINBERG`
            (default).
         :returns: A new image
