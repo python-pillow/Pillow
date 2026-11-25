@@ -3031,7 +3031,7 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(self, size, image, **options):
+                def transform(self, size, image, resample, fill):
                     # Return result
 
           Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
