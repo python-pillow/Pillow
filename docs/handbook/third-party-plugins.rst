@@ -25,10 +25,8 @@ Here is a list of PyPI projects that offer additional plugins:
 * :pypi:`pylibheif`: Python bindings for libheif, with a plugin for HEIC, HEIF and AVIF images.
 * :pypi:`wsq`: Adds support for WSQ fingerprint images, based on the NBIS library.
 
-Not listed
-----------
-
-These projects are not included in the list above:
+Emeritus
+--------
 
 .. list-table::
     :header-rows: 1
