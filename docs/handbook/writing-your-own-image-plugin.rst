@@ -291,7 +291,7 @@ When used in a tile descriptor, the parameter field should look like::
 The fields are used as follows:
 
 **bits**
-    Number of bits per pixel (2-32). No default.
+    Number of bits per pixel (2-32). The default is 8.
 
 **pad**
     Padding between lines, in bits. This is either 0 if there is no padding, or
@@ -336,7 +336,7 @@ There are 3 stages in a file codec's lifetime:
 
 1. Setup: Pillow looks for a function in the decoder or encoder registry,
    falling back to a function named ``[codecname]_decoder`` or
-   ``[codecname]_encoder`` on the internal core image object. That function is
+   ``[codecname]_encoder`` in the internal ``PIL._imaging`` module. That function is
    called with the ``args`` tuple from the ``tile``.
 
 2. Transforming: The codec's ``decode`` or ``encode`` function is repeatedly
