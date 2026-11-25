@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 import warnings
 from io import BytesIO
 from typing import Any
@@ -12,6 +13,7 @@ from PIL import (
     JpegImagePlugin,
     MpoImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     _binary,
 )
 
@@ -172,6 +174,37 @@ def test_truncated_makernote() -> None:
         ifd = TiffImagePlugin.ImageFileDirectory_v2()
         ifd[34665] = {37500: data}
         check(ifd)
+
+
+def test_makernote_duplicate_offset() -> None:
+    # Two LONG tags that contain the same offset
+    tag_numbers = (1, 2)
+    offset = 8 + 4 + 2 + len(tag_numbers) * 12
+    data = (
+        b"FUJIFILM"
+        + _binary.o32le(12)  # offset
+        + _binary.o16le(len(tag_numbers))
+        + b"".join(
+            _binary.o16le(tag)
+            + _binary.o16le(TiffTags.LONG)
+            + _binary.o32le(16)  # count
+            + _binary.o32le(offset)
+            for tag in tag_numbers
+        )
+        + bytes(range(16 * 4))
+    )
+
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[34665] = {37500: data}
+    fp = BytesIO()
+    ifd.save(fp)
+
+    e = Image.Exif()
+    e.load(fp.getvalue())
+    with pytest.warns(UserWarning, match="Tag data larger than MakerNote"):
+        makernote = e.get_ifd(37500)
+    assert makernote[1] == struct.unpack("<16L", bytes(range(64)))
+    assert 2 not in makernote
 
 
 def test_reload_exif_after_seek() -> None:
@@ -356,7 +389,7 @@ def test_save_all() -> None:
             assert_image_similar(im, im_reloaded, 30)
 
     im_rgb = Image.new("RGB", (1, 1))
-    for colors in (("#f00",), ("#f00", "#0f0")):
+    for colors in (("#f00",), ("#f00", "#0f0"), ("#f00", "#0f0", "#00f")):
         append_images = [Image.new("RGB", (1, 1), color) for color in colors]
         im_reloaded = roundtrip(im_rgb, save_all=True, append_images=append_images)
 
@@ -372,6 +405,16 @@ def test_save_all() -> None:
     # Test that a single frame image will not be saved as an MPO
     jpg = roundtrip(im_rgb, save_all=True)
     assert "mp" not in jpg.info
+
+
+def test_save_all_cmyk() -> None:
+    first = Image.new("CMYK", (1, 1))
+    second = Image.new("CMYK", (1, 1), (255, 255, 255, 255))
+    im_reloaded = roundtrip(first, save_all=True, append_images=[second])
+    assert_image_equal(first, im_reloaded)
+
+    im_reloaded.seek(1)
+    assert_image_equal(second, im_reloaded)
 
 
 def test_save_xmp() -> None:

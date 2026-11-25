@@ -20,19 +20,17 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB", "RGBA"))
 def test_sanity(mode: str, tmp_path: Path) -> None:
     outfile = tmp_path / "temp.bmp"
 
     im = hopper(mode)
-    im.save(outfile, "BMP")
+    im.save(outfile)
 
     with Image.open(outfile) as reloaded:
-        reloaded.load()
-        assert im.mode == reloaded.mode
-        assert im.size == reloaded.size
         assert reloaded.format == "BMP"
         assert reloaded.get_format_mimetype() == "image/bmp"
+        assert_image_equal(im, reloaded)
 
 
 def test_invalid_file() -> None:
@@ -46,6 +44,16 @@ def test_fallback_if_mmap_errors() -> None:
     # so that the buffer is not large enough when using mmap
     with Image.open("Tests/images/mmap_error.bmp") as im:
         assert_image_equal_tofile(im, "Tests/images/bmp/g/pal8.bmp")
+
+
+def test_large_palette() -> None:
+    with open("Tests/images/hopper_rle8.bmp", "rb") as fp:
+        data = bytearray(fp.read())
+    data[46:50] = o32(257)
+
+    b = io.BytesIO(data)
+    with pytest.raises(OSError, match=r"Unsupported BMP Palette size \(257\)"):
+        Image.open(b)
 
 
 def test_save_to_bytes() -> None:
@@ -215,7 +223,8 @@ def test_rle8() -> None:
 
 def test_rle4() -> None:
     with Image.open("Tests/images/bmp/g/pal4rle.bmp") as im:
-        assert_image_similar_tofile(im, "Tests/images/bmp/g/pal4.bmp", 12)
+        with Image.open("Tests/images/bmp/g/pal4.bmp") as im2:
+            assert_image_equal(im.convert("RGB"), im2.convert("RGB"))
 
 
 def encode_rle4(width: int, palette: bytes, rle: bytes) -> io.BytesIO:

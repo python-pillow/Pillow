@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import zlib
 from io import BytesIO
 
 import pytest
 
 from PIL import Image, ImageSequence, PngImagePlugin
+from PIL.PngImagePlugin import o16, o32
+
+from .helper import assert_image_equal
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -154,6 +158,20 @@ def test_apng_dispose_op_previous_frame() -> None:
         assert im.getpixel((0, 0)) == (255, 0, 0, 255)
 
 
+@pytest.mark.parametrize(
+    "filename", ("dispose_op_previous.png", "dispose_op_previous_region.png")
+)
+def test_apng_dispose_op_previous_load_each_frame(filename: str) -> None:
+    # Loading each frame before seeking should not change the result
+    with Image.open("Tests/images/apng/" + filename) as im:
+        assert isinstance(im, PngImagePlugin.PngImageFile)
+        for i in range(im.n_frames):
+            im.seek(i)
+            im.load()
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
+        assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
 def test_apng_dispose_op_background_p_mode() -> None:
     with Image.open("Tests/images/apng/dispose_op_background_p_mode.png") as im:
         im.seek(1)
@@ -161,13 +179,12 @@ def test_apng_dispose_op_background_p_mode() -> None:
         assert im.size == (128, 64)
 
 
-def test_apng_dispose_op_background_decompression_bomb() -> None:
-    o16 = PngImagePlugin.o16
-    o32 = PngImagePlugin.o32
-
+def _create_apng(size: tuple[int, int]) -> BytesIO:
     b = BytesIO()
     b.write(PngImagePlugin._MAGIC)
-    PngImagePlugin.putchunk(b, b"IHDR", o32(2**31 - 1), o32(1), b"\x08\x06\x00\x00\x00")
+    PngImagePlugin.putchunk(
+        b, b"IHDR", o32(size[0]), o32(size[1]), b"\x08\x06\x00\x00\x00"
+    )
     PngImagePlugin.putchunk(b, b"acTL", o32(2), o32(0))
     PngImagePlugin.putchunk(
         b,
@@ -181,11 +198,30 @@ def test_apng_dispose_op_background_decompression_bomb() -> None:
         o16(10),
         bytes([PngImagePlugin.Disposal.OP_BACKGROUND, PngImagePlugin.Blend.OP_SOURCE]),
     )
+    return b
+
+
+def test_apng_dispose_op_background_decompression_bomb() -> None:
+    b = _create_apng((2**31 - 1, 1))
     PngImagePlugin.putchunk(b, b"IDAT")
-    PngImagePlugin.putchunk(b, b"IEND")
 
     with pytest.raises(Image.DecompressionBombError):
         Image.open(b)
+
+
+def test_apng_duplicate_ihdr() -> None:
+    b = _create_apng((2, 2))
+    PngImagePlugin.putchunk(b, b"IDAT", zlib.compress(b"\x00" * 5))
+
+    # A later IHDR chunk should not change the image size
+    PngImagePlugin.putchunk(b, b"IHDR", o32(4), o32(2), b"\x08\x06\x00\x00\x00")
+    # Frame width larger than original image width, but smaller than second IHDR width
+    PngImagePlugin.putchunk(b, b"fcTL", o32(1), o32(3), b"\x00" * 18)
+
+    with Image.open(b) as im:
+        assert im.size == (2, 2)
+        with pytest.raises(SyntaxError, match="APNG contains invalid frames"):
+            im.seek(1)
 
 
 def test_apng_blend() -> None:
@@ -216,7 +252,7 @@ def test_apng_blend() -> None:
     with Image.open("Tests/images/apng/blend_op_over_near_transparent.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 97)
+        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
@@ -287,8 +323,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "RGBA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (0, 0, 128, 191)
-        assert im.getpixel((64, 32)) == (0, 0, 128, 191)
+        assert im.getpixel((0, 0)) == (0, 0, 128, 255)
+        assert im.getpixel((64, 32)) == (0, 0, 128, 255)
 
     with Image.open("Tests/images/apng/mode_grayscale.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -301,8 +337,8 @@ def test_apng_mode() -> None:
         assert isinstance(im, PngImagePlugin.PngImageFile)
         assert im.mode == "LA"
         im.seek(im.n_frames - 1)
-        assert im.getpixel((0, 0)) == (128, 191)
-        assert im.getpixel((64, 32)) == (128, 191)
+        assert im.getpixel((0, 0)) == (128, 255)
+        assert im.getpixel((64, 32)) == (128, 255)
 
     with Image.open("Tests/images/apng/mode_palette.png") as im:
         assert isinstance(im, PngImagePlugin.PngImageFile)
@@ -351,6 +387,27 @@ def test_apng_save_different_palettes(tmp_path: Path) -> None:
     red.save(test_file, save_all=True, append_images=[green])
     with Image.open(test_file) as reloaded:
         assert reloaded.mode == "RGBA"
+
+
+@pytest.mark.parametrize("mode", ("I;16", "I;16B"))
+def test_apng_save_i16(mode: str, tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new(mode, (1, 1), 1000)
+    second = Image.new(mode, (1, 1), 2000)
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[second],
+        duration=100,
+    )
+
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
+        assert reloaded.getpixel((0, 0)) == 1000
+
+        reloaded.seek(1)
+        assert reloaded.getpixel((0, 0)) == 2000
 
 
 def test_apng_chunk_errors() -> None:
@@ -695,17 +752,6 @@ def test_apng_save_disposal(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    # test info disposal
-    red.info["disposal"] = PngImagePlugin.Disposal.OP_BACKGROUND
-    red.save(
-        test_file,
-        save_all=True,
-        append_images=[Image.new("RGBA", (10, 10), (0, 255, 0, 255))],
-    )
-    with Image.open(test_file) as im:
-        im.seek(1)
-        assert im.getpixel((64, 32)) == (0, 0, 0, 0)
-
 
 def test_apng_save_disposal_previous(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
@@ -727,6 +773,22 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         im.seek(2)
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
+
+
+def test_apng_save_disposal_background(tmp_path: Path) -> None:
+    test_file = tmp_path / "temp.png"
+    im = Image.new("L", (32, 32), 128)
+
+    im.save(
+        test_file,
+        save_all=True,
+        append_images=[Image.new("L", (32, 32))],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reloaded:
+        assert isinstance(reloaded, PngImagePlugin.PngImageFile)
+        assert reloaded.n_frames == 2
 
 
 def test_apng_save_blend(tmp_path: Path) -> None:
@@ -789,13 +851,6 @@ def test_apng_save_blend(tmp_path: Path) -> None:
         assert im.getpixel((0, 0)) == (0, 255, 0, 255)
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
-    # test info blend
-    red.info["blend"] = PngImagePlugin.Blend.OP_OVER
-    red.save(test_file, save_all=True, append_images=[green, transparent])
-    with Image.open(test_file) as im:
-        im.seek(2)
-        assert im.getpixel((0, 0)) == (0, 255, 0, 255)
-
 
 def test_apng_save_size(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
@@ -833,6 +888,16 @@ def test_seek_after_close() -> None:
 
     with pytest.raises(ValueError):
         im.seek(0)
+
+
+def test_rewind() -> None:
+    with Image.open("Tests/images/apng/delay.png") as im:
+        im.seek(1)
+        expected = im.copy()
+
+        im.seek(0)
+        im.seek(1)
+        assert_image_equal(im, expected)
 
 
 @pytest.mark.parametrize("mode", ("RGBA", "RGB", "P"))

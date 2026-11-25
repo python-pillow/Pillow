@@ -36,6 +36,7 @@ import itertools
 import logging
 import os
 import struct
+import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
@@ -64,6 +65,16 @@ User code may set this to another number.
 """
 
 SAFEBLOCK = 1024 * 1024
+"""
+When a plugin reads a chunk of data whose size is given by the image file itself,
+Pillow does not trust that size.
+
+If it is greater than this number of bytes, the data is read in blocks of this size
+instead of all at once. This stops a malicious file from causing a large allocation
+by claiming more data than it contains.
+
+User code may set this to another number.
+"""
 
 LOAD_TRUNCATED_IMAGES = False
 """Whether or not to load truncated image files. User code may change this."""
@@ -98,14 +109,26 @@ def _get_oserror(error: int, *, encoder: bool) -> OSError:
     return OSError(msg)
 
 
+def _get_fp_length(fp: IO[bytes]) -> int:
+    if isinstance(fp, io.BytesIO):
+        if sys.implementation.name == "pypy":
+            pos = fp.tell()
+            fp.seek(0, io.SEEK_END)
+            length = fp.tell()
+            fp.seek(pos)
+            return length
+        else:
+            return fp.getbuffer().nbytes
+    return os.fstat(fp.fileno()).st_size
+
+
 def _tilesort(t: _Tile) -> int:
-    # sort on offset
-    return t[2]
+    return t.offset
 
 
 class _Tile(NamedTuple):
     codec_name: str
-    extents: tuple[int, int, int, int] | None
+    extents: tuple[int, int, int, int] | None = None
     offset: int = 0
     args: tuple[Any, ...] | str | None = None
 
@@ -122,8 +145,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         self, fp: StrOrBytesPath | IO[bytes], filename: str | bytes | None = None
     ) -> None:
         super().__init__()
-
-        self._min_frame = 0
 
         self.custom_mimetype: str | None = None
 
@@ -226,7 +247,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     subifd_offsets = (subifd_offsets,)
                 ifds = [
                     (exif._get_ifd_dict(subifd_offset), subifd_offset)
-                    for subifd_offset in subifd_offsets
+                    for subifd_offset in set(subifd_offsets)
                 ]
         ifd1 = exif.get_ifd(ExifTags.IFD.IFD1)
         if ifd1 and ifd1.get(ExifTags.Base.JpegIFOffset):
@@ -258,7 +279,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 if thumbnail_offset is None and isinstance(
                     im, TiffImagePlugin.TiffImageFile
                 ):
-                    im._frame_pos = [ifd_offset]
+                    im._frame_pos = {ifd_offset: None}
                     im._seek(0)
                 im.load()
                 child_images.append(im)
@@ -296,13 +317,21 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     def load(self) -> Image.core.PixelAccess | None:
         """Load image data based on tile list"""
 
-        if not self.tile and self._im is None:
-            msg = "cannot load this image"
-            raise OSError(msg)
+        if self.width == 0 or self.height == 0:
+            ImageFile.load_prepare(self)
 
-        pixel = Image.Image.load(self)
+            self.tile = []
+            self.readonly = 0
+
         if not self.tile:
-            return pixel
+            if self._im is None:
+                msg = "cannot load this image"
+                raise OSError(msg)
+            return Image.Image.load(self)
+
+        if self._im is not None:
+            # If this image has been closed, raise an error
+            self.im
 
         self.map: mmap.mmap | None = None
         use_mmap = self.filename and len(self.tile) == 1
@@ -331,6 +360,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                 args = (args, 0, 1)
             if (
                 decoder_name == "raw"
+                and extents in {None, (0, 0, *self.size)}
                 and isinstance(args, tuple)
                 and len(args) >= 3
                 and args[0] == self.mode
@@ -421,7 +451,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                                     )
                                     raise OSError(msg)
 
-                            b = b + s
+                            b += s
                             n, err_code = decoder.decode(b)
                             if n < 0:
                                 break
@@ -449,9 +479,6 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         # create image memory if necessary
         if self._im is None:
             self.im = Image.core.new(self.mode, self.size)
-        # create palette (optional)
-        if self.mode == "P":
-            Image.Image.load(self)
 
     def load_end(self) -> None:
         # may be overridden
@@ -465,14 +492,20 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
     # def load_read(self, read_bytes: int) -> bytes:
     #     pass
 
+    def _get_fp_length(self, fp: IO[bytes] | None = None) -> int:
+        if fp is None:
+            assert self.fp is not None
+            fp = self.fp
+        return _get_fp_length(fp)
+
     def _seek_check(self, frame: int) -> bool:
         if (
-            frame < self._min_frame
+            frame < 0
             # Only check upper limit on frames if additional seek operations
             # are not required to do so
             or (
                 not (hasattr(self, "_n_frames") and self._n_frames is None)
-                and frame >= getattr(self, "n_frames") + self._min_frame
+                and frame >= getattr(self, "n_frames")
             )
         ):
             msg = "attempt to seek outside sequence"
@@ -506,6 +539,12 @@ class StubImageFile(ImageFile):
             msg = f"cannot find loader for this {self.format} file"
             raise OSError(msg)
         image = self._handler.load(self)
+
+        assert self.fp is not None
+        if self._exclusive_fp and self._close_exclusive_fp_after_loading:
+            self.fp.close()
+        self.fp = None
+
         assert image is not None
         # become the other object (!)
         self.__class__ = image.__class__  # type: ignore[assignment]
@@ -549,7 +588,7 @@ class Parser:
         if self.data is None:
             self.data = data
         else:
-            self.data = self.data + data
+            self.data += data
 
         # parse what we have
         if self.decoder:
@@ -578,8 +617,8 @@ class Parser:
 
         elif self.image:
             # if we end up here with no decoder, this file cannot
-            # be incrementally parsed.  wait until we've gotten all
-            # available data
+            # be incrementally parsed, due to load_seek, load_read, or pulls_fd
+            # wait until we've gotten all available data
             pass
 
         else:
@@ -593,17 +632,24 @@ class Parser:
                 flag = hasattr(im, "load_seek") or hasattr(im, "load_read")
                 if not flag and len(im.tile) == 1:
                     # initialize decoder
-                    im.load_prepare()
-                    d, e, o, a = im.tile[0]
-                    im.tile = []
-                    self.decoder = Image._getdecoder(im.mode, d, a, im.decoderconfig)
-                    self.decoder.setimage(im.im, e)
+                    decoder_name, extents, offset, args = im.tile[0]
+                    decoder = Image._getdecoder(
+                        im.mode, decoder_name, args, im.decoderconfig
+                    )
+                    # a decoder that reads from the file itself
+                    # cannot be incrementally parsed.
+                    # wait until we've gotten all available data
+                    if not decoder.pulls_fd:
+                        im.load_prepare()
+                        im.tile = []
+                        self.decoder = decoder
+                        self.decoder.setimage(im.im, extents)
 
-                    # calculate decoder offset
-                    self.offset = o
-                    if self.offset <= len(self.data):
-                        self.data = self.data[self.offset :]
-                        self.offset = 0
+                        # calculate decoder offset
+                        self.offset = offset
+                        if self.offset <= len(self.data):
+                            self.data = self.data[self.offset :]
+                            self.offset = 0
 
                 self.image = im
 

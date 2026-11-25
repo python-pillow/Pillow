@@ -2,7 +2,6 @@ from __future__ import annotations
 
 __lazy_modules__ = {"io"}
 
-from io import BytesIO
 
 from . import Image, ImageFile
 from ._binary import i16le as i16
@@ -19,17 +18,11 @@ TYPE_CHECKING = False
 if TYPE_CHECKING:
     from typing import IO, Any
 
-_VP8_MODES_BY_IDENTIFIER = {
-    b"VP8 ": "RGB",
-    b"VP8X": "RGBA",
-    b"VP8L": "RGBA",  # lossless
-}
-
 
 def _accept(prefix: bytes) -> bool | str:
     is_riff_file_format = prefix.startswith(b"RIFF")
     is_webp_file = prefix[8:12] == b"WEBP"
-    is_valid_vp8_mode = prefix[12:16] in _VP8_MODES_BY_IDENTIFIER
+    is_valid_vp8_mode = prefix[12:16] in {b"VP8 ", b"VP8X", b"VP8L"}
 
     if is_riff_file_format and is_webp_file and is_valid_vp8_mode:
         if not SUPPORTED:
@@ -130,7 +123,6 @@ class WebPImageFile(ImageFile.ImageFile):
     def _get_next(self) -> tuple[bytes, int, int]:
         # Get next frame
         ret = self._decoder.get_next()
-        self.__physical_frame += 1
 
         # Check if an error occurred
         if ret is None:
@@ -138,6 +130,11 @@ class WebPImageFile(ImageFile.ImageFile):
             self.seek(0)
             msg = "failed to decode next frame in WebP file"
             raise EOFError(msg)
+
+        if not self.is_animated:
+            del self._decoder
+
+        self.__physical_frame += 1
 
         # Compute duration
         data, timestamp = ret
@@ -164,11 +161,10 @@ class WebPImageFile(ImageFile.ImageFile):
             data, self.info["timestamp"], self.info["duration"] = self._get_next()
             self.__loaded = self.__logical_frame
 
-            # Set tile
             if self.fp and self._exclusive_fp:
                 self.fp.close()
-            self.fp = BytesIO(data)
-            self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), 0, self.rawmode)]
+            self.fp = None
+            self.frombytes(data, "raw", self.rawmode)
 
         return super().load()
 
@@ -181,7 +177,7 @@ class WebPImageFile(ImageFile.ImageFile):
 
 def _convert_frame(im: Image.Image) -> Image.Image:
     # Make sure image mode is supported
-    if im.mode not in ("RGBX", "RGBA", "RGB"):
+    if im.mode not in {"RGBX", "RGBA", "RGB"}:
         im = im.convert("RGBA" if im.has_transparency_data else "RGB")
     return im
 

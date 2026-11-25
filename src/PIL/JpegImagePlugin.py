@@ -71,13 +71,13 @@ if TYPE_CHECKING:
 # Parser
 
 
-def Skip(self: JpegImageFile, marker: int) -> None:
+def Skip(self: JpegImageFile, name: str, marker: int) -> None:
     assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     ImageFile._safe_read(self.fp, n)
 
 
-def APP(self: JpegImageFile, marker: int) -> None:
+def APP(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Application marker.  Store these in the APP dictionary.
     # Also look for well-known application markers.
@@ -86,10 +86,9 @@ def APP(self: JpegImageFile, marker: int) -> None:
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
 
-    app = f"APP{marker & 15}"
-
-    self.app[app] = s  # compatibility
-    self.applist.append((app, s))
+    self.app[name] = s  # compatibility
+    if s:
+        self.applist.append((name, s))
 
     if marker == 0xFFE0 and s.startswith(b"JFIF"):
         # extract JFIF information
@@ -114,7 +113,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
         if "exif" in self.info:
             self.info["exif"] += s[6:]
         else:
-            self.info["exif"] = s
+            self.info["exif"] = bytearray(s)
             self._exif_offset = self.fp.tell() - n + 6
     elif marker == 0xFFE1 and s.startswith(b"http://ns.adobe.com/xap/1.0/\x00"):
         self.info["xmp"] = s.split(b"\x00", 1)[1]
@@ -184,7 +183,7 @@ def APP(self: JpegImageFile, marker: int) -> None:
         self.info["mpoffset"] = self.fp.tell() - n + 4
 
 
-def COM(self: JpegImageFile, marker: int) -> None:
+def COM(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Comment marker.  Store these in the APP dictionary.
     assert self.fp is not None
@@ -193,10 +192,11 @@ def COM(self: JpegImageFile, marker: int) -> None:
 
     self.info["comment"] = s
     self.app["COM"] = s  # compatibility
-    self.applist.append(("COM", s))
+    if s:
+        self.applist.append(("COM", s))
 
 
-def SOF(self: JpegImageFile, marker: int) -> None:
+def SOF(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Start of frame marker.  Defines the size and mode of the
     # image.  JPEG is colour blind, so we use some simple
@@ -225,7 +225,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
         msg = f"cannot handle {self.layers}-layer images"
         raise SyntaxError(msg)
 
-    if marker in [0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE]:
+    if marker in {0xFFC2, 0xFFC6, 0xFFCA, 0xFFCE}:
         self.info["progressive"] = self.info["progression"] = 1
 
     if self.icclist:
@@ -245,7 +245,7 @@ def SOF(self: JpegImageFile, marker: int) -> None:
         self.layer.append((t[0], t[1] // 16, t[1] & 15, t[2]))
 
 
-def DQT(self: JpegImageFile, marker: int) -> None:
+def DQT(self: JpegImageFile, name: str, marker: int) -> None:
     #
     # Define quantization table.  Note that there might be more
     # than one table in each marker.
@@ -390,14 +390,12 @@ class JpegImageFile(ImageFile.ImageFile):
             if i in MARKER:
                 name, description, handler = MARKER[i]
                 if handler is not None:
-                    handler(self, i)
+                    handler(self, name, i)
                 if i == 0xFFDA:  # start of scan
                     rawmode = self.mode
                     if self.mode == "CMYK":
                         rawmode = "CMYK;I"  # assume adobe conventions
-                    self.tile = [
-                        ImageFile._Tile("jpeg", (0, 0, *self.size), 0, (rawmode, ""))
-                    ]
+                    self.tile = [ImageFile._Tile("jpeg", args=(rawmode, ""))]
                     # self.__offset = self.fp.tell()
                     break
                 s = self.fp.read(1)
@@ -410,6 +408,8 @@ class JpegImageFile(ImageFile.ImageFile):
                 msg = "no marker found"
                 raise SyntaxError(msg)
 
+        if exif := self.info.get("exif"):
+            self.info["exif"] = bytes(exif)
         self._read_dpi_from_exif()
 
     def __getstate__(self) -> list[Any]:
@@ -446,31 +446,23 @@ class JpegImageFile(ImageFile.ImageFile):
         if self.decoderconfig:
             return None
 
-        d, e, o, a = self.tile[0]
         scale = 1
         original_size = self.size
 
-        assert isinstance(a, tuple)
-        if a[0] == "RGB" and mode in ["L", "YCbCr"]:
+        args = self.tile[0].args
+        assert isinstance(args, tuple)
+        if args[0] == "RGB" and mode in {"L", "YCbCr"}:
             self._mode = mode
-            a = mode, ""
+            self.tile = [self.tile[0]._replace(args=(mode, ""))]
 
         if size:
             scale = min(self.size[0] // size[0], self.size[1] // size[1])
             for s in [8, 4, 2, 1]:
                 if scale >= s:
                     break
-            assert e is not None
-            e = (
-                e[0],
-                e[1],
-                (e[2] - e[0] + s - 1) // s + e[0],
-                (e[3] - e[1] + s - 1) // s + e[1],
-            )
             self._size = ((self.size[0] + s - 1) // s, (self.size[1] + s - 1) // s)
             scale = s
 
-        self.tile = [ImageFile._Tile(d, e, o, a)]
         self.decoderconfig = (scale, 0)
 
         box = (0, 0, original_size[0] / scale, original_size[1] / scale)
@@ -523,28 +515,22 @@ class JpegImageFile(ImageFile.ImageFile):
             return
         try:
             exif = self.getexif()
-            resolution_unit = exif[0x0128]
-            x_resolution = exif[0x011A]
-            try:
-                dpi = float(x_resolution[0]) / x_resolution[1]
-            except TypeError:
-                dpi = x_resolution
+            dpi = exif[0x011A]
             if math.isnan(dpi):
                 msg = "DPI is not a number"
                 raise ValueError(msg)
-            if resolution_unit == 3:  # cm
+            if exif.get(0x0128) == 3:  # ResolutionUnit is cm
                 # 1 dpcm = 2.54 dpi
                 dpi *= 2.54
-            self.info["dpi"] = dpi, dpi
         except (
             struct.error,  # truncated EXIF
             KeyError,  # dpi not included
             SyntaxError,  # invalid/unreadable EXIF
             TypeError,  # dpi is an invalid float
             ValueError,  # dpi is an invalid float
-            ZeroDivisionError,  # invalid dpi rational value
         ):
-            self.info["dpi"] = 72, 72
+            dpi = 72
+        self.info["dpi"] = dpi, dpi
 
     def _getmp(self) -> dict[int, Any] | None:
         return _getmp(self)
@@ -868,9 +854,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
         # and the comment (COM marker).
         bufsize = max(len(exif) + 5, len(extra), len(comment or b"") + 5)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("jpeg", (0, 0, *im.size), 0, rawmode)], bufsize
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("jpeg", args=rawmode)], bufsize)
 
 
 ##

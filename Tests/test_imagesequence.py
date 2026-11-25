@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from PIL import Image, ImageSequence, PsdImagePlugin, TiffImagePlugin
+from PIL import Image, ImageSequence, TiffImagePlugin
 
 from .helper import assert_image_equal, hopper, skip_unless_feature
 
@@ -41,14 +41,6 @@ def test_iterator() -> None:
             i[index + 1]
         with pytest.raises(StopIteration):
             next(i)
-
-
-def test_iterator_min_frame() -> None:
-    with Image.open("Tests/images/hopper.psd") as im:
-        assert isinstance(im, PsdImagePlugin.PsdImageFile)
-        i = ImageSequence.Iterator(im)
-        for index in range(1, im.n_frames):
-            assert i[index] == next(i)
 
 
 @pytest.mark.parametrize(

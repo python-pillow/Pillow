@@ -59,6 +59,14 @@ Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
 :py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
 deprecated.
 
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.1.0
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
+
 Removed features
 ----------------
 

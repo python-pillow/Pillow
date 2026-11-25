@@ -2,7 +2,7 @@
 
 ## What this project is
 
-Pillow is the Python Imaging Library fork — a Python 3.10+ library for opening,
+Pillow is the Python Imaging Library fork — a Python 3.11+ library for opening,
 manipulating, and saving many image file formats. It is a mix of Python and C:
 pure Python format plugins live in `src/PIL/`, and eight C extension modules
 (`_imaging`, `_imagingcms`, `_imagingft`, `_imagingmath`, `_imagingmorph`,
@@ -60,6 +60,11 @@ pre-commit run --all-files
 
 All hooks must pass before a PR can be merged. Separate reformatting commits
 from functional commits.
+
+## Pull requests
+
+Pillow core developers (and their agents) should add the `🤖-assisted` label to pull
+requests created with AI assistance.
 
 ## Type checking
 

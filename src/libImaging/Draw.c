@@ -47,12 +47,7 @@
 // need to care about it.
 static inline INT32
 ink16(Imaging im, const void *ink_) {
-    if (
-        im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-        || im->mode == IMAGING_MODE_I_16N
-#endif
-    ) {
+    if (isImageI16BigEndian(im)) {
         const UINT8 *in = ink_;
         UINT8 out[2];
         UINT16 ink;
@@ -199,11 +194,17 @@ hline32(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
             x1 = im->xsize - 1;
         }
         p = im->image32[y0];
-        while (x0 <= x1) {
-            if (mask == NULL || mask->image8[y0][x0]) {
+        if (mask == NULL) {
+            for (; x0 <= x1; x0++) {
                 p[x0] = ink;
             }
-            x0++;
+        } else {
+            UINT8 *mask_row = mask->image8[y0];
+            for (; x0 <= x1; x0++) {
+                if (mask_row[x0]) {
+                    p[x0] = ink;
+                }
+            }
         }
     }
 }
@@ -239,6 +240,30 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
+static inline int
+should_draw_dash(int i, int *dash_offset, PyObject *dash) {
+    i += *dash_offset;
+    int total = 0;
+    int tuple_index = -1;
+    int tuple_size = PyTuple_GET_SIZE(dash);
+    while (total <= i) {
+        tuple_index += 1;
+        if (tuple_index == tuple_size) {
+            tuple_index = 0;
+        }
+        PyObject *value = PyTuple_GetItem(dash, tuple_index);
+        if (!PyLong_Check(value)) {
+            return 0;
+        }
+        int v = PyLong_AsLongLong(value);
+        if (v == -1 && PyErr_Occurred()) {
+            return 0;
+        }
+        total += v;
+    }
+    return tuple_index % 2 == 0;
+}
+
 static inline void
 line(
     Imaging im,
@@ -248,17 +273,33 @@ line(
     int y1,
     int ink,
     point_handler point,
-    hline_handler hline
+    hline_handler hline,
+    PyObject *dash,
+    int *dash_offset
 ) {
     int i, n, e, dx, dy, xs, ys;
 
     /* normalize coordinates */
+    dx = x1 - x0;
+    if (dx < 0) {
+        dx = -dx, xs = -1;
+    } else {
+        xs = 1;
+    }
     dy = y1 - y0;
     if (dy < 0) {
         dy = -dy, ys = -1;
     } else if (dy == 0) {
         /* horizontal */
-        if (x1 > x0) {
+        if (dash != NULL) {
+            for (i = 0; i < dx; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point(im, x0, y0, ink);
+                }
+                x0 += xs;
+            }
+            *dash_offset += dx;
+        } else if (x1 > x0) {
             hline(im, x0, y0, x1 - 1, ink, NULL);
         } else if (x0 > x1) {
             hline(im, x1 + 1, y0, x0, ink, NULL);
@@ -267,22 +308,25 @@ line(
     } else {
         ys = 1;
     }
-    dx = x1 - x0;
-    if (dx < 0) {
-        dx = -dx, xs = -1;
-    } else {
-        xs = 1;
-    }
 
     n = (dx > dy) ? dx : dy;
 
     if (dx == 0) {
         /* vertical */
-        for (i = 0; i < dy; i++) {
-            point(im, x0, y0, ink);
-            y0 += ys;
+        if (dash != NULL) {
+            for (i = 0; i < dy; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point(im, x0, y0, ink);
+                }
+                y0 += ys;
+            }
+            *dash_offset += dy;
+        } else {
+            for (i = 0; i < dy; i++) {
+                point(im, x0, y0, ink);
+                y0 += ys;
+            }
         }
-
     } else if (dx > dy) {
         /* bresenham, horizontal slope */
         n = dx;
@@ -290,14 +334,29 @@ line(
         e = dy - dx;
         dx += dx;
 
-        for (i = 0; i < n; i++) {
-            point(im, x0, y0, ink);
-            if (e >= 0) {
-                y0 += ys;
-                e -= dx;
+        if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
             }
-            e += dy;
-            x0 += xs;
+            *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point(im, x0, y0, ink);
+                if (e >= 0) {
+                    y0 += ys;
+                    e -= dx;
+                }
+                e += dy;
+                x0 += xs;
+            }
         }
 
     } else {
@@ -307,14 +366,29 @@ line(
         e = dx - dy;
         dy += dy;
 
-        for (i = 0; i < n; i++) {
-            point(im, x0, y0, ink);
-            if (e >= 0) {
-                x0 += xs;
-                e -= dy;
+        if (dash != NULL) {
+            for (i = 0; i < n; i++) {
+                if (should_draw_dash(i, dash_offset, dash)) {
+                    point(im, x0, y0, ink);
+                }
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
             }
-            e += dx;
-            y0 += ys;
+            *dash_offset += n;
+        } else {
+            for (i = 0; i < n; i++) {
+                point(im, x0, y0, ink);
+                if (e >= 0) {
+                    x0 += xs;
+                    e -= dy;
+                }
+                e += dx;
+                y0 += ys;
+            }
         }
     }
 }
@@ -598,13 +672,23 @@ ImagingDrawPoint(Imaging im, int x0, int y0, const void *ink_, int op) {
 }
 
 int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink_, int op) {
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink_,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+) {
     DRAW *draw;
     INT32 ink;
 
     DRAWINIT();
 
-    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline);
+    line(im, x0, y0, x1, y1, ink, draw->point, draw->hline, dash, dash_offset);
 
     return 0;
 }
@@ -676,9 +760,7 @@ ImagingDrawRectangle(
     int width,
     int op
 ) {
-    int i;
-    int y;
-    int tmp;
+    int y, tmp;
     DRAW *draw;
     INT32 ink;
 
@@ -688,6 +770,10 @@ ImagingDrawRectangle(
         tmp = y0, y0 = y1, y1 = tmp;
     }
 
+    if (width > (y1 - y0) / 2 || width > (x1 - x0) / 2) {
+        // Border is wide enough to fill the image
+        fill = 1;
+    }
     if (fill) {
         if (y0 < 0) {
             y0 = 0;
@@ -705,34 +791,20 @@ ImagingDrawRectangle(
             draw->hline(im, x0, y, x1, ink, NULL);
         }
 
-    } else {
-        /* outline */
-        if (width == 0) {
-            width = 1;
-        }
-        for (i = 0; i < width; i++) {
+    } else if (width > 0) {
+        for (int i = 0; i < width; i++) {
+            // Starting from the top, moving down one pixel at a time
             draw->hline(im, x0, y0 + i, x1, ink, NULL);
+            // Starting from the bottom, moving up one pixel at a time
             draw->hline(im, x0, y1 - i, x1, ink, NULL);
-            line(
-                im,
-                x1 - i,
-                y0 + width,
-                x1 - i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
-            line(
-                im,
-                x0 + i,
-                y0 + width,
-                x0 + i,
-                y1 - width + 1,
-                ink,
-                draw->point,
-                draw->hline
-            );
+        }
+
+        // Excluding the pixels already drawn by the top and bottom borders
+        for (y = y0 + width; y <= y1 - width; y++) {
+            // The width of the left border, moving down one pixel at a time
+            draw->hline(im, x0, y, x0 + width - 1, ink, NULL);
+            // The width of the right border, moving down one pixel at a time
+            draw->hline(im, x1 - width + 1, y, x1, ink, NULL);
         }
     }
 
@@ -748,7 +820,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 ) {
     int i, n, x0, y0, x1, y1;
     DRAW *draw;
@@ -798,6 +871,7 @@ ImagingDrawPolygon(
     } else {
         /* Outline */
         if (width == 1) {
+            int dash_offset = 0;
             for (i = 0; i < count - 1; i++) {
                 line(
                     im,
@@ -807,7 +881,9 @@ ImagingDrawPolygon(
                     xy[i * 2 + 3],
                     ink,
                     draw->point,
-                    draw->hline
+                    draw->hline,
+                    dash,
+                    &dash_offset
                 );
             }
             line(
@@ -818,7 +894,9 @@ ImagingDrawPolygon(
                 xy[1],
                 ink,
                 draw->point,
-                draw->hline
+                draw->hline,
+                dash,
+                &dash_offset
             );
         } else {
             for (i = 0; i < count - 1; i++) {

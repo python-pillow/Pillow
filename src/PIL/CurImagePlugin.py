@@ -71,7 +71,7 @@ class CurImageFile(BmpImagePlugin.BmpImageFile):
         # patch up the bitmap height
         self._size = self.width, self.height // 2
         if not self._masked:
-            self.tile = [self.tile[0]._replace(extents=(0, 0, *self.size))]
+            self.tile = [self.tile[0]._replace(extents=None)]
 
     def load_prepare(self) -> None:
         if self._masked:

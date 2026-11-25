@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import struct
+from io import BytesIO
+
 import pytest
 
 from PIL import BlpImagePlugin, Image
@@ -37,6 +40,24 @@ def test_load_blp2_dxt1() -> None:
 def test_load_blp2_dxt1a() -> None:
     with Image.open("Tests/images/blp/blp2_dxt1a.blp") as im:
         assert_image_equal_tofile(im, "Tests/images/blp/blp2_dxt1a.png")
+
+
+def test_load_blp2_narrow() -> None:
+    data = b"".join(struct.pack("<HHI", color, 0, 0) for color in (0xF800, 0x001F))
+    b = BytesIO(
+        b"BLP2"
+        + struct.pack("<i", 1)
+        + bytes((BlpImagePlugin.Encoding.DXT, 1, BlpImagePlugin.AlphaEncoding.DXT1, 0))
+        + struct.pack("<II", 1, 8)  # image size
+        + struct.pack("<16I", 20 + 16 * 4 * 2 + 256 * 4, *[0] * 15)
+        + struct.pack("<16I", len(data), *[0] * 15)
+        + bytes(256 * 4)
+        + data
+    )
+    with Image.open(b) as im:
+        assert (
+            im.get_flattened_data() == ((248, 0, 0, 255),) * 4 + ((0, 0, 248, 255),) * 4
+        )
 
 
 def test_invalid_file() -> None:

@@ -32,6 +32,12 @@ Using :py:func:`.Image.frombuffer()`, :py:func:`.Image.frombytes()` or
 :py:meth:`~PIL.Image.Image.frombytes()` to read "P;2L" or "P;4L" raw mode data has been
 deprecated.
 
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Passing lists to the ``value`` parameter of :py:meth:`~PIL.Image.Image.putpixel` has
+been deprecated. Use tuples instead.
+
 API changes
 ===========
 
@@ -43,15 +49,201 @@ TODO
 API additions
 =============
 
-TODO
-^^^^
+ImageDraw dash
+^^^^^^^^^^^^^^
 
-TODO
+:py:meth:`.ImageDraw.line`, :py:meth:`.ImageDraw.polygon` and
+:py:meth:`.ImageDraw.rectangle` now accept an optional ``dash`` argument.
+
+It is a tuple of integers, specifying the lengths of alternating drawn and blank
+segments. For example, ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd
+number of values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+skips 2, draws 3, skips 1, draws 2, and so on.
+
+When ``dash`` is set, ``width`` is ignored.
+
+ImageOps sepia and neon
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Two new image processing operations are available in ImageOps.
+
+* :py:meth:`~PIL.ImageOps.sepia`: apply a sepia tone
+* :py:meth:`~PIL.ImageOps.neon`: apply a neon glow effect, with arguments for color and
+  alpha
 
 Other changes
 =============
 
-TODO
-^^^^
+Empty JPEG APP and COM segments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+Empty APP and COM segments in JPEG images are no longer added to
+``JpegImageFile.applist``, since they carry no data. This reduces the memory used when
+opening images that contain many of them.
+
+Multiple PNG ICC profiles
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The PNG specification allows at most one iCCP chunk. If an image contains more than
+one, only the first is now used, and later iCCP chunks are skipped without being
+decompressed.
+
+Rounding crop coordinates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.crop` rounds float coordinates to the nearest integer.
+Coordinates ending in .5 were rounded to the nearest even integer, so a box of the same
+size could give an image one pixel larger or smaller depending on where it was. They
+are now always rounded up.
+
+Scaling empty text
+^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageText.Text.wrap` now raises :py:exc:`ValueError` for empty or
+whitespace-only text with ``scaling``, before adjusting the font size.
+
+Writing to read-only images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.frombytes` and
+:py:meth:`~PIL.ImageCms.ImageCmsTransform.apply`, which in-place ImageCms transforms
+use, now copy an image before writing to it if its memory is read-only, as
+:py:meth:`~PIL.Image.Image.paste` already does. Previously, they could crash on
+memory-mapped image files, or modify the buffer behind an image created by
+:py:func:`~PIL.Image.frombuffer` or :py:func:`~PIL.Image.fromarrow`.
+
+As a further safeguard, the C decoder and ImageCms transform layers now raise a
+:py:exc:`ValueError` if asked to write into a read-only image directly.
+
+Saving TIFF images with libtiff geometry tags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When saving a TIFF image with libtiff, the ImageWidth, ImageLength,
+SamplesPerPixel and PlanarConfiguration tags are now always taken from the
+image, rather than from ``tiffinfo``, ``exif`` or the IFD of the original file.
+Previously, values that described a larger row than the image raised an
+:py:exc:`OSError`, and other values could produce an invalid file.
+
+Resizing I;16B and I;16N images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On little-endian systems, :py:meth:`~PIL.Image.Image.resize` read and wrote
+I;16B and I;16N pixel values in the wrong byte order when using a resampling
+filter other than ``Resampling.NEAREST``. This has been fixed.
+
+Blurring I;16 images
+^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.GaussianBlur` and :py:class:`~PIL.ImageFilter.BoxBlur`
+now support I;16, I;16L, I;16B and I;16N images.
+
+Rank filters for I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFilter.RankFilter`, :py:class:`~PIL.ImageFilter.MedianFilter`,
+:py:class:`~PIL.ImageFilter.MinFilter` and :py:class:`~PIL.ImageFilter.MaxFilter`
+now support I;16, I;16L, I;16B and I;16N images.
+
+Respect Python build-tree configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When building against a Python build tree, Pillow now skips the extra library and
+include directory lookups based on Python's installation prefix. This avoids
+adding unprefixed installation paths in cross-compilation environments. Builds
+against an installed Python retain the existing lookups.
+
+APNG frames with previous disposal
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Pillow 13.0.0, loading an APNG frame before seeking to the next could cause
+frames using ``Disposal.OP_PREVIOUS`` and ``Blend.OP_OVER`` to be drawn over the
+wrong image. This has been fixed.
+
+Minimum C version
+^^^^^^^^^^^^^^^^^
+
+C11 is now the minimum version of C required to compile Pillow from source.
+Pillow requires Python 3.11 or later, and CPython 3.11 and later require C11.
+
+WebP encoding errors now include a description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libwebp fails to encode an image, the raised :py:exc:`ValueError` now
+consistently describes the error rather than only reporting a numeric code.
+
+ImageCms.isIntentSupported intent range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.ImageCms.isIntentSupported` now returns -1 if ``intent`` is not between
+0 and 3. Previously, when Pillow was built against Little CMS 2.14 or earlier, an
+out-of-range intent could read invalid memory and crash.
+
+zlib-ng in Linux wheels
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The Linux wheels now link zlib-ng statically. Previously, zlib-ng was built but
+not bundled into the wheels, so the system zlib was used at runtime instead, and
+``PIL.features.version_feature("zlib_ng")`` reported a version that was not in use.
+Pillow 13.0.0 also failed to import on systems where ``libz.so.1`` was not on the
+default library search path, such as NixOS. Linux wheels no longer require a
+system zlib, and gain the speed of zlib-ng as macOS and Windows wheels already did.
+
+Remapping palettes with too many entries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.Image.Image.remap_palette` now raises :py:exc:`ValueError` straight
+away if ``dest_map`` has more than 256 entries. Such maps already raised
+:py:exc:`ValueError`, but only after processing every entry, which could take a long
+time for a very long list.
+
+BMP saving preserves alpha channel
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RGBA images saved as BMP are now written with a BITMAPV4HEADER, bitfields
+compression and channel masks, so the alpha channel is preserved when the file
+is reloaded instead of being silently dropped. Other modes are unchanged.
+
+Kerning in the basic layout engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When libraqm is not available, kerning was applied at 1/64th of its intended size,
+because a value in pixels was added to an advance in 26.6 fixed point precision.
+The full kerning value is now applied even when libraqm is not available.
+
+Memory leak when merging a single band with a mismatched mode
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:func:`~PIL.Image.merge` with a single band whose mode does not match the
+requested mode, such as ``Image.merge("F", [l_image])``, raised
+:py:exc:`ValueError` but leaked the memory allocated for the output image. This
+has been fixed.
+
+Added support for XML and XMP metadata in JPEG 2000
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+XML and XMP metadata will now be read into :py:attr:`~PIL.Image.Image.info` from JPEG
+2000 images. When saving, metadata can be specified using the ``xml`` or ``xmp``
+argument.
+
+ImageEnhance with I;16 images
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageEnhance.Color`, :py:class:`~PIL.ImageEnhance.Contrast`,
+:py:class:`~PIL.ImageEnhance.Brightness` and :py:class:`~PIL.ImageEnhance.Sharpness`
+now support I;16, I;16L, I;16B and I;16N images.
+
+BLP2 DXT images with a width of 1 or 2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BLP2 images using DXT1, DXT3 or DXT5 compression with a width of 1 or 2 pixels were
+decoded incorrectly, and used up to four times more memory than needed while loading.
+This has been fixed.
+
+Rectangle outline width
+^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`.ImageDraw.rectangle` draws its outline inwards from the edges of the
+rectangle. Previously, if ``width`` was more than the size of the rectangle, the
+outline could extend outside it, drawing a larger rectangle than requested. The
+rectangle is now filled with the outline color instead. Wide outlines are also drawn
+faster.

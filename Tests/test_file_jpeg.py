@@ -16,6 +16,7 @@ from PIL import (
     ImageOps,
     JpegImagePlugin,
     UnidentifiedImageError,
+    _binary,
     features,
 )
 
@@ -115,6 +116,17 @@ class TestFileJpeg:
 
             assert im.info["comment"] == b"File written by Adobe Photoshop\xa8 4.0\x00"
             assert im.app["COM"] == im.info["comment"]
+
+    def test_empty_app_segments(self) -> None:
+        with open(TEST_FILE, "rb") as fp:
+            data = fp.read()
+
+        # APP1 marker, zero data within
+        empty_marker = _binary.o16be(0xFFE1) + _binary.o16be(2)
+
+        with Image.open(BytesIO(data[:2] + empty_marker + data[2:])) as im:
+            assert isinstance(im, JpegImagePlugin.JpegImageFile)
+            assert [name for name, _ in im.applist] == ["APP0", "COM"]
 
     def test_comment_write(self) -> None:
         with Image.open(TEST_FILE) as im:
@@ -939,6 +951,17 @@ class TestFileJpeg:
             # This should return the default, and not a ValueError or
             # OSError for an unidentified image.
             assert im.info.get("dpi") == (72, 72)
+
+    def test_dpi_without_resolution_unit(self, tmp_path: Path) -> None:
+        im = Image.new("RGB", (1, 1))
+        exif = Image.Exif()
+        exif[282] = 96
+
+        out = tmp_path / "out.jpg"
+        im.save(out, exif=exif)
+
+        with Image.open(out) as reloaded:
+            assert reloaded.info["dpi"] == (96, 96)
 
     def test_ifd_offset_exif(self) -> None:
         # Arrange

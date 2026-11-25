@@ -23,7 +23,7 @@ __lazy_modules__ = {"re"}
 import re
 from typing import Protocol, cast, overload
 
-from . import ExifTags, Image, ImagePalette
+from . import ExifTags, Image, ImageChops, ImageFilter, ImagePalette
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -121,6 +121,19 @@ def autocontrast(
 
     :return: An image.
     """
+    if isinstance(cutoff, tuple) and len(cutoff) != 2:
+        msg = (  # type: ignore[unreachable]
+            "cutoff must be either a tuple of (low, high), or a single number for both"
+        )
+        raise ValueError(msg)
+
+    if ignore is not None:
+        if isinstance(ignore, int):
+            ignore = (ignore,)
+        if not all(0 <= ix <= 255 for ix in ignore):
+            msg = "ignore must be between or equal to 0 and 255"
+            raise ValueError(msg)
+
     if preserve_tone:
         histogram = image.convert("L").histogram(mask)
     else:
@@ -131,11 +144,8 @@ def autocontrast(
         h = histogram[layer : layer + 256]
         if ignore is not None:
             # get rid of outliers
-            if isinstance(ignore, int):
-                h[ignore] = 0
-            else:
-                for ix in ignore:
-                    h[ix] = 0
+            for ix in ignore:
+                h[ix] = 0
         if cutoff:
             # cut off pixels from both ends of the histogram
             if not isinstance(cutoff, tuple):
@@ -175,10 +185,8 @@ def autocontrast(
             # don't bother
             lut.extend(list(range(256)))
         else:
-            scale = 255.0 / (hi - lo)
-            offset = -lo * scale
             for ix in range(256):
-                ix = int(ix * scale + offset)
+                ix = (ix - lo) * 255 // (hi - lo)
                 if ix < 0:
                     ix = 0
                 elif ix > 255:
@@ -313,10 +321,10 @@ def contain(
     """
 
     if image.height == 0:
-        return Image.new(image.mode, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return Image.new(image.mode, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -328,8 +336,8 @@ def contain(
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
-    if min(size) == 0:
-        return Image.new(image.mode, size)
+    if 0 in size:
+        return image.crop((0, 0, *size))
     return image.resize(size, resample=method)
 
 
@@ -349,11 +357,13 @@ def cover(
     :return: An image.
     """
 
+    if image.width == 0:
+        return image.crop((0, 0, 0, size[1]))
     if image.height == 0:
-        return Image.new(image.mode, (size[0], 0))
+        return image.crop((0, 0, size[0], 0))
     im_ratio = image.width / image.height
     if size[1] == 0:
-        return Image.new(image.mode, (0, 0))
+        return image.crop((0, 0, 0, 0))
     dest_ratio = size[0] / size[1]
 
     if im_ratio != dest_ratio:
@@ -361,10 +371,12 @@ def cover(
             new_height = round(image.height / image.width * size[0])
             if new_height != size[1]:
                 size = (size[0], new_height)
+                Image._decompression_bomb_check(size)
         else:
             new_width = round(image.width / image.height * size[1])
             if new_width != size[0]:
                 size = (new_width, size[1])
+                Image._decompression_bomb_check(size)
     return image.resize(size, resample=method)
 
 
@@ -376,7 +388,11 @@ def _new_with_fill(
         mode = image.palette.mode
         palette = ImagePalette.ImagePalette(mode, image.getpalette(mode))
         if isinstance(color, tuple) and len(color) in (3, 4):
-            color = palette.getcolor(color, image)
+            if image.mode == "PA":
+                alpha = color[3] if len(color) == 4 else 255
+                color = (palette.getcolor(color[:3], image), alpha)
+            else:
+                color = palette.getcolor(color, image)
     else:
         palette = None
     out = Image.new(image.mode, size, color)
@@ -469,6 +485,8 @@ def scale(
         raise ValueError(msg)
     else:
         size = (round(factor * image.width), round(factor * image.height))
+        if 0 in size:
+            return image.crop((0, 0, *size))
         return image.resize(size, resample)
 
 
@@ -476,8 +494,8 @@ class SupportsGetMesh(Protocol):
     """
     An object that supports the ``getmesh`` method, taking an image as an
     argument, and returning a list of tuples. Each tuple contains two tuples,
-    the source box as a tuple of 4 integers, and a tuple of 8 integers for the
-    final quadrilateral, in order of top left, bottom left, bottom right, top
+    the final box as a tuple of 4 integers, and a tuple of 8 integers for the
+    source quadrilateral, in order of top left, bottom left, bottom right, top
     right.
     """
 
@@ -603,8 +621,8 @@ def fit(
     # kevin@cazabon.com
     # https://www.cazabon.com
 
-    if min(size) == 0:
-        return Image.new(image.mode, size)
+    if 0 in size:
+        return image.crop((0, 0, *size))
     centering_x, centering_y = centering
 
     if not 0.0 <= centering_x <= 1.0:
@@ -628,7 +646,7 @@ def fit(
 
     # calculate the aspect ratio of the live_size
     if live_size[1] == 0:
-        return Image.new(image.mode, size)
+        return image.crop((0, 0, *size))
     live_size_ratio = live_size[0] / live_size[1]
 
     # calculate the aspect ratio of the output image
@@ -676,6 +694,90 @@ def grayscale(image: Image.Image) -> Image.Image:
     :return: An image.
     """
     return image.convert("L")
+
+
+def sepia(image: Image.Image) -> Image.Image:
+    """
+    Apply a sepia tone to the image.
+
+    :param image: The image to modify.
+    :return: An image.
+
+    .. versionadded:: 13.1.0
+    """
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    return image.convert(
+        "RGB",
+        matrix=(
+            0.393,
+            0.769,
+            0.189,
+            0,
+            0.349,
+            0.686,
+            0.168,
+            0,
+            0.272,
+            0.534,
+            0.131,
+            0,
+        ),
+    )
+
+
+def _sobel(image: Image.Image) -> Image.Image:
+    out = Image.new("L", image.size)
+    if min(image.size) <= 2:
+        return out
+
+    if image.mode != "L":
+        image = image.convert("L")
+
+    Kx = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+    Ky = [1, 2, 1, 0, 0, 0, -1, -2, -1]
+
+    # Kernel clips to 0-255, so |g| is the sum of the positive and negative halves
+    gx, gx_neg, gy, gy_neg = (
+        image.filter(ImageFilter.Kernel((3, 3), [s * v for v in k], 1))
+        for k in (Kx, Ky)
+        for s in (1, -1)
+    )
+    mag = ImageChops.add(ImageChops.add(gx, gx_neg), ImageChops.add(gy, gy_neg))
+
+    # Edge pixels have no full neighbourhood and stay 0
+    out.paste(mag.crop((1, 1, image.width - 1, image.height - 1)), (1, 1))
+    return out
+
+
+def neon(
+    image: Image.Image, color: tuple[int, int, int] = (255, 0, 255), alpha: float = 0.2
+) -> Image.Image:
+    """
+    Apply a neon glow effect to an image using edge detection,
+    blur-based glow generation, colorization, and alpha blending.
+
+    :param image: The image to be used for the effect
+    :param color: RGB color to be used for the neon effect
+    :param alpha: The intensity of the neon effect. If alpha is 0.0, the image is
+        converted to RGB and returned without any further changes.
+    :return: An RGB image.
+
+    .. versionadded:: 13.1.0
+    """
+    edges = _sobel(image).filter(ImageFilter.GaussianBlur(2))
+
+    # Apply a glow-enhancing mask transformation
+    glow = edges.point(lambda value: 255 - ((255 - value) ** 2 // 255))
+
+    # Apply a color tint to the intensity mask
+    neon = Image.merge(
+        "RGB",
+        tuple(glow.point(lambda value: min(255, int(value * c / 255))) for c in color),
+    )
+
+    return Image.blend(image.convert("RGB"), neon, alpha)
 
 
 def invert(image: Image.Image) -> Image.Image:

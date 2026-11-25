@@ -107,6 +107,7 @@ def test_fromarray_palette() -> None:
 
     # Act
     out = Image.fromarray(a, "P")
+    assert out.readonly == 0
 
     # Assert that the Python and C palettes match
     assert out.palette is not None

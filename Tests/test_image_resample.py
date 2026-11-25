@@ -31,6 +31,11 @@ class TestImagingResampleVulnerability:
                 # any resampling filter will do here
                 im.im.resize((xsize, ysize), Image.Resampling.BILINEAR)
 
+    def test_overflow_ksize(self) -> None:
+        im = Image.new("L", (500_000_000, 1))
+        with pytest.raises(MemoryError):
+            im.resize((2, 1), Image.Resampling.MKS2021)
+
     def test_invalid_size(self) -> None:
         im = hopper()
 

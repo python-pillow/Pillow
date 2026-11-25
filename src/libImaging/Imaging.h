@@ -132,10 +132,6 @@ struct ImagingMemoryInstance {
 #define IMAGING_PIXEL_CMYK(im, x, y) ((im)->image[(y)][(x) * 4])
 #define IMAGING_PIXEL_YCbCr(im, x, y) ((im)->image[(y)][(x) * 4])
 
-#define IMAGING_PIXEL_UINT8(im, x, y) ((im)->image8[(y)][(x)])
-#define IMAGING_PIXEL_INT32(im, x, y) ((im)->image32[(y)][(x)])
-#define IMAGING_PIXEL_FLOAT32(im, x, y) (((FLOAT32 *)(im)->image32[y])[x])
-
 struct ImagingAccessInstance {
     ModeID mode;
     void (*get_pixel)(Imaging im, int x, int y, void *pixel);
@@ -195,14 +191,14 @@ ImagingMemorySetBlockAllocator(ImagingMemoryArena arena, int use_block_allocator
 extern Imaging
 ImagingNew(ModeID mode, int xsize, int ysize);
 extern Imaging
-ImagingNewDirty(ModeID mode, int xsize, int ysize);
-extern Imaging
-ImagingNew2Dirty(ModeID mode, Imaging imOut, Imaging imIn);
+ImagingNewDirty(const ModeID mode, int xsize, int ysize);
 extern void
 ImagingDelete(Imaging im);
 
 extern Imaging
-ImagingNewBlock(ModeID mode, int xsize, int ysize);
+ImagingNewBlock(const ModeID mode, int xsize, int ysize);
+
+typedef Imaging (*ImagingAllocator)(const ModeID mode, int xsize, int ysize);
 
 extern Imaging
 ImagingNewArrow(
@@ -249,8 +245,16 @@ ImagingPaletteCacheDelete(ImagingPalette palette);
 #define ImagingPaletteCache(p, r, g, b) \
     p->cache[(r >> 2) + (g >> 2) * 64 + (b >> 2) * 64 * 64]
 
+/* mirrors PIL.Image.Quantize */
+typedef enum {
+    IMAGING_QUANTIZE_MEDIANCUT = 0,
+    IMAGING_QUANTIZE_MAXCOVERAGE = 1,
+    IMAGING_QUANTIZE_FASTOCTREE = 2,
+    IMAGING_QUANTIZE_LIBIMAGEQUANT = 3,
+} ImagingQuantizeMethod;
+
 extern Imaging
-ImagingQuantize(Imaging im, int colours, int mode, int kmeans);
+ImagingQuantize(Imaging im, int colours, ImagingQuantizeMethod method, int kmeans);
 
 /* Threading */
 /* --------- */
@@ -274,26 +278,39 @@ ImagingError_Mismatch(void); /* maps to ValueError by default */
 extern void *
 ImagingError_ValueError(const char *message);
 
+/* Helpers */
+/* ------- */
+
+int
+isImageI16BigEndian(Imaging im);
+
 /* Transform callbacks */
 /* ------------------- */
 
-/* standard transforms */
-#define IMAGING_TRANSFORM_AFFINE 0
-#define IMAGING_TRANSFORM_PERSPECTIVE 2
-#define IMAGING_TRANSFORM_QUAD 3
+/* mirrors PIL.Image.Transform (EXTENT and MESH are handled in Python) */
+typedef enum {
+    IMAGING_TRANSFORM_AFFINE = 0,
+    IMAGING_TRANSFORM_PERSPECTIVE = 2,
+    IMAGING_TRANSFORM_QUAD = 3,
+} ImagingTransformType;
 
-/* standard filters */
-#define IMAGING_TRANSFORM_NEAREST 0
-#define IMAGING_TRANSFORM_BOX 4
-#define IMAGING_TRANSFORM_BILINEAR 2
-#define IMAGING_TRANSFORM_HAMMING 5
-#define IMAGING_TRANSFORM_BICUBIC 3
-#define IMAGING_TRANSFORM_LANCZOS 1
-#define IMAGING_TRANSFORM_MKS2013 6
-#define IMAGING_TRANSFORM_MKS2021 7
+/* mirrors PIL.Image.Resampling */
+typedef enum {
+    IMAGING_TRANSFORM_NEAREST = 0,
+    IMAGING_TRANSFORM_BOX = 4,
+    IMAGING_TRANSFORM_BILINEAR = 2,
+    IMAGING_TRANSFORM_HAMMING = 5,
+    IMAGING_TRANSFORM_BICUBIC = 3,
+    IMAGING_TRANSFORM_LANCZOS = 1,
+    IMAGING_TRANSFORM_MKS2013 = 6,
+    IMAGING_TRANSFORM_MKS2021 = 7,
+} ImagingResamplingType;
 
-typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
-typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
+/* mirrors PIL.Image.Dither (ORDERED and RASTERIZE are not yet implemented) */
+typedef enum {
+    IMAGING_DITHER_NONE = 0,
+    IMAGING_DITHER_FLOYDSTEINBERG = 3,  // Default
+} ImagingDitherType;
 
 /* Image Manipulation Methods */
 /* -------------------------- */
@@ -305,8 +322,12 @@ ImagingBlend(Imaging imIn1, Imaging imIn2, float alpha);
 extern Imaging
 ImagingCopy(Imaging im);
 extern Imaging
-ImagingConvert(
-    Imaging imOut, Imaging imIn, ModeID mode, ImagingPalette palette, int dither
+ImagingConvertUsingAllocator(
+    Imaging imIn,
+    ModeID mode,
+    ImagingPalette palette,
+    ImagingDitherType dither,
+    ImagingAllocator new_image
 );
 extern Imaging
 ImagingConvertMatrix(Imaging im, ModeID mode, const float m[12]);
@@ -330,9 +351,9 @@ extern Imaging
 ImagingFillRadialGradient(ModeID mode);
 extern Imaging
 ImagingFilter(Imaging im, int xsize, int ysize, const FLOAT32 *kernel, FLOAT32 offset);
-extern Imaging
+extern void
 ImagingFlipLeftRight(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingFlipTopBottom(Imaging imOut, Imaging imIn);
 extern Imaging
 ImagingGaussianBlur(
@@ -356,6 +377,8 @@ ImagingGetColors(Imaging im, int maxcolors, int *colors);
 extern int
 ImagingGetExtrema(Imaging im, void *extrema);
 extern int
+ImagingGetExtremaMultiband(Imaging im, UINT8 extrema[8]);
+extern int
 ImagingGetProjection(Imaging im, UINT8 *xproj, UINT8 *yproj);
 extern ImagingHistogram
 ImagingGetHistogram(Imaging im, Imaging mask, void *extrema);
@@ -375,31 +398,33 @@ extern Imaging
 ImagingPutBand(Imaging im, Imaging imIn, int band);
 extern Imaging
 ImagingRankFilter(Imaging im, int size, int rank);
-extern Imaging
+extern void
 ImagingRotate90(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate180(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingRotate270(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTranspose(Imaging imOut, Imaging imIn);
-extern Imaging
+extern void
 ImagingTransverse(Imaging imOut, Imaging imIn);
 extern Imaging
-ImagingResample(Imaging imIn, int xsize, int ysize, int filter, float box[4]);
+ImagingResample(
+    Imaging imIn, int xsize, int ysize, ImagingResamplingType filter, float box[4]
+);
 extern Imaging
 ImagingReduce(Imaging imIn, int xscale, int yscale, int box[4]);
 extern int
 ImagingTransform(
     Imaging imOut,
     Imaging imIn,
-    int method,
+    ImagingTransformType method,
     int x0,
     int y0,
     int x1,
     int y1,
     double a[8],
-    int filter,
+    ImagingResamplingType filter,
     int fill
 );
 extern Imaging
@@ -418,7 +443,7 @@ ImagingColorLUT3D_linear(
 );
 
 extern Imaging
-ImagingCopy2(Imaging imOut, Imaging imIn);
+ImagingCopyInto(Imaging imOut, Imaging imIn);
 
 /* Channel operations */
 /* any mode, except "F" */
@@ -498,7 +523,17 @@ ImagingDrawEllipse(
     int op
 );
 extern int
-ImagingDrawLine(Imaging im, int x0, int y0, int x1, int y1, const void *ink, int op);
+ImagingDrawLine(
+    Imaging im,
+    int x0,
+    int y0,
+    int x1,
+    int y1,
+    const void *ink,
+    int op,
+    PyObject *dash,
+    int *dash_offset
+);
 extern int
 ImagingDrawWideLine(
     Imaging im,
@@ -536,7 +571,8 @@ ImagingDrawPolygon(
     int fill,
     int width,
     int op,
-    Imaging mask
+    Imaging mask,
+    PyObject *dash
 );
 extern int
 ImagingDrawRectangle(
@@ -625,6 +661,8 @@ ImagingJpegUseJCSExtensions(void);
 
 extern int
 ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
+extern void
+ImagingJpegEncodeCleanup(ImagingCodecState state);
 #endif
 #ifdef HAVE_OPENJPEG
 extern int

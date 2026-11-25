@@ -27,6 +27,7 @@ from __future__ import annotations
 __lazy_modules__ = {"PIL._binary"}
 
 import os
+from functools import cache
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i16le as i16
@@ -62,6 +63,17 @@ def _accept(prefix: bytes) -> bool:
 
 def _dib_accept(prefix: bytes) -> bool:
     return i32(prefix) in [12, 40, 52, 56, 64, 108, 124]
+
+
+@cache
+def _grayscale_palette(colors: int, padding: int) -> bytearray:
+    palette = bytearray()
+    indices = (0, 255) if colors == 2 else range(colors)
+    for val in indices:
+        palette += bytes((val,)) * 3
+        if padding == 4:
+            palette += bytes((0,))
+    return palette
 
 
 # =============================================================================
@@ -266,27 +278,15 @@ class BmpImageFile(ImageFile.ImageFile):
         # --------------- Once the header is processed, process the palette/LUT
         if self.mode == "P":  # Paletted for 1, 4 and 8 bit images
             # ---------------------------------------------------- 1-bit images
-            if not (0 < file_info["colors"] <= 65536):
+            if not (0 < file_info["colors"] <= 256):
                 msg = f"Unsupported BMP Palette size ({file_info['colors']})"
                 raise OSError(msg)
             else:
                 padding = file_info["palette_padding"]
                 palette = read(padding * file_info["colors"])
-                grayscale = True
-                indices = (
-                    (0, 255)
-                    if file_info["colors"] == 2
-                    else list(range(file_info["colors"]))
-                )
 
-                # ----------------- Check if grayscale and ignore palette if so
-                for ind, val in enumerate(indices):
-                    rgb = palette[ind * padding : ind * padding + 3]
-                    if rgb != o8(val) * 3:
-                        grayscale = False
-
-                # ------- If all colors are gray, white or black, ditch palette
-                if grayscale:
+                if _grayscale_palette(file_info["colors"], padding).startswith(palette):
+                    # ------- If all colors are gray, white or black, ditch palette
                     self._mode = "1" if file_info["colors"] <= 2 else "L"
                     raw_mode = self.mode
                 else:
@@ -451,7 +451,8 @@ def _save(
     ppm = tuple(int(x * 39.3701 + 0.5) for x in dpi)
 
     stride = ((im.size[0] * bits + 7) // 8 + 3) & (~3)
-    header = 40  # or 64 for OS/2 version 2
+    # Use a BITMAPV4HEADER for RGBA BMP images (not DIB)
+    header = 108 if im.mode == "RGBA" and bitmap_header else 40
     image = stride * im.size[1]
 
     if im.mode == "1":
@@ -460,7 +461,7 @@ def _save(
         palette = b"".join(o8(i) * 3 + b"\x00" for i in range(256))
     elif im.mode == "P":
         # Colors used should not be zero, as that is treated as the maximum
-        palette = im.im.getpalette("RGB", "BGRX") or b"\x00\x00\x00\x00"
+        palette = im.im.getpalette("BGRX") or b"\x00\x00\x00\x00"
         colors = len(palette) // 4
     else:
         palette = None
@@ -486,7 +487,7 @@ def _save(
         + o32(im.size[1])  # height
         + o16(1)  # planes
         + o16(bits)  # depth
-        + o32(0)  # compression (0=uncompressed)
+        + o32(BmpImageFile.COMPRESSIONS["BITFIELDS" if header == 108 else "RAW"])
         + o32(image)  # size of bitmap
         + o32(ppm[0])  # resolution
         + o32(ppm[1])  # resolution
@@ -494,14 +495,21 @@ def _save(
         + o32(colors)  # colors important
     )
 
-    fp.write(b"\0" * (header - 40))  # padding (for OS/2 format)
+    if header == 108:
+        # BITMAPV4HEADER
+        fp.write(
+            o32(0x00FF0000)  # red mask
+            + o32(0x0000FF00)  # green mask
+            + o32(0x000000FF)  # blue mask
+            + o32(0xFF000000)  # alpha mask
+            + b"sRGB"[::-1]  # LCS_sRGB color space
+            + b"\0" * 48  # endpoints and gamma
+        )
 
     if palette:
         fp.write(palette)
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, (rawmode, stride, -1))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=(rawmode, stride, -1))])
 
 
 #

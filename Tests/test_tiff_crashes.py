@@ -39,8 +39,9 @@ from .helper import on_ci
         "Tests/images/crash-0da013a13571cc8eb457a39fee8db18f8a3c7127.tif",
     ],
 )
-@pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
 @pytest.mark.filterwarnings("ignore:Metadata warning")
+@pytest.mark.filterwarnings("ignore:Possibly corrupt EXIF data")
+@pytest.mark.filterwarnings("ignore:Tag data larger than file")
 @pytest.mark.filterwarnings("ignore:Truncated File Read")
 def test_tiff_crashes(test_file: str) -> None:
     try:

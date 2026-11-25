@@ -1,9 +1,8 @@
 # Documentation: https://docs.codecov.com/docs/codecov-yaml
 
 codecov:
-  # Avoid "Missing base report" due to committing with "[CI skip]"
-  # https://github.com/codecov/support/issues/363
-  # https://docs.codecov.com/docs/comparing-commits
+  # Avoid "Missing base report" when the base commit ran no tests,
+  # such as docs-only changes skipped by paths-ignore in the test workflows
   allow_coverage_offsets: true
 
 comment: false

@@ -24,10 +24,11 @@
  * FIXME: Implement image processing gradient filters
  */
 
-#include <stdint.h>
 #include "Imaging.h"
+#include <stdint.h>
 
 #define INT32_MAX_F 2147483647.0F
+#define INT32_MIN_F -2147483648.0F
 
 static inline UINT8
 clip8(float in) {
@@ -47,11 +48,12 @@ clip16(float in) {
 
 static inline INT32
 clip32(float in) {
-    // Clamp the low bound branchlessly (maxss).
-    in = in < 0.0f ? 0.0f : in;
+    // I mode is signed, so whole INT32 range can be used.
+    in = in < INT32_MIN_F ? INT32_MIN : in;
+
     // Must explicitly return INT32_MAX for the high bound
     // to avoid incorrect overflow to INT_MIN.
-    return in >= INT32_MAX_F ? INT32_MAX : (INT32)in;
+    return in >= INT32_MAX_F ? INT32_MAX : (INT32)round(in);
 }
 
 Imaging
@@ -70,10 +72,11 @@ ImagingExpand(Imaging imIn, int margin) {
         return (Imaging)ImagingError_ValueError("filter size too large");
     }
 
-    int xsize = imIn->xsize + 2 * margin;
-    int ysize = imIn->ysize + 2 * margin;
-    if (imIn->xsize == 0 || imIn->ysize == 0) {
-        imOut = ImagingNew(imIn->mode, xsize, ysize);
+    int xsize = imIn->xsize, ysize = imIn->ysize;
+    int out_xsize = xsize + 2 * margin;
+    int out_ysize = ysize + 2 * margin;
+    if (xsize == 0 || ysize == 0) {
+        imOut = ImagingNew(imIn->mode, out_xsize, out_ysize);
         if (!imOut) {
             return NULL;
         }
@@ -81,45 +84,48 @@ ImagingExpand(Imaging imIn, int margin) {
         return imOut;
     }
 
-    imOut = ImagingNewDirty(imIn->mode, xsize, ysize);
+    imOut = ImagingNewDirty(imIn->mode, out_xsize, out_ysize);
     if (!imOut) {
         return NULL;
     }
 
-#define EXPAND_LINE(type, image, yin, yout)                       \
-    {                                                             \
-        for (x = 0; x < margin; x++) {                            \
-            imOut->image[yout][x] = imIn->image[yin][0];          \
-        }                                                         \
-        for (x = 0; x < imIn->xsize; x++) {                       \
-            imOut->image[yout][x + margin] = imIn->image[yin][x]; \
-        }                                                         \
-        for (x = 0; x < margin; x++) {                            \
-            imOut->image[yout][margin + imIn->xsize + x] =        \
-                imIn->image[yin][imIn->xsize - 1];                \
-        }                                                         \
+#define EXPAND_LINE(type, yin, yout)                     \
+    {                                                    \
+        const type *in = (const type *)imIn->image[yin]; \
+        type *out = (type *)imOut->image[yout];          \
+        for (x = 0; x < margin; x++) {                   \
+            out[x] = in[0];                              \
+        }                                                \
+        for (x = 0; x < xsize; x++) {                    \
+            out[x + margin] = in[x];                     \
+        }                                                \
+        for (x = 0; x < margin; x++) {                   \
+            out[margin + xsize + x] = in[xsize - 1];     \
+        }                                                \
     }
 
-#define EXPAND(type, image)                                                      \
-    {                                                                            \
-        for (y = 0; y < margin; y++) {                                           \
-            EXPAND_LINE(type, image, 0, y);                                      \
-        }                                                                        \
-        for (y = 0; y < imIn->ysize; y++) {                                      \
-            EXPAND_LINE(type, image, y, y + margin);                             \
-        }                                                                        \
-        for (y = 0; y < margin; y++) {                                           \
-            EXPAND_LINE(type, image, imIn->ysize - 1, margin + imIn->ysize + y); \
-        }                                                                        \
+#define EXPAND(type)                                          \
+    {                                                         \
+        for (y = 0; y < margin; y++) {                        \
+            EXPAND_LINE(type, 0, y);                          \
+        }                                                     \
+        for (y = 0; y < ysize; y++) {                         \
+            EXPAND_LINE(type, y, y + margin);                 \
+        }                                                     \
+        for (y = 0; y < margin; y++) {                        \
+            EXPAND_LINE(type, ysize - 1, margin + ysize + y); \
+        }                                                     \
     }
 
     ImagingSectionEnter(&cookie);
     MUTEX_LOCK(&imIn->mutex);
 
-    if (imIn->image8) {
-        EXPAND(UINT8, image8);
+    if (imIn->type == IMAGING_TYPE_I16) {
+        EXPAND(UINT16);
+    } else if (imIn->image8) {
+        EXPAND(UINT8);
     } else {
-        EXPAND(INT32, image32);
+        EXPAND(INT32);
     }
     MUTEX_UNLOCK(&imIn->mutex);
     ImagingSectionLeave(&cookie);
@@ -163,8 +169,6 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
 
     memcpy(imOut->image[0], im->image[0], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 1; y < ysize - 1; y++) {
                 INT32 *restrict in_1 = (INT32 *)im->image[y - 1];
@@ -183,15 +187,9 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x] = in0[x];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
-            int bigendian = 0;
-            if (
-                im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                || im->mode == IMAGING_MODE_I_16N
-#endif
-            ) {
-                bigendian = 1;
-            }
+            // Add one time for rounding
+            offset += 0.5;
+            int bigendian = isImageI16BigEndian(im);
             for (y = 1; y < ysize - 1; y++) {
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
                 UINT8 *restrict in0 = (UINT8 *)im->image[y];
@@ -214,6 +212,8 @@ ImagingFilter3x3(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x * 2 + 1] = in0[x * 2 + 1];
             }
         } else {
+            // Add one time for rounding
+            offset += 0.5;
             for (y = 1; y < ysize - 1; y++) {
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
                 UINT8 *restrict in0 = (UINT8 *)im->image[y];
@@ -325,8 +325,6 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
     memcpy(imOut->image[0], im->image[0], im->linesize);
     memcpy(imOut->image[1], im->image[1], im->linesize);
     if (im->bands == 1) {
-        // Add one time for rounding
-        offset += 0.5;
         if (im->type == IMAGING_TYPE_INT32) {
             for (y = 2; y < ysize - 2; y++) {
                 INT32 *restrict in_2 = (INT32 *)im->image[y - 2];
@@ -351,15 +349,9 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x + 1] = in0[x + 1];
             }
         } else if (im->type == IMAGING_TYPE_I16) {
-            int bigendian = 0;
-            if (
-                im->mode == IMAGING_MODE_I_16B
-#ifdef WORDS_BIGENDIAN
-                || im->mode == IMAGING_MODE_I_16N
-#endif
-            ) {
-                bigendian = 1;
-            }
+            // Add one time for rounding
+            offset += 0.5;
+            int bigendian = isImageI16BigEndian(im);
             for (y = 2; y < ysize - 2; y++) {
                 UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];
@@ -390,6 +382,8 @@ ImagingFilter5x5(Imaging imOut, Imaging im, const float *kernel, float offset) {
                 out[x * 2 + 3] = in0[x * 2 + 3];
             }
         } else {
+            // Add one time for rounding
+            offset += 0.5;
             for (y = 2; y < ysize - 2; y++) {
                 UINT8 *restrict in_2 = (UINT8 *)im->image[y - 2];
                 UINT8 *restrict in_1 = (UINT8 *)im->image[y - 1];

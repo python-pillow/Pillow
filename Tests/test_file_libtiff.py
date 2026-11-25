@@ -11,6 +11,7 @@ from typing import NamedTuple
 import pytest
 
 from PIL import (
+    ExifTags,
     Image,
     ImageFile,
     ImageFilter,
@@ -399,21 +400,23 @@ class TestFileLibTiff(LibTiffTestCase):
         "tiffinfo",
         (
             {TiffImagePlugin.IMAGEWIDTH: 1 << 27},
+            {TiffImagePlugin.IMAGELENGTH: 1 << 27},
             {TiffImagePlugin.SAMPLESPERPIXEL: 3},
+            {TiffImagePlugin.PLANAR_CONFIGURATION: 2},
         ),
     )
     def test_geometry_tags(
         self, tiffinfo: dict[int, int], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     ) -> None:
-        # libtiff reads a scanline of the size described by the IMAGEWIDTH,
-        # SAMPLESPERPIXEL and BITSPERSAMPLE tags from a buffer that only holds one
-        # row of the image, so a tag describing a larger row must be rejected.
+        # The geometry of the image is used, not the geometry from tiffinfo.
+        # Otherwise libtiff would read past the end of the row buffer.
         monkeypatch.setattr(TiffImagePlugin, "WRITE_LIBTIFF", True)
 
         out = tmp_path / "temp.tif"
         im = hopper("L")
-        with pytest.raises(OSError, match="encoder error -8"):
-            im.save(out, tiffinfo=tiffinfo)
+        im.save(out, tiffinfo=tiffinfo)
+
+        assert_image_equal_tofile(im, out)
 
     @pytest.mark.parametrize(
         "tag, value",
@@ -503,12 +506,11 @@ class TestFileLibTiff(LibTiffTestCase):
 
         with Image.open(out) as reloaded:
             assert isinstance(reloaded, TiffImagePlugin.TiffImageFile)
+            tag_data = reloaded.tag_v2[tag]
             if tag == 532:
-                assert tuple(float(v) for v in reloaded.tag_v2[tag]) == pytest.approx(
-                    value
-                )
+                assert tuple(float(v) for v in tag_data) == pytest.approx(value)
             else:
-                assert tuple(reloaded.tag_v2[tag]) == value
+                assert tuple(tag_data) == value
 
     def test_inknames_tag(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -708,6 +710,10 @@ class TestFileLibTiff(LibTiffTestCase):
             im.save(out, compression="jpeg", quality="good")
         im.save(out, compression="jpeg", quality=0)
         im.save(out, compression="jpeg", quality=100)
+
+    def test_l_ycbcr(self) -> None:
+        with Image.open("Tests/images/l_ycbcr.tif") as im:
+            assert im.mode == "L"
 
     def test_cmyk_save(self, tmp_path: Path) -> None:
         im = hopper("CMYK")
@@ -921,39 +927,34 @@ class TestFileLibTiff(LibTiffTestCase):
             )
 
     def test_save_bytesio_seek_past_end(self, tmp_path: Path) -> None:
+        outfile = tmp_path / "temp.tif"
+
         # When writing the directory, libtiff seeks past the end of the data
         # written so far, and then writes the tag values there. Check that the
         # in-memory write buffer grows to fit, and that the bytes that are
         # skipped over are zero, as they would be when writing to a file.
+        def roundtrip(im: Image.Image, **kwargs: Any) -> None:
+            im.save(outfile, **kwargs)
+            buffer_io = io.BytesIO()
+            im.save(buffer_io, format="tiff", **kwargs)
+            assert buffer_io.getvalue() == outfile.read_bytes()
 
         # 7 distinct bytes per row: PackBits emits 8 bytes per row, so the strip
         # plus the header are exactly 64 KiB, the initial size of the buffer
         im = Image.new("L", (7, 8191))
         im.putdata([(i * 37) & 0xFF for i in range(7 * 8191)])
-        kwargs: dict[str, Any] = {
-            "compression": "packbits",
-            "description": "D" * 65535,
-        }
-
-        outfile = tmp_path / "temp.tif"
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(im, compression="packbits", description="D" * 65535)
 
         # odd-length tag values, so that libtiff pads between them. Large enough
         # that the buffer has to be reallocated
         im = hopper().resize((300, 300))
-        kwargs = {
-            "compression": "tiff_lzw",
-            "description": "abcdef",
-            "software": "xyz0",
-            "tiffinfo": {315: "artist", 33432: "copyright!"},
-        }
-        im.save(outfile, **kwargs)
-        buffer_io = io.BytesIO()
-        im.save(buffer_io, format="tiff", **kwargs)
-        assert buffer_io.getvalue() == outfile.read_bytes()
+        roundtrip(
+            im,
+            compression="tiff_lzw",
+            description="abcdef",
+            software="xyz0",
+            tiffinfo={315: "artist", 33432: "copyright!"},
+        )
 
     def test_save_ycbcr(self, tmp_path: Path) -> None:
         im = hopper("YCbCr")
@@ -1406,7 +1407,8 @@ class TestFileLibTiff(LibTiffTestCase):
     def test_orientation(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
             for i in range(2, 9):
-                with Image.open("Tests/images/g4_orientation_" + str(i) + ".tif") as im:
+                infile = "Tests/images/g4_orientation_" + str(i) + ".tif"
+                with Image.open(infile) as im:
                     assert isinstance(im, TiffImagePlugin.TiffImageFile)
                     assert 274 in im.tag_v2
 
@@ -1414,6 +1416,14 @@ class TestFileLibTiff(LibTiffTestCase):
                     assert 274 not in im.tag_v2
 
                     assert_image_similar(base_im, im, 0.7)
+
+                with Image.open(infile) as im:
+                    assert im.size == (590, 88)
+
+                    im.tile.append(im.tile[0])
+                    with pytest.raises(OSError, match="Not exactly one tile"):
+                        im.load()
+                    assert im.size == (590, 88)
 
     def test_exif_transpose(self) -> None:
         with Image.open("Tests/images/g4_orientation_1.tif") as base_im:
@@ -1472,6 +1482,22 @@ class TestFileLibTiff(LibTiffTestCase):
             # Assert that the error code is IMAGING_CODEC_MEMORY
             with pytest.raises(OSError, match="decoder error -9"):
                 im.load()
+
+    def test_rgba_rows_per_strip_greater_than_height(self) -> None:
+        # 1000x1 Deflate YCbCr strip with RowsPerStrip of 1,000,000
+        data = (
+            b"SUkqAAgAAAALAAABBAABAAAA6AMAAAEBBAABAAAAAQAAAAIBAwADAAAAkgAA"
+            b"AAMBAwABAAAACAAAAAYBAwABAAAABgAAABEBBAABAAAAmAAAABUBAwABAAAA"
+            b"AwAAABYBBAABAAAAQEIPABcBBAABAAAAGgAAABwBAwABAAAAAQAAABICAwAC"
+            b"AAAAAQABAAAAAAAIAAgACAB42u3BMQEAAADCoOqLbg0PoAAAgHcDDP7cTA=="
+        )
+        with Image.open(io.BytesIO(base64.b64decode(data))) as im:
+            assert isinstance(im, TiffImagePlugin.TiffImageFile)
+            assert im.tag_v2[TiffImagePlugin.ROWSPERSTRIP] == 1_000_000
+
+            # The decoding buffer is limited to the image height
+            im.load()
+            assert im.getpixel((0, 0)) == (128, 128, 128)
 
     def test_unpacker_row_wider_than_libtiff_row(self) -> None:
         for data in (
@@ -1602,3 +1628,12 @@ class TestFileLibTiff(LibTiffTestCase):
             w = sizes[i]
             expected = Image.new("RGB", (w, w), "#f00")
             assert_image_similar(im, expected, 1)
+
+    def test_get_child_images_duplicate_offsets(self) -> None:
+        with Image.open("Tests/images/child_ifd.tiff") as im:
+            exif = im.getexif()
+            first_subifd_offset = exif[ExifTags.Base.SubIFDs][0]
+            exif[ExifTags.Base.SubIFDs] = (first_subifd_offset,) * 2
+
+            ims = im.get_child_images()
+        assert len(ims) == 1

@@ -193,7 +193,7 @@ After the fix is released and the advisory is public:
 ### Internal (during embargo)
 - Use the **private GitHub Security Advisory** thread for coordination with the reporter.
 - Use private communication channels for all other coordination.
-- Do not discuss details in public issues, PRs, or Gitter/IRC channels.
+- Do not discuss details in public issues, PRs, or IRC channels.
 
 ### External (at or after disclosure)
 
@@ -245,7 +245,7 @@ require a Pillow point release even if Pillow's own code is unchanged.
 | [zlib](https://zlib.net/) | Deflate compression | [zlib.net](https://zlib.net/) |
 | [liblzma / xz-utils](https://tukaani.org/xz/) | XZ/LZMA compression | [GitHub](https://github.com/tukaani-project/xz/security) |
 | [bzip2](https://gitlab.com/bzip2/bzip2) | BZ2 compression | [GitLab](https://gitlab.com/bzip2/bzip2/-/work_items) |
-| [zstd](https://github.com/facebook/zstd) | Zstandard compression | [GitHub](https://github.com/facebook/zstd/security) |
+| [zstd](https://github.com/meta/zstd) | Zstandard compression | [GitHub](https://github.com/meta/zstd/security) |
 | [brotli](https://github.com/google/brotli) | Brotli compression | [GitHub](https://github.com/google/brotli/security) |
 | [libyuv](https://chromium.googlesource.com/libyuv/libyuv/) | YUV conversion | [Chromium tracker](https://libyuv.issues.chromium.org/issues) |
 
