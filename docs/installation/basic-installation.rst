@@ -61,10 +61,10 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
         python3 -m pip install delocate
 
     Then, with the names of the downloaded wheels, use Python to combine them. For
-    example, for Pillow 13.0.0 on Python 3.14::
+    example, for Pillow 13.0.0 on Python 3.15::
 
         from delocate.fuse import fuse_wheels
-        fuse_wheels('pillow-13.0.0-cp314-cp314-macosx_10_15_x86_64.whl', 'pillow-13.0.0-cp314-cp314-macosx_11_0_arm64.whl', 'pillow-13.0.0-cp314-cp314-macosx_11_0_universal2.whl')
+        fuse_wheels('pillow-13.0.0-cp315-cp315-macosx_10_15_x86_64.whl', 'pillow-13.0.0-cp315-cp315-macosx_11_0_arm64.whl', 'pillow-13.0.0-cp315-cp315-macosx_11_0_universal2.whl')
 
 .. tab:: iOS
 
