@@ -77,6 +77,11 @@ Methods
     :members:
     :show-inheritance:
 
+.. autoclass:: PIL.ImageFont.FreeTypeFontFamily
+    :members:
+    :special-members: __init__
+    :show-inheritance:
+
 .. autoclass:: PIL.ImageFont.TransposedFont
     :members:
     :undoc-members:

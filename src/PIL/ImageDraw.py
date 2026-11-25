@@ -674,7 +674,10 @@ class ImageDraw:
                 x = int(line.x)
                 y = int(line.y)
                 start = (math.modf(line.x)[0], math.modf(line.y)[0])
-                if isinstance(image_text.font, ImageFont.FreeTypeFont):
+                if isinstance(
+                    image_text.font,
+                    (ImageFont.FreeTypeFont, ImageFont.FreeTypeFontFamily),
+                ):
                     mask, offset = image_text.font.getmask2(
                         line.text,
                         mode,

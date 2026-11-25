@@ -17,6 +17,7 @@ from PIL import Image, ImageDraw, ImageFont, features
 from .helper import (
     assert_image_equal,
     assert_image_equal_tofile,
+    assert_image_similar,
     assert_image_similar_tofile,
     has_feature_version,
     is_win32,
@@ -1286,3 +1287,98 @@ def test_invalid_truetype_sizes_raise_valueerror(
 ) -> None:
     with pytest.raises(ValueError):
         ImageFont.truetype(FONT_PATH, size, layout_engine=layout_engine)
+
+
+FAMILY_TEXT = "abあいcd"
+
+
+def _family_fonts(
+    layout_engine: ImageFont.Layout,
+) -> tuple[ImageFont.FreeTypeFont, ImageFont.FreeTypeFont]:
+    return (
+        ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=layout_engine),
+        ImageFont.truetype(
+            "Tests/fonts/NotoSansJP-Regular.otf", FONT_SIZE, layout_engine=layout_engine
+        ),
+    )
+
+
+def test_family_fallback(layout_engine: ImageFont.Layout) -> None:
+    mono, jp = _family_fonts(layout_engine)
+    family = ImageFont.FreeTypeFontFamily(mono, jp, layout_engine=layout_engine)
+
+    # Characters missing from the first font use the second font
+    assert family.getlength("あい") == jp.getlength("あい")
+    assert family.getbbox("あい", anchor="ls") == jp.getbbox("あい", anchor="ls")
+
+    # Characters in the first font use the first font
+    assert family.getlength("ab") == mono.getlength("ab")
+    assert family.getbbox("ab", anchor="ls") == mono.getbbox("ab", anchor="ls")
+
+    assert family.getlength(FAMILY_TEXT) == (
+        mono.getlength("ab") + jp.getlength("あい") + mono.getlength("cd")
+    )
+
+
+def test_family_missing_glyph(layout_engine: ImageFont.Layout) -> None:
+    mono, jp = _family_fonts(layout_engine)
+    family = ImageFont.FreeTypeFontFamily(mono, jp, layout_engine=layout_engine)
+
+    # If no font has a character, the first font's missing glyph is used
+    assert family.getlength("\U0001f600") == mono.getlength("\U0001f600")
+
+
+def test_family_metrics(layout_engine: ImageFont.Layout) -> None:
+    mono, jp = _family_fonts(layout_engine)
+    family = ImageFont.FreeTypeFontFamily(mono, jp, layout_engine=layout_engine)
+
+    mono_ascent, mono_descent = mono.getmetrics()
+    jp_ascent, jp_descent = jp.getmetrics()
+    assert family.getmetrics() == (
+        max(mono_ascent, jp_ascent),
+        max(mono_descent, jp_descent),
+    )
+
+
+def test_family_draw(layout_engine: ImageFont.Layout) -> None:
+    mono, jp = _family_fonts(layout_engine)
+    family = ImageFont.FreeTypeFontFamily(mono, jp, layout_engine=layout_engine)
+
+    im = Image.new("L", (200, 60))
+    draw = ImageDraw.Draw(im)
+    draw.text((10, 40), FAMILY_TEXT, 255, family, anchor="ls")
+
+    expected = Image.new("L", (200, 60))
+    draw = ImageDraw.Draw(expected)
+    x = 10.0
+    for text, font in (("ab", mono), ("あい", jp), ("cd", mono)):
+        draw.text((x, 40), text, 255, font, anchor="ls")
+        x += font.getlength(text)
+
+    if layout_engine == ImageFont.Layout.BASIC:
+        assert_image_equal(im, expected)
+    else:
+        # Raqm positions glyphs with subpixel precision
+        assert_image_similar(im, expected, 1)
+
+
+def test_family_from_bytes(layout_engine: ImageFont.Layout) -> None:
+    mono, jp = _family_fonts(layout_engine)
+    with open(FONT_PATH, "rb") as f:
+        mono_bytes = ImageFont.truetype(
+            BytesIO(f.read()), FONT_SIZE, layout_engine=layout_engine
+        )
+    family = ImageFont.FreeTypeFontFamily(mono, jp, layout_engine=layout_engine)
+    family_bytes = ImageFont.FreeTypeFontFamily(
+        mono_bytes, jp, layout_engine=layout_engine
+    )
+
+    assert family_bytes.getlength(FAMILY_TEXT) == family.getlength(FAMILY_TEXT)
+
+
+def test_family_errors() -> None:
+    with pytest.raises(ValueError, match="At least one font is required"):
+        ImageFont.FreeTypeFontFamily()
+
+    with pytest.raises(TypeError, match="Only FreeTypeFont instances"):
+        ImageFont.FreeTypeFontFamily(ImageFont.load_default_imagefont())  # type: ignore[arg-type]

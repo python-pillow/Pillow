@@ -59,6 +59,57 @@ class Font:
     def setvarname(self, instance_index: int, /) -> None: ...
     def setvaraxes(self, axes: list[float], /) -> None: ...
 
+class FontFamily:
+    @property
+    def ascent(self) -> int: ...
+    @property
+    def descent(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    def render(
+        self,
+        string: str | bytes,
+        fill: Callable[[int, int], _imaging.ImagingCore],
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
+        stroke_width: float = 0,
+        stroke_filled: bool = ...,
+        anchor: str | None = None,
+        foreground_ink_long: int = 0,
+        start: tuple[float, float] = ...,
+        /,
+    ) -> tuple[_imaging.ImagingCore, tuple[int, int]]: ...
+    def getsize(
+        self,
+        string: str | bytes,
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
+        anchor: str | None = None,
+        /,
+    ) -> tuple[tuple[int, int], tuple[int, int]]: ...
+    def getlength(
+        self,
+        string: str | bytes,
+        mode_name: str | None = None,
+        dir: str | None = None,
+        features: list[str] | None = None,
+        lang: str | None = None,
+        /,
+    ) -> int: ...
+
+def getfamily(
+    fonts: tuple[
+        tuple[str | bytes, float, int, str]
+        | tuple[str | bytes, float, int, str, bytes],
+        ...,
+    ],
+    layout_engine: int,
+    /,
+) -> FontFamily: ...
 def getfont(
     filename: str | bytes,
     size: float,
