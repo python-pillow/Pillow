@@ -1441,7 +1441,7 @@ class Image:
                 if isinstance(v, int)
                 else int(
                     decimal.Decimal(v).quantize(
-                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                        0, decimal.ROUND_HALF_DOWN if v < 0 else decimal.ROUND_HALF_UP
                     )
                 )
             )
