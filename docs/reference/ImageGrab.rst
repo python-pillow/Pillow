@@ -76,4 +76,5 @@ or the clipboard to a PIL image memory.
              On macOS, an image,
              or None if the clipboard does not contain image data.
 
-             On Linux, an image.
+             On Linux, an image,
+             or None if the clipboard does not contain image data.

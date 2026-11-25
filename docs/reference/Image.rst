@@ -16,8 +16,7 @@ Open, rotate, and display an image (using the default viewer)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following script loads an image, rotates it 45 degrees, and displays it
-using an external viewer (usually xv on Unix, and the Paint program on
-Windows). ::
+using an external viewer (see :py:mod:`~PIL.ImageShow`). ::
 
     from PIL import Image
     with Image.open("hopper.jpg") as im:
@@ -48,7 +47,7 @@ Functions
     .. warning::
         To protect against potential DOS attacks caused by "`decompression bombs`_" (i.e. malicious files
         which decompress into a huge amount of data and are designed to crash or cause disruption by using up
-        a lot of memory), Pillow will issue a ``DecompressionBombWarning`` if the number of pixels in an
+        a lot of memory), Pillow will issue an ``Image.DecompressionBombWarning`` if the number of pixels in an
         image is over a certain limit, :py:data:`MAX_IMAGE_PIXELS`.
 
         This threshold can be changed by setting :py:data:`MAX_IMAGE_PIXELS`. It can be disabled
@@ -60,7 +59,7 @@ Functions
         `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
 
         If the number of pixels is greater than twice :py:data:`MAX_IMAGE_PIXELS`, then a
-        ``DecompressionBombError`` will be raised instead.
+        ``Image.DecompressionBombError`` will be raised instead.
 
     .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb
     .. _the logging documentation: https://docs.python.org/3/library/logging.html#integration-with-the-warnings-module
@@ -82,6 +81,8 @@ Constructing images
 .. autofunction:: fromarrow
 .. autofunction:: frombytes
 .. autofunction:: frombuffer
+.. autofunction:: fromqimage
+.. autofunction:: fromqpixmap
 
 Generating images
 ^^^^^^^^^^^^^^^^^
@@ -194,6 +195,7 @@ This helps to get the bounding box coordinates of the input image::
 .. automethod:: PIL.Image.Image.get_flattened_data
 .. automethod:: PIL.Image.Image.getexif
 .. automethod:: PIL.Image.Image.getextrema
+.. automethod:: PIL.Image.Image.getim
 .. automethod:: PIL.Image.Image.getpalette
 .. automethod:: PIL.Image.Image.getpixel
 .. automethod:: PIL.Image.Image.getprojection
@@ -241,6 +243,8 @@ This rotates the input image by ``theta`` degrees counterclockwise::
 .. automethod:: PIL.Image.Image.thumbnail
 .. automethod:: PIL.Image.Image.tobitmap
 .. automethod:: PIL.Image.Image.tobytes
+.. automethod:: PIL.Image.Image.toqimage
+.. automethod:: PIL.Image.Image.toqpixmap
 .. automethod:: PIL.Image.Image.transform
 .. automethod:: PIL.Image.Image.transpose
 
@@ -289,7 +293,7 @@ Instances of the :py:class:`Image` class have the following attributes:
     :ref:`concept-modes` for a full list.
 
 .. py:attribute:: Image.size
-    :type: tuple[int]
+    :type: tuple[int, int]
 
     Image size, in pixels. The size is given as a 2-tuple (width, height).
 
@@ -383,9 +387,15 @@ Constants
 ---------
 
 .. data:: NONE
+
+    Equivalent to :data:`Dither.NONE`.
+
 .. data:: MAX_IMAGE_PIXELS
 
-    Set to 89,478,485, approximately 0.25GB for a 24-bit (3 bpp) image.
+    The number of pixels above which opening an image issues an
+    ``Image.DecompressionBombWarning``, and twice which raises an
+    ``Image.DecompressionBombError``. It can be changed at runtime, or set to
+    ``None`` to disable the check.
     See :py:meth:`~PIL.Image.open` for more information about how this is used.
 
 .. data:: WARN_POSSIBLE_FORMATS

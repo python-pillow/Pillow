@@ -16,5 +16,24 @@ QImage objects from PIL images.
     QtGui.QImage, which means that you can pass the resulting objects directly
     to PyQt6/PySide6 API functions and methods.
 
-    This operation is currently supported for mode 1, L, P, RGB, and RGBA
+    This operation is currently supported for mode 1, L, P, RGB, RGBA and I;16
     images. To handle other modes, you need to convert the image first.
+
+.. py:function:: toqimage(im)
+
+    Creates an :py:class:`~PIL.ImageQt.ImageQt` object from a PIL
+    :py:class:`~PIL.Image.Image` object, or the path to an image.
+
+.. py:function:: toqpixmap(im)
+
+    Creates a QtGui.QPixmap object from a PIL :py:class:`~PIL.Image.Image`
+    object, or the path to an image.
+
+.. py:function:: fromqimage(im)
+
+    Creates a PIL :py:class:`~PIL.Image.Image` object from a QImage or
+    :py:class:`~PIL.ImageQt.ImageQt` object.
+
+.. py:function:: fromqpixmap(im)
+
+    Creates a PIL :py:class:`~PIL.Image.Image` object from a QPixmap object.
