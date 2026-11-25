@@ -60,10 +60,10 @@ Other
       - Describes itself as a plugin until official support was added. Pillow now
         supports AVIF.
     * - :pypi:`pillow-stackblur`
-      - Does not add support for an image format.
+      - Adds a filter, rather than support for a new image format.
     * - :pypi:`pillow-svg`
       - Requires Pillow earlier than 9.0.0.
     * - :pypi:`pyheif-pillow-opener`
-      - Discontinued.
+      - Discontinued in favour of :pypi:`heif-image-plugin`.
     * - :pypi:`raw-pillow-opener`
       - Requires rawpy 0.16.0, which cannot be installed on supported Python versions.
