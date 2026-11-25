@@ -602,8 +602,8 @@ def fit(
     :param bleed: Remove a border around the outside of the image from all
                   four edges. The value is a decimal percentage (use 0.01 for
                   one percent). The default value is 0 (no border).
-                  Values less than 0, or greater than or equal to 0.5, are
-                  treated as 0.
+                  Values less than 0, or greater than or equal to 0.5,
+                  are treated as 0.
     :param centering: Control the cropping position.  Use (0.5, 0.5) for
                       center cropping (e.g. if cropping the width, take 50% off
                       of the left side, and therefore 50% off the right side).
