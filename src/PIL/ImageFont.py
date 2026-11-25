@@ -989,7 +989,7 @@ def load_path(filename: StrOrBytesPath) -> ImageFont:
 
 
 def load_default_imagefont() -> ImageFont:
-    """Load a "better than nothing" bitmap font, without using FreeType.
+    """Load a "better than nothing" bitmap font.
 
     :return: An :py:class:`~PIL.ImageFont.ImageFont` object.
     """

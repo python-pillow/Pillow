@@ -199,7 +199,7 @@ class Text(Generic[AnyStr]):
         """
         Wrap text to fit within a given width.
 
-        This modifies the text of this object, and its font if ``scaling`` is used.
+        This modifies the text of this object, and font size if ``scaling`` is used.
 
         :param width: The width to fit within.
         :param height: An optional height limit. Any text that does not fit within this
