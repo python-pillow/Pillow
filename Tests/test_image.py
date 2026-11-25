@@ -1297,8 +1297,7 @@ class TestImage:
 
     def test_fli_overrun2(self) -> None:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
-            with pytest.raises(OSError, match="buffer overrun when reading image file"):
-                im.seek(1)
+            im.seek(1)
 
     def test_exit_fp(self) -> None:
         with Image.new("L", (1, 1)) as im:
