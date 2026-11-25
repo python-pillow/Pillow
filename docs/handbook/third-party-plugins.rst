@@ -1,11 +1,9 @@
 Third-party plugins
 ===================
 
-Pillow uses a plugin model which allows users to add their own
-decoders and encoders to the library, without any changes to the library
-itself.
-
-Here is a list of PyPI projects that offer additional plugins:
+Pillow's plugin model lets other projects add support for more image formats,
+without any changes to Pillow itself. To write your own, see
+:doc:`writing-your-own-image-plugin`. These PyPI projects provide plugins:
 
 * :pypi:`amigainfo`: Adds support for Amiga Workbench .info icon files.
 * :pypi:`amos-abk`: AMOS BASIC sprite and image banks.
