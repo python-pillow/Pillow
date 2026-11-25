@@ -661,6 +661,8 @@ ImagingJpegUseJCSExtensions(void);
 
 extern int
 ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buffer, int bytes);
+extern void
+ImagingJpegEncodeCleanup(ImagingCodecState state);
 #endif
 #ifdef HAVE_OPENJPEG
 extern int
