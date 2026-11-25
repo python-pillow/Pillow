@@ -125,7 +125,7 @@ class PsdImageFile(ImageFile.ImageFile):
                 name = read(i8(read(1)))
                 if not (len(name) & 1):
                     read(1)  # padding
-                data = read(i32(read(4)))
+                data = ImageFile._safe_read(self.fp, i32(read(4)))
                 if len(data) & 1:
                     read(1)  # padding
                 self.resources.append((id, name, data))
