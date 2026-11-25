@@ -241,10 +241,18 @@ class ImageDraw:
     def _restrict_lines(
         self, xy: list[tuple[float, float]]
     ) -> list[list[tuple[float, float]]]:
-        """Restrict line coordinates to image using Liang–Barsky algorithm"""
-        w, h = self.im.size
-        if len(xy) == 1 or all(0 <= x <= w and 0 <= y <= h for x, y in xy):
+        """
+        Restrict line coordinates to the range of C ints, using the Liang–Barsky
+        algorithm. The C code skips the part of a line outside the image by
+        itself and then draws exactly the pixels of the whole line, so lines
+        within that range are left unchanged.
+        """
+        if len(xy) == 1 or all(
+            -(2**31) <= x < 2**31 and -(2**31) <= y < 2**31 for x, y in xy
+        ):
             return [xy]
+        # Clip to a smaller range, so that rounding errors stay within C ints
+        lo, hi = -(2**30), 2**30
 
         lines = []
         line: list[tuple[float, float]] = []
@@ -254,10 +262,10 @@ class ImageDraw:
 
             u1, u2 = 0.0, 1.0
             for p, q in (
-                (-dx, x0),  # left side
-                (dx, w - x0),  # right side
-                (-dy, y0),  # top side
-                (dy, h - y0),  # bottom side
+                (-dx, x0 - lo),  # left side
+                (dx, hi - x0),  # right side
+                (-dy, y0 - lo),  # top side
+                (dy, hi - y0),  # bottom side
             ):
                 if p == 0:
                     # line is parallel to the side
@@ -311,7 +319,7 @@ class ImageDraw:
         if dash is not None:
             self._validate_dash(dash)
         normalized_xy = self._normalize_coords(xy)
-        if width == 1:
+        if width == 1 or dash is not None:
             lines = self._restrict_lines(normalized_xy)
         else:
             lines = [normalized_xy]

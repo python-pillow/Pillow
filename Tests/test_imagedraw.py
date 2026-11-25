@@ -507,6 +507,34 @@ def test_line_far_outside_image(far: Coords, near: Coords) -> None:
     assert_image_equal(im, expected)
 
 
+@timeout_unless_slower_valgrind(1)
+def test_line_far_outside_image_dash() -> None:
+    expected = Image.new("L", (16, 16))
+    ImageDraw.Draw(expected).line(((0, 0), (20, 0)), 255, dash=(4, 2))
+    im = Image.new("L", (16, 16))
+    ImageDraw.Draw(im).line(((0, 0), (2**30, 1)), 255, dash=(4, 2))
+    assert_image_equal(im, expected)
+
+
+@pytest.mark.parametrize("dash", (None, (4, 2), (3, 1, 2)))
+def test_line_partly_outside_image(dash: tuple[int, ...] | None) -> None:
+    # The pixels inside the image are those of the whole line,
+    # drawn on an image that it does not leave
+    values = range(-45, 86, 19)
+    for a in values:
+        for b in values:
+            for c in values:
+                for d in values:
+                    xy = [(a, b), (c, d), (b, a)]
+                    im = Image.new("L", (40, 40))
+                    ImageDraw.Draw(im).line(xy, 255, dash=dash)
+
+                    large = Image.new("L", (400, 400))
+                    moved = [(x + 200, y + 200) for x, y in xy]
+                    ImageDraw.Draw(large).line(moved, 255, dash=dash)
+                    assert_image_equal(im, large.crop((200, 200, 240, 240)))
+
+
 def test_shape1() -> None:
     # Arrange
     im = Image.new("RGB", (100, 100), "white")

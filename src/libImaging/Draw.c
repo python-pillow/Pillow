@@ -240,30 +240,106 @@ hline32rgba(Imaging im, int x0, int y0, int x1, int ink, Imaging mask) {
     }
 }
 
-static inline int
-should_draw_dash(int i, int *dash_offset, PyObject *dash) {
-    i += *dash_offset;
-    int total = 0;
-    int tuple_index = -1;
-    int tuple_size = PyTuple_GET_SIZE(dash);
-    while (total <= i) {
-        tuple_index += 1;
-        if (tuple_index == tuple_size) {
-            tuple_index = 0;
-        }
-        PyObject *value = PyTuple_GetItem(dash, tuple_index);
+/* Returns the total length of the dash pattern, or 0 if it is not usable */
+static inline int64_t
+dash_length(PyObject *dash) {
+    int64_t total = 0;
+    Py_ssize_t i, size = PyTuple_GET_SIZE(dash);
+    for (i = 0; i < size; i++) {
+        PyObject *value = PyTuple_GetItem(dash, i);
         if (!PyLong_Check(value)) {
             return 0;
         }
-        int v = PyLong_AsLongLong(value);
-        if (v == -1 && PyErr_Occurred()) {
+        long long v = PyLong_AsLongLong(value);
+        if ((v == -1 && PyErr_Occurred()) || v < 0 || v > INT32_MAX) {
+            PyErr_Clear();
             return 0;
         }
         total += v;
     }
-    return tuple_index % 2 == 0;
+    return total;
 }
 
+/* Whether the pixel at position pos (0 <= pos < length) of the dash pattern
+ * is drawn. Even entries of the pattern are dashes, odd entries are gaps. */
+static inline int
+should_draw_dash(int64_t pos, PyObject *dash) {
+    Py_ssize_t i, size = PyTuple_GET_SIZE(dash);
+    for (i = 0; i < size; i++) {
+        int64_t v = PyLong_AsLongLong(PyTuple_GetItem(dash, i));
+        if (pos < v) {
+            return i % 2 == 0;
+        }
+        pos -= v;
+    }
+    return 0;
+}
+
+/* A solid line that is not horizontal and lies inside the image, as before:
+ * no steps to skip and nothing to clip, so it needs neither 64-bit integers nor
+ * checks of its own. Doubling dx or dy needs n < 2**30, which the caller checks. */
+static inline void
+line_inside(Imaging im, int x0, int y0, int x1, int y1, int ink, point_handler point) {
+    int i, n, e, dx, dy, xs, ys;
+
+    dx = x1 - x0;
+    if (dx < 0) {
+        dx = -dx, xs = -1;
+    } else {
+        xs = 1;
+    }
+    dy = y1 - y0;
+    if (dy < 0) {
+        dy = -dy, ys = -1;
+    } else {
+        ys = 1;
+    }
+
+    if (dx == 0) {
+        /* vertical */
+        for (i = 0; i < dy; i++) {
+            point(im, x0, y0, ink);
+            y0 += ys;
+        }
+    } else if (dx > dy) {
+        /* bresenham, horizontal slope */
+        n = dx;
+        dy += dy;
+        e = dy - dx;
+        dx += dx;
+        for (i = 0; i < n; i++) {
+            point(im, x0, y0, ink);
+            if (e >= 0) {
+                y0 += ys;
+                e -= dx;
+            }
+            e += dy;
+            x0 += xs;
+        }
+    } else {
+        /* bresenham, vertical slope */
+        n = dy;
+        dx += dx;
+        e = dx - dy;
+        dy += dy;
+        for (i = 0; i < n; i++) {
+            point(im, x0, y0, ink);
+            if (e >= 0) {
+                x0 += xs;
+                e -= dy;
+            }
+            e += dx;
+            y0 += ys;
+        }
+    }
+}
+
+/* Draws the pixels of a line from (x0, y0) to (x1, y1), excluding the end
+ * point, as Bresenham's algorithm visits them. Step i of the major axis sets
+ * the minor axis offset k(i) = floor((2 * minor * i + major) / (2 * major)),
+ * so the steps before the image can be skipped and the error term computed
+ * for the first visible step. The pixels drawn are exactly those of the whole
+ * line, however far it reaches outside the image. */
 static inline void
 line(
     Imaging im,
@@ -277,119 +353,117 @@ line(
     PyObject *dash,
     int *dash_offset
 ) {
-    int i, n, e, dx, dy, xs, ys;
+    int64_t dx, dy, xs, ys, n, d, i, first, last, e, k, major, minor;
+    int64_t major_size, minor_size, major_step, minor_step, length = 0;
+    int xmajor;
+    uint64_t p;
 
     /* normalize coordinates */
-    dx = x1 - x0;
+    dx = (int64_t)x1 - x0;
     if (dx < 0) {
         dx = -dx, xs = -1;
     } else {
         xs = 1;
     }
-    dy = y1 - y0;
+    dy = (int64_t)y1 - y0;
     if (dy < 0) {
         dy = -dy, ys = -1;
-    } else if (dy == 0) {
-        /* horizontal */
-        if (dash != NULL) {
-            for (i = 0; i < dx; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                x0 += xs;
-            }
-            *dash_offset += dx;
-        } else if (x1 > x0) {
+    } else {
+        ys = 1;
+    }
+
+    if (dy == 0 && dash == NULL) {
+        /* horizontal, hline clips to the image */
+        if (x1 > x0) {
             hline(im, x0, y0, x1 - 1, ink, NULL);
         } else if (x0 > x1) {
             hline(im, x1 + 1, y0, x0, ink, NULL);
         }
         return;
-    } else {
-        ys = 1;
     }
 
-    n = (dx > dy) ? dx : dy;
-
-    if (dx == 0) {
-        /* vertical */
-        if (dash != NULL) {
-            for (i = 0; i < dy; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                y0 += ys;
-            }
-            *dash_offset += dy;
-        } else {
-            for (i = 0; i < dy; i++) {
-                point(im, x0, y0, ink);
-                y0 += ys;
-            }
+    if (dash != NULL) {
+        length = dash_length(dash);
+        if (length == 0) {
+            return;
         }
-    } else if (dx > dy) {
-        /* bresenham, horizontal slope */
-        n = dx;
-        dy += dy;
-        e = dy - dx;
-        dx += dx;
+    }
 
-        if (dash != NULL) {
-            for (i = 0; i < n; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                if (e >= 0) {
-                    y0 += ys;
-                    e -= dx;
-                }
-                e += dy;
-                x0 += xs;
-            }
-            *dash_offset += n;
-        } else {
-            for (i = 0; i < n; i++) {
-                point(im, x0, y0, ink);
-                if (e >= 0) {
-                    y0 += ys;
-                    e -= dx;
-                }
-                e += dy;
-                x0 += xs;
-            }
-        }
-
+    /* the axis that advances on every step */
+    xmajor = dx > dy;
+    if (xmajor) {
+        n = dx, d = dy;
+        major = x0, major_step = xs, major_size = im->xsize;
+        minor = y0, minor_step = ys, minor_size = im->ysize;
     } else {
-        /* bresenham, vertical slope */
-        n = dy;
-        dx += dx;
-        e = dx - dy;
-        dy += dy;
+        n = dy, d = dx;
+        major = y0, major_step = ys, major_size = im->ysize;
+        minor = x0, minor_step = xs, minor_size = im->xsize;
+    }
+    if (n == 0) {
+        return;
+    }
 
-        if (dash != NULL) {
-            for (i = 0; i < n; i++) {
-                if (should_draw_dash(i, dash_offset, dash)) {
-                    point(im, x0, y0, ink);
-                }
-                if (e >= 0) {
-                    x0 += xs;
-                    e -= dy;
-                }
-                e += dx;
-                y0 += ys;
-            }
-            *dash_offset += n;
-        } else {
-            for (i = 0; i < n; i++) {
-                point(im, x0, y0, ink);
-                if (e >= 0) {
-                    x0 += xs;
-                    e -= dy;
-                }
-                e += dx;
-                y0 += ys;
-            }
+    /* steps whose major coordinate lies inside the image */
+    if (major_step > 0) {
+        first = -major;
+        last = major_size - 1 - major;
+    } else {
+        first = major - (major_size - 1);
+        last = major;
+    }
+    if (first < 0) {
+        first = 0;
+    }
+    if (last > n - 1) {
+        last = n - 1;
+    }
+
+    if (dash == NULL && n < (1 << 30) && first == 0 && last == n - 1) {
+        /* every step is inside the image along the major axis; if the first
+         * and the last are inside along the minor axis, so are all between */
+        p = (uint64_t)d * (uint64_t)last;
+        k = (int64_t)(p / (uint64_t)n) + (2 * (p % (uint64_t)n) >= (uint64_t)n);
+        if (minor >= 0 && minor < minor_size && minor + minor_step * k >= 0 &&
+            minor + minor_step * k < minor_size) {
+            line_inside(im, x0, y0, x1, y1, ink, point);
+            return;
         }
+    }
+
+    if (first <= last) {
+        /* d * first < 2**64, since d <= n < 2**32 and first < n */
+        p = (uint64_t)d * (uint64_t)first;
+        k = (int64_t)(p / (uint64_t)n);
+        e = 2 * (int64_t)(p % (uint64_t)n) + 2 * d - n;
+        if (e - 2 * d >= 0) {
+            /* the rounding of k(first) went up */
+            k++;
+            e -= 2 * n;
+        }
+        major += major_step * first;
+        minor += minor_step * k;
+
+        for (i = first; i <= last; i++) {
+            if (minor >= 0 && minor < minor_size &&
+                (dash == NULL || should_draw_dash((*dash_offset + i) % length, dash))) {
+                if (xmajor) {
+                    point(im, (int)major, (int)minor, ink);
+                } else {
+                    point(im, (int)minor, (int)major, ink);
+                }
+            }
+            if (e >= 0) {
+                minor += minor_step;
+                e -= 2 * n;
+            }
+            e += 2 * d;
+            major += major_step;
+        }
+    }
+
+    if (dash != NULL) {
+        *dash_offset = (int)((*dash_offset + n) % length);
     }
 }
 
