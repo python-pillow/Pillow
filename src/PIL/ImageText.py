@@ -212,7 +212,7 @@ class Text(Generic[AnyStr]):
         :returns: A :py:class:`.Text` object, or None.
         :exception ValueError: If the font is a
                                :py:class:`~PIL.ImageFont.TransposedFont`, the
-                               direction is not "ltr", or the text cannot be
+                               direction is not "ltr" or None, or the text cannot be
                                scaled as requested.
         """
         if isinstance(self.font, ImageFont.TransposedFont):
