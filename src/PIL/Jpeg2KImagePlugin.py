@@ -61,7 +61,7 @@ class BoxReader:
             msg = "Box length too large"
             raise SyntaxError(msg)
 
-        data = self.fp.read(num_bytes)
+        data = ImageFile._safe_read(self.fp, num_bytes)
         if len(data) < num_bytes:
             msg = f"Expected to read {num_bytes} bytes but only got {len(data)}."
             raise OSError(msg)

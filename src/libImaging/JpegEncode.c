@@ -376,24 +376,6 @@ ImagingJpegEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
             jpeg_finish_compress(&context->cinfo);
 
 cleanup:
-            /* Clean up */
-            if (context->comment) {
-                free(context->comment);
-                context->comment = NULL;
-            }
-            if (context->extra) {
-                free(context->extra);
-                context->extra = NULL;
-            }
-            if (context->rawExif) {
-                free(context->rawExif);
-                context->rawExif = NULL;
-            }
-            if (context->qtables) {
-                free(context->qtables);
-                context->qtables = NULL;
-            }
-
             jpeg_destroy_compress(&context->cinfo);
             /* if (jerr.pub.num_warnings) return BROKEN; */
             state->errcode = IMAGING_CODEC_END;
@@ -402,6 +384,32 @@ cleanup:
 
     /* Return number of bytes in output buffer */
     return context->destination.pub.next_output_byte - buf;
+}
+
+/* -------------------------------------------------------------------- */
+/* Cleanup                                                              */
+/* -------------------------------------------------------------------- */
+
+void
+ImagingJpegEncodeCleanup(ImagingCodecState state) {
+    JPEGENCODERSTATE *context = (JPEGENCODERSTATE *)state->context;
+
+    if (context->comment) {
+        free(context->comment);
+        context->comment = NULL;
+    }
+    if (context->extra) {
+        free(context->extra);
+        context->extra = NULL;
+    }
+    if (context->rawExif) {
+        free(context->rawExif);
+        context->rawExif = NULL;
+    }
+    if (context->qtables) {
+        free(context->qtables);
+        context->qtables = NULL;
+    }
 }
 
 const char *

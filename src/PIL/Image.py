@@ -914,7 +914,7 @@ class Image:
 
         :param name: The name prefix to use for the bitmap variables.
         :returns: A string containing an X11 bitmap.
-        :raises ValueError: If the mode is not "1"
+        :exception ValueError: If the mode is not "1"
         """
 
         self.load()
@@ -1441,7 +1441,7 @@ class Image:
                 if isinstance(v, int)
                 else int(
                     decimal.Decimal(v).quantize(
-                        0, decimal.ROUND_HALF_UP if v < 0 else decimal.ROUND_HALF_DOWN
+                        0, decimal.ROUND_HALF_DOWN if v < 0 else decimal.ROUND_HALF_UP
                     )
                 )
             )

@@ -482,6 +482,31 @@ def test_line(points: Coords) -> None:
     assert_image_equal_tofile(im, "Tests/images/imagedraw_line.png")
 
 
+@pytest.mark.parametrize(
+    "far, near",
+    (
+        (((0, 0), (2**31 - 1, 2**31 - 1)), ((0, 0), (9, 9))),
+        (((-(2**31), -(2**31)), (2**31 - 1, 2**31 - 1)), ((0, 0), (9, 9))),
+        (((2**31 - 1, 2**31 - 1), (-(2**31), -(2**31))), ((9, 9), (0, 0))),
+        (((-(2**31), 5), (2**31 - 1, 5)), ((0, 5), (9, 5))),
+        (((5, 2**31 - 1), (5, -(2**31))), ((5, 9), (5, 0))),
+    ),
+)
+@timeout_unless_slower_valgrind(1)
+def test_line_far_outside_image(far: Coords, near: Coords) -> None:
+    # Arrange
+    expected = Image.new("RGB", (10, 10))
+    ImageDraw.Draw(expected).line(near, fill="yellow")
+    im = Image.new("RGB", (10, 10))
+    draw = ImageDraw.Draw(im)
+
+    # Act
+    draw.line(far, fill="yellow")
+
+    # Assert
+    assert_image_equal(im, expected)
+
+
 def test_shape1() -> None:
     # Arrange
     im = Image.new("RGB", (100, 100), "white")
@@ -1845,21 +1870,28 @@ def test_dash_rectangle() -> None:
 
     # Act
     draw.rectangle([10, 10, 90, 90], outline="green", dash=(10, 5))
-    draw.rectangle([30, 30, 70, 70], fill="red", outline="green", dash=(10, 5))
+    draw.rectangle([(30, 30), (70, 70)], fill="red", outline="green", dash=(10, 5))
 
     # Assert
     assert_image_equal_tofile(im, "Tests/images/imagedraw_dash_rectangle.png")
 
 
-def test_dash_empty() -> None:
+@pytest.mark.parametrize("dash", ((), (0,), (0, -1)))
+def test_dash_empty(dash: tuple[int, ...]) -> None:
     im = Image.new("RGB", (W, H))
     draw = ImageDraw.Draw(im)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.line([(10, 50), (90, 50)], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.line([(10, 50), (90, 50)], dash=dash)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.polygon([(10, 10), (90, 10), (90, 90)], dash=dash)
 
-    with pytest.raises(ValueError, match="dash must be a non-empty tuple of ints"):
-        draw.rectangle([10, 10, 90, 90], dash=())
+    with pytest.raises(
+        ValueError, match="dash must be a non-empty tuple of positive ints"
+    ):
+        draw.rectangle([10, 10, 90, 90], dash=dash)

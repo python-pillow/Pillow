@@ -44,6 +44,7 @@ __lazy_modules__ = {
 
 import itertools
 import logging
+import os
 import re
 import struct
 import warnings
@@ -447,6 +448,9 @@ class PngStream(ChunkStream):
         # ICC profile
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if "icc_profile" in self.im_info:
+            # Only use the first iCCP chunk
+            return s
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
         # Null separator        1 byte (null character)
@@ -1070,7 +1074,7 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
         assert self.fp is not None
         if self.__idat != 0:
-            self.fp.read(self.__idat)
+            self.fp.seek(self.__idat, os.SEEK_CUR)
         while True:
             self.fp.read(4)  # CRC
 
