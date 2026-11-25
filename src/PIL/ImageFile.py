@@ -40,6 +40,7 @@ import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
+from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
@@ -497,6 +498,20 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             assert self.fp is not None
             fp = self.fp
         return _get_fp_length(fp)
+
+    def _seek_check(self, frame: int) -> None:
+        deprecate("ImageFile.ImageFile._seek_check", 15, "SeekableImageFile")
+        if (
+            frame < 0
+            # Only check upper limit on frames if additional seek operations
+            # are not required to do so
+            or (
+                not (hasattr(self, "_n_frames") and self._n_frames is None)
+                and frame >= getattr(self, "n_frames")
+            )
+        ):
+            msg = "attempt to seek outside sequence"
+            raise EOFError(msg)
 
 
 class SeekableImageFile(ImageFile):

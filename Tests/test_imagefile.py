@@ -531,3 +531,16 @@ class TestPyEncoder(CodecsTest):
         assert im._im is not None
         assert im._im.mode == im.mode
         assert im._im.size == im.size
+
+    def test_deprecation(self) -> None:
+        class TestImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self.n_frames = 1
+
+        fp = BytesIO()
+        im = TestImageFile(fp)
+        with pytest.warns(DeprecationWarning, match="ImageFile.ImageFile._seek_check"):
+            with pytest.raises(EOFError, match="attempt to seek outside sequence"):
+                im._seek_check(-1)
