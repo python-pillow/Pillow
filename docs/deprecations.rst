@@ -594,9 +594,7 @@ ImageFile.raise_ioerror
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
 
-:py:exc:`IOError` was merged into :py:exc:`OSError` in Python 3.3.
-So, ``ImageFile.raise_ioerror`` has been removed.
-``ImageFile.raise_oserror`` could be used instead, but it has since been removed as well.
+``ImageFile.raise_ioerror`` has been removed.
 
 FreeType 2.7
 ^^^^^^^^^^^^
