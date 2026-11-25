@@ -941,7 +941,7 @@ class PyDecoder(PyCodec):
 class PyEncoder(PyCodec):
     """
     Python implementation of a format encoder. Override this class and
-    add the decoding logic in the :meth:`encode` method.
+    add the encoding logic in the :meth:`encode` method.
 
     See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
     """
