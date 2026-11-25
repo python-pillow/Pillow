@@ -19,9 +19,8 @@ Image getdata()
 
 :py:meth:`~PIL.Image.Image.getdata` has been deprecated, and will be removed in
 Pillow 14 (2027-10-15). :py:meth:`~PIL.Image.Image.get_flattened_data` can be used
-instead. This new method is
-identical, except that it returns a tuple of pixel values, instead of an internal
-Pillow data type.
+instead. This new method is identical, except that it returns a tuple of pixel values,
+instead of an internal Pillow data type.
 
 IM image format
 ^^^^^^^^^^^^^^^

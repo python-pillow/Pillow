@@ -201,8 +201,8 @@ container).
 
 **E-2 — Ghostscript exploitation via EPS (RCE)**
 
-Loading pixel data from an EPS file invokes the system Ghostscript binary (``gs``)
-via ``subprocess``. Ghostscript has a long history of sandbox-escape CVEs
+Loading an EPS image invokes the system Ghostscript binary (``gs``) via
+``subprocess``. Ghostscript has a long history of sandbox-escape CVEs
 permitting arbitrary code execution from malicious PostScript.
 
 *Mitigations:* **block EPS files** at the application input layer before

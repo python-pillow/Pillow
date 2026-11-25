@@ -116,9 +116,9 @@ Many of Pillow's features require external libraries:
 
     Prerequisites for **Ubuntu 16.04 LTS - 26.04 LTS** are installed with::
 
-        sudo apt-get install libtiff-dev libjpeg-turbo8-dev libopenjp2-7-dev zlib1g-dev \
-            libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
-            libharfbuzz-dev libfribidi-dev libxcb1-dev
+        sudo apt-get install libtiff-dev libjpeg-turbo8-dev libopenjp2-7-dev \
+            zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev \
+            python3-tk libharfbuzz-dev libfribidi-dev libxcb1-dev
 
     To install libraqm, ``sudo apt-get install meson`` and then see
     ``depends/install_raqm.sh``.
