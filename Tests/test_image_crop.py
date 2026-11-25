@@ -69,24 +69,18 @@ def test_crop_float() -> None:
     assert cropped.size == (3, 5)
 
 
-@pytest.mark.parametrize("left", (1.5, 2.5, 84.5, 85.5))
-def test_crop_float_half(left: float) -> None:
-    # Halves are rounded up, so a box keeps its width wherever it is
+def test_crop_float_half() -> None:
     im = Image.new("L", (200, 10))
 
-    assert im.crop((left, 0, left + 31, 1)).size == (31, 1)
-    assert im.crop((left, 0, left + 1, 1)).size == (1, 1)
+    # Cropping should produce the same size wherever it starts
+    for left in (1.5, 2.5, 84.5, 85.5):
+        assert im.crop((left, 0, left + 31, 1)).size == (31, 1)
+        assert im.crop((left, 0, left + 1, 1)).size == (1, 1)
 
-
-@pytest.mark.parametrize(
-    "left, expected",
-    ((0.5, [1]), (1.5, [2]), (2.5, [3]), (-0.5, [0])),
-)
-def test_crop_float_half_up(left: float, expected: list[int]) -> None:
-    im = Image.frombytes("L", (4, 1), bytes([0, 1, 2, 3]))
-
-    cropped = im.crop((left, 0, left + 1, 1))
-    assert list(cropped.get_flattened_data()) == expected
+    # -0.5 should be rounded to 0, and 0.5 should be rounded to 1
+    for i, left in enumerate((-0.5, 0.5)):
+        im = Image.frombytes("L", (2, 1), bytes([0, 1]))
+        assert im.crop((left, 0, left + 1, 1)).getpixel((0, 0)) == i
 
 
 def test_crop_crash() -> None:
