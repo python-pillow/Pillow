@@ -335,20 +335,6 @@ class ImageDraw:
                     # This is a straight line, so no joint is required
                     continue
 
-                def coord_at_angle(
-                    coord: Sequence[float], angle: float
-                ) -> tuple[float, ...]:
-                    x, y = coord
-                    angle -= 90
-                    distance = width / 2 - 1
-                    return tuple(
-                        p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                        for p, p_d in (
-                            (x, distance * math.cos(math.radians(angle))),
-                            (y, distance * math.sin(math.radians(angle))),
-                        )
-                    )
-
                 flipped = (angles[1] > angles[0] and angles[1] - 180 > angles[0]) or (
                     angles[1] < angles[0] and angles[1] + 180 > angles[0]
                 )
@@ -364,18 +350,27 @@ class ImageDraw:
 
                 if width > 8:
                     # Cover potential gaps between the line and the joint
-                    if flipped:
-                        gap_coords = [
-                            coord_at_angle(point, angles[0] + 90),
-                            point,
-                            coord_at_angle(point, angles[1] + 90),
-                        ]
-                    else:
-                        gap_coords = [
-                            coord_at_angle(point, angles[0] - 90),
-                            point,
-                            coord_at_angle(point, angles[1] - 90),
-                        ]
+                    gap_coords = []
+                    distance = width / 2 - 1
+                    for angle in angles:
+                        if flipped:
+                            angle -= 180
+                        gap_coords.append(
+                            tuple(
+                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                                for p, p_d in (
+                                    (
+                                        point[0],
+                                        distance * math.cos(math.radians(angle)),
+                                    ),
+                                    (
+                                        point[1],
+                                        distance * math.sin(math.radians(angle)),
+                                    ),
+                                )
+                            )
+                        )
+                    gap_coords.insert(1, point)
                     self.line(gap_coords, fill, width=3)
 
     def shape(
