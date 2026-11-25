@@ -1404,7 +1404,6 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Freed in JpegEncode, Case 6
     qarrays = get_qtables_arrays(qtables, &qtablesLen);
     if (qarrays == NULL && PyErr_Occurred()) {
         Py_DECREF(encoder);
@@ -1413,7 +1412,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (comment && comment_size > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *p = malloc(comment_size);  // Freed in JpegEncode, Case 6
+        char *p = malloc(comment_size);
         if (!p) {
             goto memory_error;
         }
@@ -1425,7 +1424,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (extra && extra_size > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *p = malloc(extra_size);  // Freed in JpegEncode, Case 6
+        char *p = malloc(extra_size);
         if (!p) {
             goto memory_error;
         }
@@ -1437,7 +1436,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
 
     if (rawExif && rawExifLen > 0) {
         /* malloc check ok, length is from python parsearg */
-        char *pp = malloc(rawExifLen);  // Freed in JpegEncode, Case 6
+        char *pp = malloc(rawExifLen);
         if (!pp) {
             goto memory_error;
         }
@@ -1448,6 +1447,7 @@ PyImaging_JpegEncoderNew(PyObject *self, PyObject *args) {
     }
 
     encoder->encode = ImagingJpegEncode;
+    encoder->cleanup = ImagingJpegEncodeCleanup;
 
     JPEGENCODERSTATE *jpeg_encoder_state = (JPEGENCODERSTATE *)encoder->state.context;
     jpeg_encoder_state->rawmode = rawmode;
