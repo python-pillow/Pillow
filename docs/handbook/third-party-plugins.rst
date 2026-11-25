@@ -11,38 +11,36 @@ without any changes to Pillow itself. To write your own, see
     * - Project
       - Description
     * - :pypi:`amigainfo`
-      - Adds support for Amiga Workbench .info icon files.
+      - Amiga Workbench .info icon files.
     * - :pypi:`amos-abk`
       - AMOS BASIC sprite and image banks.
     * - :pypi:`heif-image-plugin`
-      - Simple HEIF/HEIC images plugin, based on the pyheif library.
+      - HEIF/HEIC and AVIF images, based on pyheif.
     * - :pypi:`jxlpy`
-      - Introduces reading and writing support for JPEG XL.
+      - Reading and writing JPEG XL images.
     * - :pypi:`pi-heif`
       - A light version of pillow-heif, with a more permissive license for binary wheels.
     * - :pypi:`pillow-degas`
-      - Adds reading Atari ST Degas image files.
+      - Reading Atari ST DEGAS images.
     * - :pypi:`pillow-heif`
-      - Python bindings to libheif for working with HEIF images.
+      - HEIF images, based on libheif.
     * - :pypi:`pillow-jpls`
-      - Plugin for the JPEG-LS codec, based on the Charls JPEG-LS implementation. Python
-        bindings implemented using pybind11.
+      - JPEG-LS images, based on CharLS.
     * - :pypi:`pillow-jxl-plugin`
-      - Plugin for JPEG-XL, using Rust for bindings.
+      - JPEG XL images, with Rust bindings.
     * - :pypi:`pillow-lunasvg`
-      - SVG read support based on the LunaSVG C++ library. Wheels for Linux, macOS and
-        Windows, no system libraries needed.
+      - Reading SVG images, based on LunaSVG. No system libraries needed.
     * - :pypi:`pillow-mbm`
-      - Adds support for KSP's proprietary MBM texture format.
+      - Kerbal Space Program's MBM texture format.
     * - :pypi:`pillow-minecraft-map`
       - Loading, saving and color-quantizing Minecraft .dat map files.
     * - :pypi:`pillow-netpbm`
-      - Adds .pam support, and loads images using `Netpbm
-        <https://en.wikipedia.org/wiki/Netpbm>`__'s converter collection.
+      - PAM images, and loading other formats through `Netpbm
+        <https://en.wikipedia.org/wiki/Netpbm>`__'s converters.
     * - :pypi:`pillow-wmf`
-      - Cross platform support for Windows MetaFiles.
+      - Windows Metafile (WMF) images on any platform.
     * - :pypi:`pillow-zx-spectrum`
-      - Open loading SCREEN$ from ZX Spectrum tapes, disks and memory snapshots.
+      - Loading SCREEN$ images from ZX Spectrum tapes, disks and memory snapshots.
     * - :pypi:`pylibheif`
       - Python bindings for libheif, with a plugin for HEIC, HEIF and AVIF images.
     * - :pypi:`wsq`
