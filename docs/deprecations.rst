@@ -780,21 +780,21 @@ import _imaging
 
 .. versionremoved:: 2.1.0
 
-Pillow >= 2.1.0 no longer supports ``import _imaging``.
-Please use ``from PIL.Image import core as _imaging`` instead.
+``import _imaging`` is no longer supported. Use
+``from PIL.Image import core as _imaging`` instead.
 
 Pillow and PIL
 ^^^^^^^^^^^^^^
 
 .. versionremoved:: 1.0.0
 
-Pillow and PIL cannot co-exist in the same environment.
-Before installing Pillow, please uninstall PIL.
+Pillow cannot be installed in the same environment as PIL, since both provide the
+``PIL`` package. Uninstall PIL before installing Pillow.
 
 import Image
 ^^^^^^^^^^^^
 
 .. versionremoved:: 1.0.0
 
-Pillow >= 1.0 no longer supports ``import Image``.
-Please use ``from PIL import Image`` instead.
+Modules must be imported from the ``PIL`` package. For example, use
+``from PIL import Image`` instead of ``import Image``.
