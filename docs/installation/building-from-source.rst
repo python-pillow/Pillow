@@ -33,7 +33,7 @@ Many of Pillow's features require external libraries:
 * **libjpeg** provides JPEG functionality.
 
   * Pillow has been tested with libjpeg versions **6b**, **8**, **9-9d** and
-    libjpeg-turbo version **8**.
+    libjpeg-turbo versions **2** and **3**.
   * Starting with Pillow 3.0.0, libjpeg is required by default. It can be
     disabled with the ``-C jpeg=disable`` flag.
 
@@ -44,7 +44,7 @@ Many of Pillow's features require external libraries:
 
 * **libtiff** provides compressed TIFF functionality
 
-  * Pillow has been tested with libtiff versions **4.0-4.7.1**
+  * Pillow has been tested with libtiff versions **4.0-4.7.2**
 
 * **libfreetype** provides type related services
 
@@ -114,11 +114,9 @@ Many of Pillow's features require external libraries:
 
         sudo apk add python3-dev py3-setuptools
 
-    .. Note:: ``redhat-rpm-config`` is required on Fedora 23, but not earlier versions.
-
     Prerequisites for **Ubuntu 16.04 LTS - 26.04 LTS** are installed with::
 
-        sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev \
+        sudo apt-get install libtiff-dev libjpeg-turbo8-dev libopenjp2-7-dev zlib1g-dev \
             libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
             libharfbuzz-dev libfribidi-dev libxcb1-dev
 
@@ -306,8 +304,7 @@ Build options
   ``-C jpeg2000=enable``, ``-C imagequant=enable``, ``-C xcb=enable``,
   ``-C avif=enable``.
   Require that the corresponding feature is built. The build will raise
-  an exception if the libraries are not found. Tcl and Tk must be used
-  together.
+  an exception if the libraries are not found.
 
 * Config settings: ``-C raqm=vendor``, ``-C fribidi=vendor``.
   These flags are used to compile a modified version of libraqm and
@@ -326,7 +323,7 @@ Build options
 
 Sample usage::
 
-    python3 -m pip install --upgrade Pillow -C [feature]=enable
+    python3 -m pip install --upgrade Pillow --no-binary :all: -C [feature]=enable
 
 .. _old-versions:
 

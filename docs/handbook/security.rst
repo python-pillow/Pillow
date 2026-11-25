@@ -66,8 +66,10 @@ Tampering
 
 **T-1 — Malicious metadata propagation**
 
-Pillow preserves EXIF, XMP, IPTC, ICC profiles, and comments when
-round-tripping images. Applications that store or render metadata without
+Pillow reads EXIF, XMP, IPTC, ICC profiles, comments and text chunks from
+images, and some of this metadata is written again when re-saving, depending on
+the format and save options (for example, PNG and TIFF keep ICC profiles, and JPEG
+keeps comments). Applications that store or render metadata without
 sanitisation are vulnerable to second-order injection (SQLi, XSS, command
 injection).
 
@@ -77,8 +79,8 @@ or rendering; strip metadata when it is not required.
 
 **T-2 — Covert data channel (steganography)**
 
-Pillow does not remove hidden data (JPEG comments, PNG text chunks) when
-re-saving. An attacker can embed data that survives the
+Pillow does not guarantee that hidden data is removed when re-saving. Depending
+on the format and save options, data such as JPEG comments can survive the
 encode-decode cycle invisibly.
 
 *Mitigations:* to guarantee a clean output when saving, create a new image instance via
@@ -199,8 +201,8 @@ container).
 
 **E-2 — Ghostscript exploitation via EPS (RCE)**
 
-Opening an EPS file invokes the system Ghostscript binary (``gs``) via
-``subprocess``. Ghostscript has a long history of sandbox-escape CVEs
+Loading pixel data from an EPS file invokes the system Ghostscript binary (``gs``)
+via ``subprocess``. Ghostscript has a long history of sandbox-escape CVEs
 permitting arbitrary code execution from malicious PostScript.
 
 *Mitigations:* **block EPS files** at the application input layer before
@@ -259,7 +261,7 @@ The following mitigations are listed in priority order.
    uploads to publicly served images.
 8. **Sanitise all metadata** returned by Pillow before using it downstream.
 9. **Pin dependencies with hash verification** — use
-   ``pip install --require-hashes`` and lockfiles.
+   ``python3 -m pip install --require-hashes`` and lockfiles.
 10. **Log and alert** on ``Image.DecompressionBombWarning``,
     ``Image.DecompressionBombError``, ``PIL.UnidentifiedImageError``,
     and all exceptions from ``Image.open()``.
@@ -323,10 +325,10 @@ What to include and how to structure a vulnerability report
   collapsed section using ``<details></details>`` for better readability.
 
 * Ensure that your issue is reproducible in ``main``. We only
-  support the latest version. The one exception -- if your issue is
-  exploitable in the latest public release, but not in ``main``, and the
-  pull request does not mention a security implication this may be an
-  unknown security issue that was inadvertently fixed.
+  support the latest version. The one exception is if your issue is
+  exploitable in the latest public release but not in ``main``, and the pull
+  request that fixed it does not mention a security implication. Then it may be
+  an unknown security issue that was inadvertently fixed, so please report it.
 
 * Demonstrating a memory overflow is enough. Do not weaponize
   the reproducer to do remote code execution.
