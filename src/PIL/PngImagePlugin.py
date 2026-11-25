@@ -447,6 +447,9 @@ class PngStream(ChunkStream):
         # ICC profile
         assert self.fp is not None
         s = ImageFile._safe_read(self.fp, length)
+        if "icc_profile" in self.im_info:
+            # Only use the first iCCP chunk
+            return s
         # according to PNG spec, the iCCP chunk contains:
         # Profile name  1-79 bytes (character string)
         # Null separator        1 byte (null character)
