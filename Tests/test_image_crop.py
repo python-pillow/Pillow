@@ -78,6 +78,17 @@ def test_crop_float_half(left: float) -> None:
     assert im.crop((left, 0, left + 1, 1)).size == (1, 1)
 
 
+@pytest.mark.parametrize(
+    "left, expected",
+    ((0.5, [1]), (1.5, [2]), (2.5, [3]), (-0.5, [0])),
+)
+def test_crop_float_half_up(left: float, expected: list[int]) -> None:
+    im = Image.frombytes("L", (4, 1), bytes([0, 1, 2, 3]))
+
+    cropped = im.crop((left, 0, left + 1, 1))
+    assert list(cropped.get_flattened_data()) == expected
+
+
 def test_crop_crash() -> None:
     # Image.crop crashes prepatch with an access violation
     # apparently a use after free on Windows, see
