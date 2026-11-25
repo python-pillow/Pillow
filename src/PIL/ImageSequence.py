@@ -41,7 +41,7 @@ class Iterator:
             msg = "im must have seek method"
             raise AttributeError(msg)
         self.im = im
-        self.position = getattr(self.im, "_min_frame", 0)
+        self.position = 0
 
     def __getitem__(self, ix: int) -> Image.Image:
         try:

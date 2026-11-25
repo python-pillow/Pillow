@@ -85,7 +85,7 @@ except ImportError as ex:
     core = DeferredError.new(ex)
 
 
-def _string_length_check(text: str | bytes | bytearray) -> None:
+def _string_length_check(text: str | bytes) -> None:
     if MAX_STRING_LENGTH is not None and len(text) > MAX_STRING_LENGTH:
         msg = "too many characters in string"
         raise ValueError(msg)
@@ -112,7 +112,7 @@ class BaseImageFont(abc.ABC):
 
     @abc.abstractmethod
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[float, float, float, float]:
         pass
 
@@ -142,7 +142,7 @@ class ImageFont(BaseImageFont):
                     image.close()
                 try:
                     fullname = root + ext
-                    image = Image.open(fullname)
+                    image = Image.open(fullname, formats=["PNG", "GIF", "PPM"])
                 except Exception:
                     pass
                 else:
@@ -217,7 +217,7 @@ class ImageFont(BaseImageFont):
         return self.font.getmask(text, mode)
 
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[int, int, int, int]:
         """
         Returns bounding box (in pixels) of given text.
@@ -232,9 +232,7 @@ class ImageFont(BaseImageFont):
         width, height = self.font.getsize(text)
         return 0, 0, width, height
 
-    def getlength(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
-    ) -> int:
+    def getlength(self, text: str | bytes, *args: Any, **kwargs: Any) -> int:
         """
         Returns length (in pixels) of given text.
         This is the amount by which following text should be offset.
@@ -336,7 +334,7 @@ class FreeTypeFont(BaseImageFont):
         """
         return self.font.ascent, self.font.descent
 
-    def _has_separator(self, text: str | bytes | bytearray) -> bool:
+    def _has_separator(self, text: str | bytes) -> bool:
         if self.layout_engine != Layout.RAQM:
             return False
         if isinstance(text, str):
@@ -427,7 +425,7 @@ class FreeTypeFont(BaseImageFont):
 
     def getbbox(
         self,
-        text: str | bytes | bytearray,
+        text: str | bytes,
         mode: str = "",
         direction: str | None = None,
         features: list[str] | None = None,
@@ -801,7 +799,7 @@ class TransposedFont(BaseImageFont):
         return im
 
     def getbbox(
-        self, text: str | bytes | bytearray, *args: Any, **kwargs: Any
+        self, text: str | bytes, *args: Any, **kwargs: Any
     ) -> tuple[int, int, float, float]:
         # TransposedFont doesn't support getmask2, move top-left point to (0, 0)
         # this has no effect on ImageFont and simulates anchor="lt" for FreeTypeFont

@@ -330,6 +330,8 @@ ImagingRotate270(Imaging imOut, Imaging imIn) {
 
 /* transform primitives (ImagingTransformMap) */
 
+typedef int (*ImagingTransformMap)(double *X, double *Y, int x, int y, void *data);
+
 static int
 affine_transform(double *xout, double *yout, int x, int y, void *data) {
     /* full moon tonight.  your compiler will generate bogus code
@@ -368,8 +370,12 @@ perspective_transform(double *xout, double *yout, int x, int y, void *data) {
     double xin = x + 0.5;
     double yin = y + 0.5;
 
-    xout[0] = (a0 * xin + a1 * yin + a2) / (a6 * xin + a7 * yin + 1);
-    yout[0] = (a3 * xin + a4 * yin + a5) / (a6 * xin + a7 * yin + 1);
+    double denominator = a6 * xin + a7 * yin + 1;
+    if (denominator == 0) {
+        return 0;
+    }
+    xout[0] = (a0 * xin + a1 * yin + a2) / denominator;
+    yout[0] = (a3 * xin + a4 * yin + a5) / denominator;
 
     return 1;
 }
@@ -398,6 +404,8 @@ quad_transform(double *xout, double *yout, int x, int y, void *data) {
 }
 
 /* transform filters (ImagingTransformFilter) */
+
+typedef int (*ImagingTransformFilter)(void *out, Imaging im, double x, double y);
 
 static int
 nearest_filter8(void *out, Imaging im, double xin, double yin) {
@@ -725,7 +733,7 @@ getfilter(Imaging im, ImagingResamplingType filterid) {
 
 /* transformation engines */
 
-int
+static int
 ImagingGenericTransform(
     Imaging imOut,
     Imaging imIn,

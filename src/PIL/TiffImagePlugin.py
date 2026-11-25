@@ -1265,7 +1265,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.__first = self.__next = self.tag_v2.next
         self.__frame = -1
         self._fp = self.fp
-        self._frame_pos: list[int] = []
+        self._frame_pos: dict[int, None] = {}
 
         # Out-of-line tag data is budgeted across all frames, so that many
         # frames cannot each read the same data. Each frame's limit is fixed
@@ -1285,9 +1285,9 @@ class TiffImageFile(ImageFile.ImageFile):
         current_n_frames = self._n_frames
         if current_n_frames is None:
             current = self.tell()
-            self._seek(len(self._frame_pos))
+            self._seek(len(self._frame_pos), False)
             while self._n_frames is None:
-                self._seek(self.tell() + 1)
+                self._seek(self.tell() + 1, False)
             self.seek(current)
         assert self._n_frames is not None
         return self._n_frames
@@ -1304,7 +1304,7 @@ class TiffImageFile(ImageFile.ImageFile):
         ):
             self._im = None
 
-    def _seek(self, frame: int) -> None:
+    def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.fp = self._fp
@@ -1324,7 +1324,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 msg = "Unable to seek to frame"
                 raise ValueError(msg)
             self.fp.seek(self.__next)
-            self._frame_pos.append(self.__next)
+            self._frame_pos[self.__next] = None
             self._tag_data_limits.append(self._tag_data_remaining)
             logger.debug("Loading tags, location: %s", self.fp.tell())
             self.tag_v2._tag_data_limit = self._tag_data_remaining
@@ -1341,7 +1341,9 @@ class TiffImageFile(ImageFile.ImageFile):
             if not hasattr(self, "is_animated"):
                 self.is_animated = self.__next != 0
             self.__frame += 1
-        self.fp.seek(self._frame_pos[frame])
+        if not update_image:
+            return
+        self.fp.seek(tuple(self._frame_pos.keys())[frame])
         self.tag_v2._tag_data_limit = self._tag_data_limits[frame]
         self.tag_v2.load(self.fp)
         if XMP in self.tag_v2:
@@ -1677,7 +1679,7 @@ class TiffImageFile(ImageFile.ImageFile):
                 # fillorder==2 modes have a corresponding
                 # fillorder=1 mode
                 self._mode, rawmode = OPEN_INFO[key]
-            if photo == 6:
+            if photo == 6 and len(bps_tuple) == 3:
                 self._mode = "RGB"
                 if self._compression in "jpeg" and self._planar_configuration == 1:
                     # YCbCr images with new jpeg compression with pixels in one plane
@@ -1953,16 +1955,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     if PHOTOMETRIC_INTERPRETATION not in ifd:
         ifd[PHOTOMETRIC_INTERPRETATION] = photo
     elif im.mode in ("1", "L") and ifd[PHOTOMETRIC_INTERPRETATION] == 0:
-        if im.mode == "1":
-            inverted_im = im.copy()
-            px = inverted_im.load()
-            if px is not None:
-                for y in range(inverted_im.height):
-                    for x in range(inverted_im.width):
-                        px[x, y] = 0 if px[x, y] == 255 else 255
-                im = inverted_im
-        else:
-            im = ImageOps.invert(im)
+        im = ImageOps.invert(im)
 
     if im.mode in ["P", "PA"]:
         lut = im.im.getpalette("RGB;L")
@@ -2270,6 +2263,7 @@ class AppendingTiffWriter(io.BytesIO):
         self.tagFormat = f"{self.endian}HH" + ("Q" if self._bigtiff else "L")
 
     def skipIFDs(self) -> None:
+        ifd_offsets = set()
         while True:
             ifd_offset = self._read(8 if self._bigtiff else 4)
             if ifd_offset == 0:
@@ -2277,6 +2271,11 @@ class AppendingTiffWriter(io.BytesIO):
                     8 if self._bigtiff else 4
                 )
                 break
+
+            if ifd_offset in ifd_offsets:
+                msg = "IFD loop found"
+                raise RuntimeError(msg)
+            ifd_offsets.add(ifd_offset)
 
             self.f.seek(ifd_offset)
             num_tags = self._read(8 if self._bigtiff else 2)

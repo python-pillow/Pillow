@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import sys
 import warnings
@@ -116,6 +117,23 @@ class TestFilePng:
 
         with pytest.raises(SyntaxError):
             PngImagePlugin.PngImageFile(invalid_file)
+
+    def test_save_wide(self, tmp_path: Path) -> None:
+        test_file = tmp_path / "temp.png"
+        Image.new("L", (1 << 24, 1), 0x80).save(test_file)
+
+        with open(test_file, "rb") as fp:
+            fp.seek(len(MAGIC))
+            with PngImagePlugin.PngStream(fp) as png:
+                while True:
+                    cid, _, length = png.read()
+                    if cid == b"IDAT":
+                        compressed = fp.read(length)
+                        break
+                    if cid == b"IEND":
+                        break
+                    fp.seek(length + 4, os.SEEK_CUR)
+        assert zlib.decompress(compressed)[0] == 1
 
     def test_broken(self) -> None:
         # Check reading of totally broken files.  In this case, the test
@@ -602,6 +620,14 @@ class TestFilePng:
 
                 im = roundtrip(im, icc_profile=expected_icc)
                 assert im.info["icc_profile"] == expected_icc
+
+    def test_multiple_icc_profiles(self) -> None:
+        iccp = chunk(b"iCCP", b"first\0\0", zlib.compress(b"profile"))
+        # An unknown compression method would raise an error if not ignored
+        second_iccp = chunk(b"iCCP", b"second\0\1", zlib.compress(b"other"))
+
+        with Image.open(BytesIO(HEAD + iccp + second_iccp + TAIL)) as im:
+            assert im.info["icc_profile"] == b"profile"
 
     def test_discard_icc_profile(self) -> None:
         with Image.open("Tests/images/icc_profile.png") as im:
