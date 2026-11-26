@@ -7,7 +7,7 @@
 The :py:mod:`~PIL.TiffTags` module exposes many of the standard TIFF
 metadata tag numbers, names, and type information.
 
-.. method:: lookup(tag)
+.. function:: lookup(tag, group=None)
 
     :param tag: Integer tag number
     :param group: Which :py:data:`~PIL.TiffTags.TAGS_V2_GROUPS` to look in
@@ -22,7 +22,7 @@ metadata tag numbers, names, and type information.
 
 .. class:: TagInfo
 
-  .. method:: __init__(self, value=None, name="unknown", type=None, length=0, enum=None)
+  .. method:: __init__(self, value=None, name="unknown", type=None, length=None, enum=None)
 
      :param value: Integer Tag Number
      :param name: Tag Name
@@ -33,7 +33,8 @@ metadata tag numbers, names, and type information.
   .. method:: cvt_enum(self, value)
 
      :param value: The enumerated value name
-     :returns: The integer corresponding to the name.
+     :returns: The integer corresponding to the name, or ``value`` unchanged if
+               it is not in the enumeration.
 
 .. versionadded:: 3.0.0
 
@@ -76,6 +77,6 @@ metadata tag numbers, names, and type information.
     human readable type name.
 
 .. py:data:: PIL.TiffTags.LIBTIFF_CORE
-    :type: list
+    :type: set
 
-    A list of supported tag IDs when writing using LibTIFF.
+    A set of supported tag IDs when writing using LibTIFF.

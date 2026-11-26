@@ -875,6 +875,8 @@ def load(filename: str | os.PathLike[str]) -> ImageFont:
     :param filename: Name of font file.
     :return: A font object.
     :exception OSError: If the file could not be read.
+    :exception SyntaxError: If the file is not a PIL font file.
+    :exception TypeError: If the font image is not in mode "1" or "L".
     """
     f = ImageFont()
     f._load_pilfont(filename)
@@ -1036,6 +1038,10 @@ def load_path(filename: StrOrBytesPath) -> ImageFont:
 
 
 def load_default_imagefont() -> ImageFont:
+    """Load a "better than nothing" bitmap font.
+
+    :return: An :py:class:`~PIL.ImageFont.ImageFont` object.
+    """
     f = ImageFont()
     f._load_pilfont_data(
         # courB08

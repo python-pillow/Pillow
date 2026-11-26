@@ -44,6 +44,7 @@ __lazy_modules__ = {
 
 import itertools
 import logging
+import os
 import re
 import struct
 import warnings
@@ -805,7 +806,7 @@ def _accept(prefix: bytes) -> bool:
 # Image plugin for PNG images.
 
 
-class PngImageFile(ImageFile.ImageFile):
+class PngImageFile(ImageFile.SeekableImageFile):
     format = "PNG"
     format_description = "Portable network graphics"
 
@@ -909,9 +910,7 @@ class PngImageFile(ImageFile.ImageFile):
 
         super().verify()
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seek_to(self, frame: int) -> None:
         if frame < self.__frame:
             self._seek(0, True)
 
@@ -1073,7 +1072,7 @@ class PngImageFile(ImageFile.ImageFile):
         assert self.png is not None
         assert self.fp is not None
         if self.__idat != 0:
-            self.fp.read(self.__idat)
+            self.fp.seek(self.__idat, os.SEEK_CUR)
         while True:
             self.fp.read(4)  # CRC
 

@@ -1231,7 +1231,7 @@ ImageFileDirectory = ImageFileDirectory_v1
 # Image plugin for TIFF files.
 
 
-class TiffImageFile(ImageFile.ImageFile):
+class TiffImageFile(ImageFile.SeekableImageFile):
     format = "TIFF"
     format_description = "Adobe TIFF"
     _close_exclusive_fp_after_loading = False
@@ -1278,7 +1278,7 @@ class TiffImageFile(ImageFile.ImageFile):
         logger.debug("- ifh: %s", repr(ifh))  # Use repr to avoid str(bytes)
 
         # and load the first frame
-        self._seek(0)
+        TiffImageFile._seek_to(self, 0)
 
     @property
     def n_frames(self) -> int:
@@ -1292,17 +1292,8 @@ class TiffImageFile(ImageFile.ImageFile):
         assert self._n_frames is not None
         return self._n_frames
 
-    def seek(self, frame: int) -> None:
-        """Select a given frame as current image"""
-        if not self._seek_check(frame):
-            return
+    def _seek_to(self, frame: int) -> None:
         self._seek(frame)
-        if self._im is not None and (
-            self.im.size != self._tile_size
-            or self.im.mode != self.mode
-            or self.readonly
-        ):
-            self._im = None
 
     def _seek(self, frame: int, update_image: bool = True) -> None:
         if isinstance(self._fp, DeferredError):
@@ -1392,6 +1383,7 @@ class TiffImageFile(ImageFile.ImageFile):
             return super().load()
 
         original_size = self._size
+        assert self._tile_size is not None
         self._size = self._tile_size
 
         try:

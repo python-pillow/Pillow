@@ -83,7 +83,7 @@ def _accept(prefix: bytes) -> bool:
 # GIF89 images.
 
 
-class GifImageFile(ImageFile.ImageFile):
+class GifImageFile(ImageFile.SeekableImageFile):
     format = "GIF"
     format_description = "Compuserve GIF"
     _close_exclusive_fp_after_loading = False
@@ -160,9 +160,7 @@ class GifImageFile(ImageFile.ImageFile):
         self.seek(current)
         return is_animated
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seek_to(self, frame: int) -> None:
         if frame < self.__frame:
             self._im = None
             self._seek(0)
@@ -1065,9 +1063,7 @@ def _write_frame_data(
         _write_local_header(fp, im_frame, offset, 0)
 
         ImageFile._save(
-            im_frame,
-            fp,
-            [ImageFile._Tile("gif", (0, 0, *im_frame.size), 0, RAWMODE[im_frame.mode])],
+            im_frame, fp, [ImageFile._Tile("gif", args=RAWMODE[im_frame.mode])]
         )
 
         fp.write(b"\0")  # end of image data

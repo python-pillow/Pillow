@@ -60,6 +60,24 @@ symbols that no single font covers::
     im = Image.new("RGB", (200, 50), "white")
     draw = ImageDraw.Draw(im)
     draw.text((10, 10), "abあいcd", "black", family)
+ImageFile.SeekableImageFile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFile.SeekableImageFile` has been added. Image file plugins with
+``seek()`` methods should inherit from this, replacing::
+
+    class CustomImageFile(ImageFile.ImageFile):
+      def seek(self, frame):
+        if not self._seek_check(frame):
+          return
+        pass  # Format seek() operations
+        Image.Image.seek(self, frame)
+
+with::
+
+    class CustomImageFile(ImageFile.SeekableImageFile):
+      def _seek_to(self, frame):
+        pass  # Format seek() operations
 
 ImageDraw dash
 ^^^^^^^^^^^^^^

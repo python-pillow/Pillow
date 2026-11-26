@@ -42,7 +42,7 @@ Not safe
   This includes in-place operations such as :py:meth:`~PIL.Image.Image.paste`,
   :py:meth:`~PIL.Image.Image.putpixel`, :py:meth:`~PIL.Image.Image.putdata`,
   :py:meth:`~PIL.Image.Image.putpalette`, :py:meth:`~PIL.Image.Image.putalpha`,
-  drawing with :py:meth:`~PIL.ImageDraw.Draw`, and writing through the
+  drawing with :py:func:`~PIL.ImageDraw.Draw`, and writing through the
   :py:class:`PixelAccess` class (as returned by :py:meth:`~PIL.Image.Image.load`).
   The results are undefined: the reading thread may see partly updated pixels.
   This applies to the default build as well as to the free-threaded build.
