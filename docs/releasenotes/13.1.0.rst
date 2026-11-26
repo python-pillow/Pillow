@@ -60,6 +60,7 @@ symbols that no single font covers::
     im = Image.new("RGB", (200, 50), "white")
     draw = ImageDraw.Draw(im)
     draw.text((10, 10), "abあいcd", "black", family)
+
 ImageFile.SeekableImageFile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
