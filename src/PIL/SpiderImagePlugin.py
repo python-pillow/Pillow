@@ -133,7 +133,9 @@ class SpiderImageFile(ImageFile.SeekableImageFile):
             msg = "not a Spider 2D image"
             raise SyntaxError(msg)
 
-        self._size = int(h[12]), int(h[2])  # size in pixels (width, height)
+        size = int(h[12]), int(h[2])  # size in pixels (width, height)
+        Image._decompression_bomb_check(size)
+        self._size = size
         self.istack = int(h[24])
         self.imgnumber = int(h[27])
 

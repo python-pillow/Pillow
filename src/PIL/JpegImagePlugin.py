@@ -207,7 +207,9 @@ def SOF(self: JpegImageFile, name: str, marker: int) -> None:
     assert self.fp is not None
     n = i16(self.fp.read(2)) - 2
     s = ImageFile._safe_read(self.fp, n)
-    self._size = i16(s, 3), i16(s, 1)
+    size = i16(s, 3), i16(s, 1)
+    Image._decompression_bomb_check(size)
+    self._size = size
 
     self.bits = s[0]
     if self.bits != 8:
