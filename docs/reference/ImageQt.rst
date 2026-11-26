@@ -26,14 +26,15 @@ QImage objects from PIL images.
 
 .. py:function:: toqpixmap(im)
 
-    Creates a QtGui.QPixmap object from a PIL :py:class:`~PIL.Image.Image`
+    Creates a ``QtGui.QPixmap`` object from a PIL :py:class:`~PIL.Image.Image`
     object, or the path to an image.
 
 .. py:function:: fromqimage(im)
 
-    Creates a PIL :py:class:`~PIL.Image.Image` object from a QImage or
-    :py:class:`~PIL.ImageQt.ImageQt` object.
+    Creates a PIL :py:class:`~PIL.ImageFile.ImageFile` object from a ``QImage`` or
+    ``QPixmap`` object.
 
 .. py:function:: fromqpixmap(im)
 
-    Creates a PIL :py:class:`~PIL.Image.Image` object from a QPixmap object.
+    Creates a PIL :py:class:`~PIL.ImageFile.ImageFile` object from a ``QPixmap``
+    object.

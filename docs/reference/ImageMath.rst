@@ -141,7 +141,7 @@ These functions are applied to each individual pixel.
 .. py:function:: equal(image1, image2)
     :noindex:
 
-    1 where the values are equal, 0 elsewhere. The result is a 32-bit integer image.
+    1 where the values are equal, 0 elsewhere.
 
 .. py:function:: float(image)
     :noindex:
@@ -170,5 +170,4 @@ These functions are applied to each individual pixel.
 .. py:function:: notequal(image1, image2)
     :noindex:
 
-    1 where the values are not equal, 0 elsewhere. The result is a 32-bit integer
-    image.
+    1 where the values are not equal, 0 elsewhere.

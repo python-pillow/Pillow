@@ -75,7 +75,7 @@ def rgb(r: int, g: int, b: int, a: int = 255) -> int:
 
 def fromqimage(im: QImage | QPixmap) -> ImageFile.ImageFile:
     """
-    :param im: QImage or PIL ImageQt object
+    :param im: QImage or QPixmap object
     """
     buffer = QBuffer()
     qt_openmode: object

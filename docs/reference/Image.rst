@@ -16,7 +16,7 @@ Open, rotate, and display an image (using the default viewer)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following script loads an image, rotates it 45 degrees, and displays it
-using an external viewer (see :py:mod:`~PIL.ImageShow`). ::
+using an external viewer (see :py:func:`~Image.show()`). ::
 
     from PIL import Image
     with Image.open("hopper.jpg") as im:
@@ -58,7 +58,7 @@ Functions
         ``warnings.simplefilter('ignore', Image.DecompressionBombWarning)``. See also
         `the logging documentation`_ to have warnings output to the logging facility instead of stderr.
 
-        If the number of pixels is greater than twice :py:data:`MAX_IMAGE_PIXELS`, then a
+        If the number of pixels is greater than twice :py:data:`MAX_IMAGE_PIXELS`, then an
         ``Image.DecompressionBombError`` will be raised instead.
 
     .. _decompression bombs: https://en.wikipedia.org/wiki/Zip_bomb

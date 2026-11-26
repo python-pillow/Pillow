@@ -309,14 +309,13 @@ can be easily displayed in a chromaticity diagram, for example).
         :type: dict | None
 
         The measurement conditions, as a dictionary with ``observer``,
-        ``backing``, ``geo``, ``flare`` and ``illuminant_type`` keys (see
-        9.2.36 of ICC.1:2010).
+        ``backing``, ``geo``, ``flare`` and ``illuminant_type`` keys.
 
     .. py:attribute:: icc_viewing_condition
         :type: dict | None
 
         The viewing conditions, as a dictionary with ``illuminant``,
-        ``surround`` and ``illuminant_type`` keys (see 9.2.51 of ICC.1:2010).
+        ``surround`` and ``illuminant_type`` keys.
 
     .. py:attribute:: screening_description
         :type: str | None
