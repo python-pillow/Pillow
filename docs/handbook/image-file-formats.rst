@@ -78,8 +78,8 @@ The :py:meth:`~PIL.Image.Image.save` method supports the following options:
 
 **max_threads**
     Limit the number of active threads used. Defaults to the number of available CPUs,
-    or ``AvifImagePlugin.DEFAULT_MAX_THREADS`` if that is set. If the aom codec is used,
-    there is a maximum of 64.
+    or ``AvifImagePlugin.DEFAULT_MAX_THREADS`` if that is non-zero. If the aom codec is
+    used, there is a maximum of 64.
 
 **range**
     YUV range, either "full" or "limited". Defaults to "full".
@@ -161,13 +161,12 @@ The :py:meth:`~PIL.Image.open` method sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **compression**
-    The compression method from the BMP header. For example, set to 0 if the file is
-    not compressed, 1 if it is a 256-color run-length encoded image, 2 if it is a
-    16-color run-length encoded image, or 3 if it uses bitfields.
+    Set to 0 if the file is not compressed, 1 if it is a 256-color run-length encoded
+    image, 2 if it is a 16-color run-length encoded image, or 3 if it uses bitfields.
 
 **dpi**
     A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution unit.
-    Only set if the file specifies a resolution.
+    Only set if the file specifies a non-zero resolution.
 
 Saving
 ~~~~~~
@@ -895,9 +894,9 @@ PNG
 Pillow identifies, reads, and writes PNG files containing ``1``, ``L``, ``LA``,
 ``I;16``, ``P``, ``RGB`` or ``RGBA`` data. Interlaced files are supported.
 
-EXIF data can be read from PNG images. However, unlike other image formats, EXIF data is not guaranteed to be present in
-:py:attr:`~PIL.Image.Image.info` until :py:meth:`~PIL.Image.Image.load` has been
-called.
+EXIF data can be read from PNG images. However, unlike other image formats, EXIF data
+is not guaranteed to be present in :py:attr:`~PIL.Image.Image.info` until
+:py:meth:`~PIL.Image.Image.load` has been called.
 
 By default Pillow doesn't allow loading of truncated PNG files, set
 :data:`.ImageFile.LOAD_TRUNCATED_IMAGES` to override this.
@@ -937,14 +936,13 @@ The :py:func:`~PIL.Image.open` function sets the following
 
 **dpi**
     A tuple of ``(x_resolution, y_resolution)``, with inches as the resolution
-    unit, if the pHYs chunk specifies meters as the unit.
+    unit. Alternative to ``aspect``.
 
 **aspect**
-    A tuple of ``(x, y)`` pixels per unit, if the pHYs chunk does not specify a
-    unit.
+    A tuple of ``(x, y)`` pixels per unit. Alternative to ``dpi``.
 
 **icc_profile**
-    The ICC color profile for the image, from the first iCCP chunk.
+    The ICC color profile for the image.
 
 **exif**
     Raw EXIF data from the image.
@@ -1167,7 +1165,7 @@ For PFM files, the :py:func:`~PIL.Image.open` function sets the following
 :py:attr:`~PIL.Image.Image.info` properties:
 
 **scale**
-    The absolute value of the number stored in the *Scale Factor / Endianness* line.
+    The absolute value of scale factor.
 
 QOI
 ^^^
@@ -1423,8 +1421,7 @@ The :py:meth:`~PIL.Image.Image.save` method can take the following keyword argum
     ``"tiff_raw_16"``, ``"tiff_sgilog"``, ``"tiff_sgilog24"``, ``"tiff_thunderscan"``,
     ``"webp"``, ``"zstd"``
 
-    If not given, the compression of the original image is used, if it was a TIFF
-    image.
+    If not given, it will default to the compression of the loaded image.
 
 **quality**
     The image quality for JPEG compression, on a scale from 0 (worst) to 100
@@ -1691,7 +1688,7 @@ The :py:meth:`~PIL.Image.open` method sets the following
 GD
 ^^
 
-Pillow reads uncompressed GD 2.x ``.gd`` files. Note that you must use
+Pillow reads uncompressed GD 2.x files. Note that you must use
 :py:func:`PIL.GdImageFile.open` to read such a file.
 
 .. _gd-opening:
@@ -1776,9 +1773,9 @@ WMF, EMF
 
 Pillow can identify WMF and EMF files.
 
-On Windows, it can read WMF and EMF files. By default, WMF images are loaded at
-72 dpi, and EMF images at the resolution given in their header. To load an image
-at another resolution::
+On Windows, it can read WMF and EMF files. EMF images have different DPI resolutions,
+but WMF will always open with 72 DPI initially. To load an image at another
+resolution::
 
     from PIL import Image
 
