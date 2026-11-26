@@ -19,7 +19,7 @@ If successful, this function returns an :py:class:`~PIL.Image.Image` object.
 You can now use instance attributes to examine the file contents::
 
     >>> print(im.format, im.size, im.mode)
-    PPM (512, 512) RGB
+    PPM (128, 128) RGB
 
 The :py:attr:`~PIL.Image.Image.format` attribute identifies the source of an
 image. If the image was not read from a file, it is set to None. The size
@@ -133,7 +133,7 @@ Identify image files
     for infile in sys.argv[1:]:
         try:
             with Image.open(infile) as im:
-                print(infile, im.format, f"{im.size}x{im.mode}")
+                print(infile, im.format, f"{im.width}x{im.height}", im.mode)
         except OSError:
             pass
 
@@ -171,7 +171,7 @@ Processing a subrectangle, and pasting it back
     im.paste(region, box)
 
 When pasting regions back, the size of the region must match the given region
-exactly. In addition, the region cannot extend outside the image. However, the
+exactly. If the region extends outside the image, it is clipped. However, the
 modes of the original image and the region do not need to match. If they don’t,
 the region is automatically converted before being pasted (see the section on
 :ref:`color-transforms` below for details).
@@ -247,7 +247,7 @@ Splitting and merging bands
     im = Image.merge("RGB", (b, g, r))
 
 Note that for a single-band image, :py:meth:`~PIL.Image.Image.split` returns
-the image itself. To work with individual color bands, you may want to convert
+a tuple containing a copy of the image. To work with individual color bands, you may want to convert
 the image to “RGB” first.
 
 .. image:: rebanded_hopper.webp
@@ -371,9 +371,25 @@ Converting between modes
     with Image.open("hopper.ppm") as im:
         im = im.convert("L")
 
-The library supports transformations between each supported mode and the “L”
-and “RGB” modes. To convert between other modes, you may have to use an
-intermediate image (typically an “RGB” image).
+The library supports transformations between each supported mode and the "L"
+and "RGB" modes. To convert between other modes, you may have to use an
+intermediate image (typically an "RGB" image).
+
+Converting and scaling
+^^^^^^^^^^^^^^^^^^^^^^
+
+When converting to a mode with a lower bit depth, Pillow does not automatically
+scale pixel values. For example, converting from "I;16" mode to "L" mode limits
+values to a maximum of 255. You may wish to scale values before converting::
+
+    >>> from PIL import Image
+    >>> im = Image.new("I;16", (1, 1), 51200)
+    >>> im_l = im.convert("L")
+    >>> im_l.getpixel((0, 0))
+    255
+    >>> im_l2 = im.point(lambda value: value / 256).convert("L")
+    >>> im_l2.getpixel((0, 0))
+    200
 
 Image enhancement
 -----------------
@@ -483,9 +499,8 @@ Image sequences
 ---------------
 
 The Python Imaging Library contains some basic support for image sequences
-(also called animation formats). Supported sequence formats include FLI/FLC,
-GIF, and a few experimental formats. TIFF files can also contain more than one
-frame.
+(also called animation formats). Supported sequence formats include APNG, AVIF,
+FLI/FLC, GIF, MPO, TIFF and WebP.
 
 When you open a sequence file, PIL automatically loads the first frame in the
 sequence. You can use the seek and tell methods to move between different
@@ -553,6 +568,7 @@ Using the :py:class:`~PIL.ImageSequence.Iterator` class
     from PIL import ImageSequence
     for frame in ImageSequence.Iterator(im):
         # ...do something to frame...
+        pass
 
 
 PostScript printing

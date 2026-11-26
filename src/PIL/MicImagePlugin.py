@@ -17,8 +17,6 @@
 #
 from __future__ import annotations
 
-__lazy_modules__ = {"olefile"}
-
 import olefile
 
 from . import Image, TiffImagePlugin
@@ -73,9 +71,7 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         self.__fp = self.fp
         self.seek(0)
 
-    def seek(self, frame: int) -> None:
-        if not self._seek_check(frame):
-            return
+    def _seek_to(self, frame: int) -> None:
         filename = self.images[frame]
         self.fp = self.ole.openstream(filename)
 
@@ -83,7 +79,6 @@ class MicImageFile(TiffImagePlugin.TiffImageFile):
         Image._decompression_bomb_check(self.size)
 
         self.frame = frame
-        Image.Image.seek(self, frame)
 
     def tell(self) -> int:
         return self.frame

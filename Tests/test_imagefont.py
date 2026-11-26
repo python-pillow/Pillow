@@ -66,6 +66,7 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     font_copy = font.font_variant()
     assert font_copy.path == FONT_PATH
     assert font_copy.size == FONT_SIZE
+    assert font_copy.layout_engine == font.layout_engine
 
     font_copy = font.font_variant(size=FONT_SIZE + 1)
     assert font_copy.size == FONT_SIZE + 1
@@ -73,6 +74,20 @@ def test_font_properties(font: ImageFont.FreeTypeFont) -> None:
     second_font_path = "Tests/fonts/DejaVuSans/DejaVuSans.ttf"
     font_copy = font.font_variant(font=second_font_path)
     assert font_copy.path == second_font_path
+
+
+@pytest.mark.parametrize(
+    "variant_layout_engine",
+    (
+        ImageFont.Layout.BASIC,
+        pytest.param(ImageFont.Layout.RAQM, marks=skip_unless_feature("raqm")),
+    ),
+)
+def test_font_variant_layout_engine(
+    font: ImageFont.FreeTypeFont, variant_layout_engine: ImageFont.Layout
+) -> None:
+    font_copy = font.font_variant(layout_engine=variant_layout_engine)
+    assert font_copy.layout_engine == variant_layout_engine
 
 
 def _render(
@@ -211,6 +226,17 @@ def test_getlength(
         # disable kerning, kerning metrics changed
         length = d.textlength(text, f, features=["-kern"])
         assert length == length_raqm
+
+
+@skip_unless_feature("raqm")
+@pytest.mark.parametrize("separator", ImageFont._separators)
+@pytest.mark.parametrize("string", (True, False))
+def test_getlength_multiline(separator: str, string: bool) -> None:
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+    with pytest.raises(
+        ValueError, match="can't measure length of multiline text with Raqm"
+    ):
+        font.getlength(separator if string else separator.encode())
 
 
 def test_float_size(layout_engine: ImageFont.Layout) -> None:
@@ -586,12 +612,21 @@ def test_default_font() -> None:
 
 @pytest.mark.parametrize("mode", ("", "1", "RGBA"))
 def test_getbbox(font: ImageFont.FreeTypeFont, mode: str) -> None:
-    assert (0, 4, 12, 16) == font.getbbox("A", mode)
+    assert font.getbbox("A", mode) == (0, 4, 12, 16)
+
+
+@skip_unless_feature("raqm")
+def test_getbbox_multiline() -> None:
+    font = ImageFont.truetype(FONT_PATH, FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+    with pytest.raises(
+        ValueError, match="can't measure bounding box of multiline text with Raqm"
+    ):
+        font.getbbox("\n")
 
 
 def test_getbbox_empty(font: ImageFont.FreeTypeFont) -> None:
     # issue #2614, should not crash.
-    assert (0, 0, 0, 0) == font.getbbox("")
+    assert font.getbbox("") == (0, 0, 0, 0)
 
 
 def test_render_empty(font: ImageFont.FreeTypeFont) -> None:
@@ -817,6 +852,14 @@ def test_variation_set_by_name(font: ImageFont.FreeTypeFont) -> None:
     _check_text(font, "Tests/images/variation_tiny_name.png", 40)
 
 
+def test_truetype_bytes() -> None:
+    # Ensure bytestrings with the high bit set do not cause sign extension
+    font = ImageFont.truetype(
+        "Tests/fonts/FreeMono.ttf", 20, layout_engine=ImageFont.Layout.BASIC
+    )
+    assert font.getbbox(b"\xe9") == font.getbbox("\u00e9")
+
+
 def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     with pytest.raises(OSError):
         font.set_variation_by_axes([500, 50])
@@ -828,6 +871,17 @@ def test_variation_set_by_axes(font: ImageFont.FreeTypeFont) -> None:
     font = ImageFont.truetype("Tests/fonts/TINY5x3GX.ttf", 36)
     font.set_variation_by_axes([100])
     _check_text(font, "Tests/images/variation_tiny_axes.png", 32.5)
+
+
+def test_variation_set_by_fractional_axes() -> None:
+    font = ImageFont.truetype("Tests/fonts/AdobeVFPrototype.ttf", 200)
+
+    def mask(weight: float) -> bytes:
+        font.set_variation_by_axes([weight, 0])
+        return bytes(font.getmask("test"))
+
+    # A fractional value must not be truncated or rounded
+    assert mask(600) != mask(600.5) != mask(601)
 
 
 @pytest.mark.parametrize(

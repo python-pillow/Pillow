@@ -46,7 +46,7 @@ class _Operand:
                 raise ValueError(msg)
         else:
             # argument was a constant
-            if isinstance(im1, (int, float)) and self.im.mode in ("1", "L", "I"):
+            if isinstance(im1, int) and self.im.mode in ("1", "L", "I"):
                 return Image.new("I", self.im.size, im1)
             else:
                 return Image.new("F", self.im.size, im1)

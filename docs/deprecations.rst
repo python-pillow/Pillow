@@ -17,10 +17,10 @@ Image getdata()
 
 .. deprecated:: 12.1.0
 
-:py:meth:`~PIL.Image.Image.getdata` has been deprecated.
-:py:meth:`~PIL.Image.Image.get_flattened_data` can be used instead. This new method is
-identical, except that it returns a tuple of pixel values, instead of an internal
-Pillow data type.
+:py:meth:`~PIL.Image.Image.getdata` has been deprecated, and will be removed in
+Pillow 14 (2027-10-15). :py:meth:`~PIL.Image.Image.get_flattened_data` can be used
+instead. This new method is identical, except that it returns a tuple of pixel values,
+instead of an internal Pillow data type.
 
 IM image format
 ^^^^^^^^^^^^^^^
@@ -36,8 +36,9 @@ ImageQt align8to32()
 
 .. deprecated:: 13.0.0
 
-``ImageQt.align8to32()`` has been deprecated. This was an undocumented helper function
-intended for internal use, so there is no replacement.
+``ImageQt.align8to32()`` has been deprecated, and will be removed in Pillow 14
+(2027-10-15). This was an undocumented helper function intended for internal use, so
+there is no replacement.
 
 JpegImageFile.load_djpeg
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -49,6 +50,15 @@ JpegImageFile.load_djpeg
 
 Use the built-in JPEG decoder instead, or call ``djpeg`` directly and decode the
 resulting image with Pillow.
+
+Image.putpixel 'value' lists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. deprecated:: 13.1.0
+
+:py:meth:`~PIL.Image.Image.putpixel` accepted lists to the ``value`` parameter, only
+for assigning RGB and RGBA values to ``P`` and ``PA`` images. This has been deprecated,
+and will be removed in Pillow 15 (2028-10-15). Use tuples instead.
 
 Removed features
 ----------------
@@ -297,14 +307,14 @@ interact with C code, you can use ``Image.Image.getim()``, which returns a ``Cap
 object.
 
 TiffImagePlugin IFD_LEGACY_API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. versionremoved:: 11.0.0
 
 ``TiffImagePlugin.IFD_LEGACY_API`` has been removed, as it was an unused setting.
 
 PSFile
-~~~~~~
+^^^^^^
 
 .. deprecated:: 9.5.0
 .. versionremoved:: 11.0.0
@@ -315,7 +325,7 @@ so there is no replacement. If you need this functionality though,
 it is a very short class that can easily be recreated in your own code.
 
 PyAccess and Image.USE_CFFI_ACCESS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 10.0.0
 .. versionremoved:: 11.0.0
@@ -327,7 +337,7 @@ removed. Pillow's C API will now be used on PyPy instead.
 similarly removed.
 
 Tk/Tcl 8.4
-~~~~~~~~~~
+^^^^^^^^^^
 
 .. deprecated:: 8.2.0
 .. versionremoved:: 10.0.0
@@ -335,7 +345,7 @@ Tk/Tcl 8.4
 Support for Tk/Tcl 8.4 was removed in Pillow 10.0.0 (2023-07-01).
 
 Categories
-~~~~~~~~~~
+^^^^^^^^^^
 
 .. deprecated:: 8.2.0
 .. versionremoved:: 10.0.0
@@ -347,7 +357,7 @@ To determine if an image has multiple frames or not,
 ``getattr(im, "is_animated", False)`` can be used instead.
 
 JpegImagePlugin.convert_dict_qtables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 8.3.0
 .. versionremoved:: 10.0.0
@@ -356,7 +366,7 @@ Since deprecation in Pillow 8.3.0, the ``convert_dict_qtables`` method no longer
 performed any operations on the data given to it, and has been removed.
 
 ImagePalette size parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 8.4.0
 .. versionremoved:: 10.0.0
@@ -366,7 +376,7 @@ default, and the ``size`` parameter could be used to override that. Pillow 8.3.0
 removed the default required length, also removing the need for the ``size`` parameter.
 
 ImageShow.Viewer.show_file file argument
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.1.0
 .. versionremoved:: 10.0.0
@@ -377,7 +387,7 @@ removed and replaced by ``path``.
 In effect, ``viewer.show_file("test.jpg")`` will continue to work unchanged.
 
 Constants
-~~~~~~~~~
+^^^^^^^^^
 
 .. deprecated:: 9.1.0
 .. versionremoved:: 10.0.0
@@ -398,7 +408,7 @@ Removed                                                Use instead
 ``Image.CUBIC``                                        ``Image.BICUBIC`` or ``Image.Resampling.BICUBIC``
 ``Image.ANTIALIAS``                                    ``Image.LANCZOS`` or ``Image.Resampling.LANCZOS``
 ``ImageCms.INTENT_PERCEPTUAL``                         ``ImageCms.Intent.PERCEPTUAL``
-``ImageCms.INTENT_RELATIVE_COLORMETRIC``               ``ImageCms.Intent.RELATIVE_COLORMETRIC``
+``ImageCms.INTENT_RELATIVE_COLORIMETRIC``              ``ImageCms.Intent.RELATIVE_COLORIMETRIC``
 ``ImageCms.INTENT_SATURATION``                         ``ImageCms.Intent.SATURATION``
 ``ImageCms.INTENT_ABSOLUTE_COLORIMETRIC``              ``ImageCms.Intent.ABSOLUTE_COLORIMETRIC``
 ``ImageCms.DIRECTION_INPUT``                           ``ImageCms.Direction.INPUT``
@@ -423,7 +433,7 @@ Removed                                                Use instead
 =====================================================  ============================================================
 
 FitsStubImagePlugin
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.1.0
 .. versionremoved:: 10.0.0
@@ -432,7 +442,7 @@ The stub image plugin ``FitsStubImagePlugin`` has been removed.
 FITS images can be read without a handler through :mod:`~PIL.FitsImagePlugin` instead.
 
 Font size and offset methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
@@ -513,7 +523,7 @@ Use instead::
     draw.text((100 / 2, 100 / 2), "Hello world", font=font, anchor="mm")
 
 FreeTypeFont.getmask2 fill parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
@@ -522,7 +532,7 @@ The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has bee
 removed.
 
 PhotoImage.paste box parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
@@ -530,7 +540,7 @@ PhotoImage.paste box parameter
 The ``box`` parameter was unused and has been removed.
 
 PyQt5 and PySide2
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
@@ -543,7 +553,7 @@ Support for PyQt5 and PySide2 has been removed from ``ImageQt``. Upgrade to
 `PySide6 <https://doc.qt.io/qtforpython-6/>`_ instead.
 
 Image.coerce_e
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
@@ -551,7 +561,7 @@ Image.coerce_e
 This undocumented method has been removed.
 
 PILLOW_VERSION constant
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 5.2.0
 .. versionremoved:: 9.0.0
@@ -562,7 +572,7 @@ It was initially removed in Pillow 7.0.0, but temporarily brought back in 7.1.0
 to give projects more time to upgrade.
 
 Image.show command parameter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
@@ -571,7 +581,7 @@ The ``command`` parameter has been removed. Use a subclass of
 :py:class:`.ImageShow.Viewer` instead.
 
 Image._showxv
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
@@ -580,17 +590,15 @@ Use :py:meth:`.Image.Image.show` instead. If custom behaviour is required, use
 :py:func:`.ImageShow.register` to add a custom :py:class:`.ImageShow.Viewer` class.
 
 ImageFile.raise_ioerror
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 7.2.0
 .. versionremoved:: 9.0.0
 
-:py:exc:`IOError` was merged into :py:exc:`OSError` in Python 3.3.
-So, ``ImageFile.raise_ioerror`` has been removed.
-Use ``ImageFile.raise_oserror`` instead.
+``ImageFile.raise_ioerror`` has been removed.
 
 FreeType 2.7
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 .. deprecated:: 8.1.0
 .. versionremoved:: 9.0.0
@@ -603,7 +611,7 @@ vulnerability introduced in FreeType 2.6 (:cve:`2020-15999`).
 .. _FreeType: https://freetype.org/
 
 im.offset
-~~~~~~~~~
+^^^^^^^^^
 
 .. deprecated:: 1.1.2
 .. versionremoved:: 8.0.0
@@ -616,7 +624,7 @@ an :py:exc:`Exception` since Pillow 3.0.0
 and :py:exc:`NotImplementedError` since 3.3.0.
 
 Image.fromstring, im.fromstring and im.tostring
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 2.0.0
 .. versionremoved:: 8.0.0
@@ -630,7 +638,7 @@ an :py:exc:`Exception` since 3.0.0
 and :py:exc:`NotImplementedError` since 3.3.0.
 
 ImageCms.CmsProfile attributes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 3.2.0
 .. versionremoved:: 8.0.0
@@ -651,7 +659,7 @@ Removed                   Use instead
 ========================  ===================================================
 
 Python 2.7
-~~~~~~~~~~
+^^^^^^^^^^
 
 .. deprecated:: 6.0.0
 .. versionremoved:: 7.0.0
@@ -660,7 +668,7 @@ Python 2.7 reached end-of-life on 2020-01-01. Pillow 6.x was the last series to
 support Python 2.
 
 Image.__del__
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
 .. deprecated:: 6.1.0
 .. versionremoved:: 7.0.0
@@ -680,7 +688,7 @@ Use instead::
         im.save("out.jpg")
 
 PIL.*ImagePlugin.__version__ attributes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 6.0.0
 .. versionremoved:: 7.0.0
@@ -706,7 +714,7 @@ Removed                          Removed                            Removed
 ===============================  =================================  ==================================
 
 PyQt4 and PySide
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 .. deprecated:: 6.0.0
 .. versionremoved:: 7.0.0
@@ -714,11 +722,11 @@ PyQt4 and PySide
 Qt 4 reached end-of-life on 2015-12-19. Its Python bindings are also EOL: PyQt4 since
 2018-08-31 and PySide since 2015-10-14.
 
-Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt5
-or PySide2.
+Support for PyQt4 and PySide has been removed from ``ImageQt``. Please upgrade to PyQt6
+or PySide6.
 
 Setting the size of TIFF images
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 5.3.0
 .. versionremoved:: 7.0.0
@@ -727,7 +735,7 @@ Setting the size of a TIFF image directly (eg. ``im.size = (256, 256)``) throws
 an error. Use ``Image.resize`` instead.
 
 VERSION constant
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 .. deprecated:: 5.2.0
 .. versionremoved:: 6.0.0
@@ -736,7 +744,7 @@ VERSION constant
 ``__version__`` instead.
 
 Undocumented ImageOps functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. deprecated:: 4.3.0
 .. versionremoved:: 6.0.0
@@ -755,7 +763,7 @@ Removed                     Use instead
 ==========================  ============================
 
 PIL.OleFileIO
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
 .. deprecated:: 4.0.0
 .. versionremoved:: 6.0.0
@@ -766,25 +774,25 @@ the upstream :pypi:`olefile` Python package, and replaced with an :py:exc:`Impor
 PyPI (eg. ``python3 -m pip install olefile``).
 
 import _imaging
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. versionremoved:: 2.1.0
 
-Pillow >= 2.1.0 no longer supports ``import _imaging``.
-Please use ``from PIL.Image import core as _imaging`` instead.
+``import _imaging`` is no longer supported. Use
+``from PIL.Image import core as _imaging`` instead.
 
 Pillow and PIL
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
 .. versionremoved:: 1.0.0
 
-Pillow and PIL cannot co-exist in the same environment.
-Before installing Pillow, please uninstall PIL.
+Pillow cannot be installed in the same environment as PIL, since both provide the
+``PIL`` package. Uninstall PIL before installing Pillow.
 
 import Image
-~~~~~~~~~~~~
+^^^^^^^^^^^^
 
 .. versionremoved:: 1.0.0
 
-Pillow >= 1.0 no longer supports ``import Image``.
-Please use ``from PIL import Image`` instead.
+Modules must be imported from the ``PIL`` package. For example, use
+``from PIL import Image`` instead of ``import Image``.

@@ -92,7 +92,7 @@ ARCHIVE_SDIR=pillow-depends-main
 
 VERSIONS_FILE="$PROJECTDIR/.github/dependencies.json"
 _get_ver() { python3 -c "import json; print(json.load(open('$VERSIONS_FILE'))['$1'])"; }
-FREETYPE_VERSION=$(_get_ver freetype)
+FREETYPE_VERSION=$(_get_ver freetype | tr - .)
 HARFBUZZ_VERSION=$(_get_ver harfbuzz)
 LIBPNG_VERSION=$(_get_ver libpng)
 JPEGTURBO_VERSION=$(_get_ver jpegturbo)
@@ -144,7 +144,18 @@ function build_zlib_ng {
     ORIGINAL_HOST_CONFIGURE_FLAGS=$HOST_CONFIGURE_FLAGS
     unset HOST_CONFIGURE_FLAGS
 
-    build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    if [[ -n "$IS_MACOS" ]]; then
+        build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --installnamedir=$BUILD_PREFIX/lib --zlib-compat
+    else
+        # auditwheel does not bundle libz.so.1, so link zlib-ng statically,
+        # with hidden symbols so a system zlib cannot take its place.
+        CFLAGS="$CFLAGS -fPIC -fvisibility=hidden" build_github zlib-ng/zlib-ng $ZLIB_NG_VERSION --static --zlib-compat
+        # The shared install used to run ldconfig, which later steps rely on
+        # to find libraries in /usr/local/lib. musl has no cache.
+        if [[ -z "$IS_ALPINE" ]]; then
+            ldconfig
+        fi
+    fi
 
     HOST_CONFIGURE_FLAGS=$ORIGINAL_HOST_CONFIGURE_FLAGS
     touch zlib-stamp
@@ -242,7 +253,7 @@ function build_libavif {
 
 function build_zstd {
     if [ -e zstd-stamp ]; then return; fi
-    local out_dir=$(fetch_unpack https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
+    local out_dir=$(fetch_unpack https://github.com/meta/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz)
     (cd $out_dir \
         && make -j4 install)
     touch zstd-stamp

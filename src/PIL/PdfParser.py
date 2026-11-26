@@ -8,6 +8,7 @@ import collections
 import mmap
 import os
 import re
+import sys
 import time
 import zlib
 from typing import Any, NamedTuple
@@ -285,10 +286,10 @@ class PdfDict(_DictBase):
                 value = value[2:]
 
             relationship = "Z"
-            if len(value) > 17:
+            if len(value) >= 17:
                 relationship = value[14]
                 offset = int(value[15:17]) * 60
-                if len(value) > 20:
+                if len(value) >= 20:
                     offset += int(value[18:20])
 
             format = "%Y%m%d%H%M%S"[: len(value) - 2]
@@ -445,6 +446,11 @@ class PdfParser:
     def close_buf(self) -> None:
         if isinstance(self.buf, memoryview):
             self.buf.release()
+            if sys.implementation.name == "pypy":
+                import gc
+
+                # See https://github.com/pypy/pypy/pull/5616
+                gc.collect()
         elif isinstance(self.buf, mmap.mmap):
             self.buf.close()
         self.buf = None
@@ -773,7 +779,7 @@ class PdfParser:
 
     @classmethod
     def interpret_name(cls, raw: bytes, as_text: bool = False) -> str | bytes:
-        name = b""
+        name = bytearray()
         for m in cls.re_hashes_in_name.finditer(raw):
             if m.group(3):
                 name += m.group(1) + bytearray.fromhex(m.group(3).decode("us-ascii"))

@@ -21,6 +21,7 @@ __lazy_modules__ = {"PIL._binary", "PIL._util", "io"}
 
 import io
 from functools import cached_property
+from typing import NamedTuple
 
 from . import Image, ImageFile, ImagePalette
 from ._binary import i8
@@ -48,6 +49,13 @@ MODES = {
 }
 
 
+class _Layer(NamedTuple):
+    name: str
+    mode: str
+    box: tuple[int, int, int, int]
+    tile: list[ImageFile._Tile]
+
+
 # --------------------------------------------------------------------.
 # read PSD images
 
@@ -60,7 +68,7 @@ def _accept(prefix: bytes) -> bool:
 # Image plugin for Photoshop images.
 
 
-class PsdImageFile(ImageFile.ImageFile):
+class PsdImageFile(ImageFile.SeekableImageFile):
     format = "PSD"
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
@@ -96,19 +104,18 @@ class PsdImageFile(ImageFile.ImageFile):
         #
         # color mode data
 
-        size = i32(read(4))
-        if size:
-            data = read(size)
+        if size := i32(read(4)):
             if mode == "P" and size == 768:
-                self.palette = ImagePalette.raw("RGB;L", data)
+                self.palette = ImagePalette.raw("RGB;L", read(768))
+            else:
+                self.fp.seek(size, io.SEEK_CUR)
 
         #
         # image resources
 
         self.resources = []
 
-        size = i32(read(4))
-        if size:
+        if size := i32(read(4)):
             # load resources
             end = self.fp.tell() + size
             while self.fp.tell() < end:
@@ -117,7 +124,7 @@ class PsdImageFile(ImageFile.ImageFile):
                 name = read(i8(read(1)))
                 if not (len(name) & 1):
                     read(1)  # padding
-                data = read(i32(read(4)))
+                data = ImageFile._safe_read(self.fp, i32(read(4)))
                 if len(data) & 1:
                     read(1)  # padding
                 self.resources.append((id, name, data))
@@ -129,8 +136,7 @@ class PsdImageFile(ImageFile.ImageFile):
 
         self._layers_position = None
 
-        size = i32(read(4))
-        if size:
+        if size := i32(read(4)):
             end = self.fp.tell() + size
             size = i32(read(4))
             if size:
@@ -143,58 +149,54 @@ class PsdImageFile(ImageFile.ImageFile):
         # image descriptor
 
         self.tile = _maketile(self.fp, mode, (0, 0, *self.size), channels)
+        self._initial_data = self.mode, self.tile
 
         # keep the file open
         self._fp = self.fp
-        self.frame = 1
-        self._min_frame = 1
+        self.frame = 0
 
     @cached_property
-    def layers(
-        self,
-    ) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
+    def layers(self) -> list[_Layer]:
         layers = []
         if self._layers_position is not None:
             if isinstance(self._fp, DeferredError):
                 raise self._fp.ex
             self._fp.seek(self._layers_position)
             layers = _layerinfo(self._fp, self._layers_size)
-        self._n_frames = len(layers)
+        self._n_frames = len(layers) + 1
         return layers
 
     @property
     def n_frames(self) -> int:
         if self._n_frames is None:
-            self._n_frames = len(self.layers)
+            self._n_frames = len(self.layers) + 1
         return self._n_frames
 
     @property
     def is_animated(self) -> bool:
-        return len(self.layers) > 1
+        return len(self.layers) != 0
 
-    def seek(self, layer: int) -> None:
-        if not self._seek_check(layer):
-            return
+    def _seek_to(self, layer: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 
+        if layer == 0:
+            self._mode, self.tile = self._initial_data
         # seek to given layer (1..max)
-        if layer > len(self.layers):
+        elif layer > len(self.layers):
             msg = "no more images in PSD file"
             raise EOFError(msg)
-        _, self._mode, _, self.tile = self.layers[layer - 1]
+        else:
+            _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
-        Image.Image.seek(self, layer)
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)
         return self.frame
 
 
-def _layerinfo(
-    fp: IO[bytes], ct_bytes: int
-) -> list[tuple[str, str, tuple[int, int, int, int], list[ImageFile._Tile]]]:
+def _layerinfo(fp: IO[bytes], ct_bytes: int) -> list[_Layer]:
     # read layerinfo block
     layers = []
 
@@ -216,7 +218,6 @@ def _layerinfo(
         x1 = si32(read(4))
 
         # image info
-        bands = set()
         ct_types = i16(read(2))
         if ct_types > 4:
             fp.seek(ct_types * 6 + 12, io.SEEK_CUR)
@@ -224,12 +225,13 @@ def _layerinfo(
             fp.seek(size, io.SEEK_CUR)
             continue
 
+        bands = set()
         for _ in range(ct_types):
-            channel_id = i16(read(2))
+            channel_id = si16(read(2))
 
-            if channel_id == 65535:
+            if channel_id == -1:
                 b = "A"
-            elif channel_id < 4:
+            elif 0 <= channel_id < 4:
                 b = "RGBA"[channel_id]
             else:
                 b = ""
@@ -273,13 +275,13 @@ def _layerinfo(
 
     # get tiles
     layerinfo = []
-    for i, (name, mode, bbox) in enumerate(layers):
+    for name, mode, bbox in layers:
         tile = []
         for m in mode:
             t = _maketile(fp, m, bbox, 1)
             if t:
                 tile.extend(t)
-        layerinfo.append((name, mode, bbox, tile))
+        layerinfo.append(_Layer(name, mode, bbox, tile))
 
     return layerinfo
 

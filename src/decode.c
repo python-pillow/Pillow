@@ -57,14 +57,18 @@ typedef struct {
 
 static PyTypeObject ImagingDecoderType;
 
+int
+decode_setup(void) {
+    if (PyType_Ready(&ImagingDecoderType) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
 static ImagingDecoderObject *
 PyImaging_DecoderNew(int contextsize) {
     ImagingDecoderObject *decoder;
     void *context;
-
-    if (PyType_Ready(&ImagingDecoderType) < 0) {
-        return NULL;
-    }
 
     decoder = PyObject_New(ImagingDecoderObject, &ImagingDecoderType);
     if (decoder == NULL) {
@@ -136,6 +140,9 @@ _decode(ImagingDecoderObject *decoder, PyObject *args) {
     }
 
     PyBuffer_Release(&buffer);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
     return Py_BuildValue("ii", status, decoder->state.errcode);
 }
 
@@ -153,13 +160,13 @@ PyImaging_AsImaging(PyObject *op);
 
 static PyObject *
 _setimage(ImagingDecoderObject *decoder, PyObject *args) {
-    PyObject *op, *extents;
+    PyObject *op, *extents = Py_None;
     Imaging im;
     ImagingCodecState state;
     int x0, y0, x1, y1;
 
     /* FIXME: should publish the ImagingType descriptor */
-    if (!PyArg_ParseTuple(args, "OO", &op, &extents)) {
+    if (!PyArg_ParseTuple(args, "O|O", &op, &extents)) {
         return NULL;
     }
     im = PyImaging_AsImaging(op);
@@ -206,6 +213,11 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
         PyErr_SetString(PyExc_ValueError, "decoder already has an image");
         return NULL;
     }
+
+    if (im->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
     decoder->im = im;
 
     state = &decoder->state;
@@ -219,10 +231,17 @@ _setimage(ImagingDecoderObject *decoder, PyObject *args) {
     /* Allocate memory buffer (if bits field is set) */
     if (state->bits > 0) {
         if (!state->bytes) {
-            if (state->xsize > ((INT_MAX / state->bits) - 7)) {
-                return ImagingError_MemoryError();
+            if (state->planes) {
+                if (state->xsize > INT_MAX - 7) {
+                    return ImagingError_MemoryError();
+                }
+                state->bytes = state->planes * ((state->xsize + 7) / 8);
+            } else {
+                if (state->xsize > ((INT_MAX / state->bits) - 7)) {
+                    return ImagingError_MemoryError();
+                }
+                state->bytes = (state->bits * state->xsize + 7) / 8;
             }
-            state->bytes = (state->bits * state->xsize + 7) / 8;
         }
         /* malloc check ok, overflow checked above */
         state->buffer = (UINT8 *)calloc(1, state->bytes);
@@ -305,6 +324,14 @@ get_unpacker(
 
     decoder->state.shuffle = unpack;
     decoder->state.bits = bits;
+
+    if (rawmode == IMAGING_RAWMODE_P_2L) {
+        decoder->state.planes = 2;
+    } else if (rawmode == IMAGING_RAWMODE_P_4L) {
+        decoder->state.planes = 4;
+    } else {
+        decoder->state.planes = 0;
+    }
 
     return 0;
 }
@@ -805,6 +832,13 @@ PyImaging_ZipDecoderNew(PyObject *self, PyObject *args) {
 
     const ModeID mode = findModeID(mode_name);
     const RawModeID rawmode = findRawModeID(rawmode_name);
+    if (interlaced &&
+        (rawmode == IMAGING_RAWMODE_P_2L || rawmode == IMAGING_RAWMODE_P_4L)) {
+        // The interlaced path feeds the unpacker one pixel at a time through a
+        // single byte staging slot, which is incompatible with planar raw modes
+        PyErr_SetString(PyExc_ValueError, "invalid raw mode for interlaced");
+        return NULL;
+    }
 
     decoder = PyImaging_DecoderNew(sizeof(ZIPSTATE));
     if (decoder == NULL) {
@@ -915,7 +949,7 @@ PyImaging_Jpeg2KDecoderNew(PyObject *self, PyObject *args) {
     int reduce = 0;
     int layers = 0;
     int fd = -1;
-    PY_LONG_LONG length = -1;
+    long long length = -1;
 
     if (!PyArg_ParseTuple(
             args, "ss|iiiL", &mode, &format, &reduce, &layers, &fd, &length

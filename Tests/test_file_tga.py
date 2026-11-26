@@ -88,6 +88,24 @@ def test_palette_depth_16(tmp_path: Path) -> None:
             assert_image_equal_tofile(reloaded.convert("RGBA"), "Tests/images/p_16.png")
 
 
+def test_palette_depth_32(tmp_path: Path) -> None:
+    im = Image.frombytes("L", (1, 2), bytes((0, 1)))
+    data = [255, 0, 0, 255, 0, 0, 255, 0]
+    im.putpalette(data, "RGBA")
+
+    out = tmp_path / "temp.tga"
+    im.save(out)
+
+    with Image.open(out) as reloaded:
+        assert reloaded.palette is not None
+        assert reloaded.palette.mode == "RGBA"
+        assert reloaded.getpalette(None) == data
+
+        reloaded_rgba = reloaded.convert("RGBA")
+    assert reloaded_rgba.getpixel((0, 0)) == (255, 0, 0, 255)
+    assert reloaded_rgba.getpixel((0, 1)) == (0, 0, 255, 0)
+
+
 def test_rgba_16() -> None:
     with Image.open("Tests/images/rgba16.tga") as im:
         assert im.mode == "RGBA"

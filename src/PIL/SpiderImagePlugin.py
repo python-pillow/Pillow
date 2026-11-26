@@ -27,10 +27,10 @@
 # image data from electron microscopy and tomography.
 #
 # Spider home page:
-# https://spider.wadsworth.org/spider_doc/spider/docs/spider.html
+# https://spider-em.github.io/SPIDER/
 #
 # Details about the Spider image format:
-# https://spider.wadsworth.org/spider_doc/spider/docs/image_doc.html
+# https://spider-em.github.io/SPIDER/docs/image_doc.html
 #
 from __future__ import annotations
 
@@ -99,10 +99,12 @@ def isSpiderImage(filename: str) -> int:
     return hdrlen
 
 
-class SpiderImageFile(ImageFile.ImageFile):
+class SpiderImageFile(ImageFile.SeekableImageFile):
     format = "SPIDER"
     format_description = "Spider 2D image"
     _close_exclusive_fp_after_loading = False
+
+    stkoffset = 0
 
     def _open(self) -> None:
         # check header
@@ -147,8 +149,8 @@ class SpiderImageFile(ImageFile.ImageFile):
             # Point to the first image in the stack
             offset = hdrlen * 2
             self.imgnumber = 1
-        elif self.istack == 0 and self.imgnumber > 0:
-            # stk=0, img>0: an image within the stack
+        elif self.istack == 0 and self.imgnumber > 0 and self.stkoffset != 0:
+            # stk=0, img>0: an image within the stack, reached through seek()
             offset = hdrlen + self.stkoffset
             self.istack = 2  # So Image knows it's still a stack
         else:
@@ -162,7 +164,7 @@ class SpiderImageFile(ImageFile.ImageFile):
             self.rawmode = "F;32F"
         self._mode = "F"
 
-        self.tile = [ImageFile._Tile("raw", (0, 0, *self.size), offset, self.rawmode)]
+        self.tile = [ImageFile._Tile("raw", None, offset, self.rawmode)]
         self._fp = self.fp  # FIXME: hack
 
     # 1st image index is zero (although SPIDER imgnumber starts at 1)
@@ -172,12 +174,10 @@ class SpiderImageFile(ImageFile.ImageFile):
         else:
             return self.imgnumber - 1
 
-    def seek(self, frame: int) -> None:
+    def _seek_to(self, frame: int) -> None:
         if self.istack == 0:
             msg = "attempt to seek in a non-stack file"
             raise EOFError(msg)
-        if not self._seek_check(frame):
-            return
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
         self.stkoffset = self.hdrlen + frame * (self.hdrlen + self.imgbytes)
@@ -282,7 +282,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     fp.writelines(hdr)
 
     rawmode = "F;32NF"  # 32-bit native floating point
-    ImageFile._save(im, fp, [ImageFile._Tile("raw", (0, 0, *im.size), 0, rawmode)])
+    ImageFile._save(im, fp, [ImageFile._Tile("raw", args=rawmode)])
 
 
 def _save_spider(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:

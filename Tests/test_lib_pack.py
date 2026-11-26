@@ -298,11 +298,10 @@ class TestLibUnpack:
     def test_P(self) -> None:
         self.assert_unpack("P", "P;1", b"\xe4", 1, 1, 1, 0, 0, 1, 0, 0)
         self.assert_unpack("P", "P;2", b"\xe4", 3, 2, 1, 0)
-        # erroneous?
-        # self.assert_unpack("P", "P;2L", b'\xe4', 1, 1, 1, 0)
+        self.assert_unpack("P", "P;2L", b"\xe4\x0f", 1, 1, 1, 0, 2, 3, 2, 2)
+        self.assert_unpack("P", "P;2L", b"\xe4\x00", 1, 1, 1, 0)
         self.assert_unpack("P", "P;4", b"\x02\xef", 0, 2, 14, 15)
-        # erroneous?
-        # self.assert_unpack("P", "P;4L", b'\x02\xef', 2, 10, 10, 0)
+        self.assert_unpack("P", "P;4L", b"\x02\xef\x00\x00", 2, 2, 2, 0)
         self.assert_unpack("P", "P", 1, 1, 2, 3, 4)
         self.assert_unpack("P", "P;R", 1, 128, 64, 192, 32)
 
@@ -808,3 +807,77 @@ class TestLibUnpack:
             self.assert_unpack("RGB", "RGB", 2, 0)
         with pytest.raises(ValueError):
             self.assert_unpack("CMYK", "CMYK", 2, 0)
+
+    @pytest.mark.parametrize(
+        "size, data_len, rawmode",
+        (
+            ((9, 1), 3, "P;2L"),
+            ((9, 1), 5, "P;4L"),
+            ((8, 1), 1, "P;2L"),
+            ((8, 1), 3, "P;4L"),
+            ((17, 4), 20, "P;2L"),
+            ((17, 8), 72, "P;4L"),
+        ),
+    )
+    def test_pXl_truncated(
+        self, size: tuple[int, int], data_len: int, rawmode: str
+    ) -> None:
+        data = b"\x00" * data_len
+        with pytest.raises(ValueError, match="not enough image data"):
+            Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
+
+    @pytest.mark.parametrize(
+        "size, data_len, rawmode",
+        (
+            ((8, 1), 2, "P;2L"),
+            ((8, 1), 4, "P;4L"),
+            ((9, 1), 4, "P;2L"),
+            ((9, 1), 8, "P;4L"),
+            ((17, 4), 24, "P;2L"),
+            ((17, 8), 96, "P;4L"),
+        ),
+    )
+    def test_pXl_not_truncated(
+        self, size: tuple[int, int], data_len: int, rawmode: str
+    ) -> None:
+        data = b"\x00" * data_len
+        Image.frombuffer("P", size, data, "raw", rawmode, 0, 1)
+
+    @pytest.mark.parametrize(
+        "decoder_name, rawmode, data",
+        (
+            ("hex", "P;2L", b"000000"),  # 3 decoded bytes
+            ("hex", "P;4L", b"0000000000"),  # 5 decoded bytes
+            ("packbits", "P;2L", bytes([2, 0, 0, 0])),  # 3 literal bytes
+            ("packbits", "P;4L", bytes([4, 0, 0, 0, 0, 0])),  # 5 literal bytes
+        ),
+    )
+    def test_pXl_decoder_buffer_size(
+        self, decoder_name: str, rawmode: str, data: bytes
+    ) -> None:
+        im = Image.new("P", (9, 1))
+        with pytest.raises(ValueError, match="not enough image data"):
+            im.frombytes(data, decoder_name, rawmode)
+
+    @pytest.mark.parametrize(
+        "w, rawmode, size, stride",
+        (
+            (9, "P;2L", 3, 3),  # packed size 3, planar size 4
+            (17, "P;4L", 10, 9),  # packed size 9, planar size 12
+        ),
+    )
+    def test_pcx_pXl_decoder_buffer_size(
+        self, w: int, rawmode: str, size: int, stride: int
+    ) -> None:
+        # The PCX decoder takes its buffer size from the stride argument,
+        # so it must check against the planar row size itself
+        im = Image.new("P", (w, 1))
+        data = bytes(range(1, size))
+        with pytest.raises(ValueError, match="cannot decode image data"):
+            im.frombytes(data, "pcx", rawmode, stride)
+
+    @pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+    def test_zip_pXl_interlaced(self, rawmode: str) -> None:
+        im = Image.new("P", (1, 1))
+        with pytest.raises(ValueError, match="invalid raw mode for interlaced"):
+            im.frombytes(b"", "zip", rawmode, 1)

@@ -35,7 +35,7 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
 
     if (!state->state) {
         /* sanity check */
-        if (state->xsize <= 0 || state->ysize <= 0) {
+        if (state->xsize == 0 || state->ysize == 0) {
             state->errcode = IMAGING_CODEC_END;
             return 0;
         }
@@ -176,9 +176,9 @@ ImagingPcxEncode(Imaging im, ImagingCodecState state, UINT8 *buf, int bytes) {
                     if (state->x < planes * bytes_per_line) {
                         state->count = 1;
                         state->LAST = state->buffer[state->x];
-                        state->x += 1;
                     }
-                } while (state->x < planes * bytes_per_line);
+                    state->x += 1;
+                } while (state->x <= planes * bytes_per_line);
 
                 /* read next line */
                 state->state = FETCH;

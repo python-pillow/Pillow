@@ -41,6 +41,14 @@ ImagingLibTiffMergeFieldInfo(
     ImagingCodecState state, TIFFDataType field_type, int key, int is_var_length
 );
 extern int
+ImagingLibTiffFindField(
+    ImagingCodecState state,
+    int key,
+    TIFFDataType *field_type,
+    int *passcount,
+    int *writecount
+);
+extern int
 ImagingLibTiffSetField(ImagingCodecState state, ttag_t tag, ...);
 
 #endif

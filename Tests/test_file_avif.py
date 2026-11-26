@@ -25,6 +25,7 @@ from .helper import (
     assert_image,
     assert_image_similar,
     assert_image_similar_tofile,
+    has_feature_version,
     hopper,
     skip_if_tsan,
     skip_unless_feature,
@@ -133,13 +134,14 @@ class TestFileAvif:
                 image, "Tests/images/avif/hopper_avif_write.png", 11.5
             )
 
-    @skip_unless_feature_version("avif", "1.3.0")
-    def test_write_l(self) -> None:
-        im = hopper("L")
-        reloaded = roundtrip(im)
+    @pytest.mark.parametrize("mode", ["1", "L", "I", "I;16", "F"])
+    def test_write_grayscale(self, mode: str) -> None:
+        im = hopper(mode)
+        reloaded: Image.Image = roundtrip(im)
 
-        assert reloaded.mode == "L"
-        assert_image_similar(reloaded, im, 1.69)
+        if not has_feature_version("avif", "1.3.0"):
+            reloaded = reloaded.convert("L")
+        assert_image_similar(reloaded, im.convert("L"), 1.69)
 
     def test_write_rgb(self, tmp_path: Path) -> None:
         """
@@ -193,6 +195,8 @@ class TestFileAvif:
         """Save should raise an OSError if AvifEncoder.finish returns None"""
 
         class _mock_avif:
+            libavif_version = "1.3.0"
+
             class AvifEncoder:
                 def __init__(self, *args: Any) -> None:
                     pass

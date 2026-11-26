@@ -47,10 +47,13 @@ Colors
 To specify colors, you can use numbers or tuples just as you would use with
 :py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
-For palette images (mode “P”), use integers as color indexes. In 1.1.4 and
-later, you can also use RGB 3-tuples or color names (see below). The drawing
+For palette images (mode "P"), use integers as color indexes. You can also use
+RGB 3-tuples or color names (see below). The drawing
 layer will automatically assign color indexes, as long as you don’t draw with
 more than 256 colors.
+
+For palette images with an alpha channel (mode "PA"), use a tuple of a color
+index and an alpha value, RGB 3-tuples, RGBA 4-tuples or color names.
 
 Color names
 ^^^^^^^^^^^
@@ -161,7 +164,7 @@ Example: Draw multiline text
 Functions
 ---------
 
-.. py:method:: Draw(im, mode=None)
+.. py:function:: Draw(im, mode=None)
 
     Creates an object that can be used to draw in the given image.
 
@@ -243,7 +246,7 @@ Methods
     for the non-zero portions. The bitmap should be a valid transparency mask
     (mode “1”) or matte (mode “L” or “RGBA”).
 
-    This is equivalent to doing ``image.paste(xy, color, bitmap)``.
+    This is equivalent to doing ``image.paste(color, xy, bitmap)``.
 
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
@@ -287,7 +290,7 @@ Methods
 
         .. versionadded:: 5.3.0
 
-.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None)
+.. py:method:: ImageDraw.line(xy, fill=None, width=1, joint=None, dash=None)
 
     Draws a line between the coordinates in the ``xy`` list.
     The coordinate pixels are included in the drawn line.
@@ -303,6 +306,14 @@ Methods
     :param joint: Joint type between a sequence of lines. It can be ``"curve"``, for rounded edges, or :data:`None`.
 
         .. versionadded:: 5.3.0
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        and ``joint`` are ignored.
+
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.pieslice(xy, start, end, fill=None, outline=None, width=1)
 
@@ -329,7 +340,7 @@ Methods
                numeric values like ``[x, y, x, y, ...]``.
     :param fill: Color to use for the point.
 
-.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.polygon(xy, fill=None, outline=None, width=1, dash=None)
 
     Draws a polygon.
 
@@ -342,6 +353,14 @@ Methods
     :param fill: Color to use for the fill.
     :param outline: Color to use for the outline.
     :param width: The line width, in pixels.
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
+
+        .. versionadded:: 13.1.0
 
 
 .. py:method:: ImageDraw.regular_polygon(bounding_circle, n_sides, rotation=0, fill=None, outline=None, width=1)
@@ -362,7 +381,7 @@ Methods
     :param width: The line width, in pixels.
 
 
-.. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1)
+.. py:method:: ImageDraw.rectangle(xy, fill=None, outline=None, width=1, dash=None)
 
     Draws a rectangle.
 
@@ -374,6 +393,14 @@ Methods
     :param width: The line width, in pixels.
 
         .. versionadded:: 5.3.0
+    :param dash: An optional dash pattern, given as a tuple of integers.
+        The dash pattern specifies the lengths of alternating drawn and blank segments
+        (e.g. ``(10, 5)`` draws 10 pixels, skips 5, and repeats). If an odd number of
+        values is given, it continues to alternate (e.g. ``(1, 2, 3)`` draws 1 pixel,
+        skips 2, draws 3, skips 1, draws 2, and so on). When ``dash`` is set, ``width``
+        is ignored.
+
+        .. versionadded:: 13.1.0
 
 .. py:method:: ImageDraw.rounded_rectangle(xy, radius=0, fill=None, outline=None, width=1, corners=None)
 
@@ -407,6 +434,11 @@ Methods
     :param text: String to be drawn. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
+
+                 It may also be an :py:class:`~PIL.ImageText.Text` object, in
+                 which case ``font``, ``spacing``, ``direction``, ``features``,
+                 ``language``, ``stroke_width``, ``stroke_fill`` and
+                 ``embedded_color`` are taken from that object instead.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
@@ -620,7 +652,6 @@ Methods
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
-    Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with
     1/64 pixel precision. The bounding box includes extra margins for
@@ -632,7 +663,7 @@ Methods
     :param text: Text to be measured. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`.
-    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left,
                    specifically ``la`` for horizontal text and ``lt`` for
@@ -680,7 +711,6 @@ Methods
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
-    Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with
     1/64 pixel precision. The bounding box includes extra margins for
@@ -692,7 +722,7 @@ Methods
 
     :param xy: The anchor coordinates of the text.
     :param text: Text to be measured.
-    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left,
                    specifically ``la`` for horizontal text and ``lt`` for
@@ -732,7 +762,7 @@ Methods
 
     :return: ``(left, top, right, bottom)`` bounding box
 
-.. py:method:: getdraw(im=None)
+.. py:function:: getdraw(im=None)
 
     .. warning:: This method is experimental.
 

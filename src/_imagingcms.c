@@ -28,6 +28,7 @@ https://www.cazabon.com\n\
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>  // Include before wchar.h so _GNU_SOURCE is set
+#include "thirdparty/pythoncapi_compat.h"
 #include <wchar.h>
 #include <datetime.h>
 
@@ -530,7 +531,7 @@ buildProofTransform(PyObject *self, PyObject *args) {
 }
 
 static PyObject *
-cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+cms_transform_apply_impl(CmsTransformObject *self, PyObject *args) {
     PyObject *i0, *i1;
     Imaging im;
     Imaging imOut;
@@ -559,7 +560,21 @@ cms_transform_apply(CmsTransformObject *self, PyObject *args) {
         return NULL;
     }
 
+    if (imOut->read_only) {
+        PyErr_SetString(PyExc_ValueError, "image is readonly");
+        return NULL;
+    }
+
     return Py_BuildValue("i", pyCMSdoTransform(im, imOut, self->transform));
+}
+
+static PyObject *
+cms_transform_apply(CmsTransformObject *self, PyObject *args) {
+    PyObject *result;
+    Py_BEGIN_CRITICAL_SECTION(self);
+    result = cms_transform_apply_impl(self, args);
+    Py_END_CRITICAL_SECTION();
+    return result;
 }
 
 /* -------------------------------------------------------------------- */
@@ -619,6 +634,12 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
     int direction;
     if (!PyArg_ParseTuple(args, "ii:is_intent_supported", &intent, &direction)) {
         return NULL;
+    }
+
+    /* Only valid for ICC Intents (otherwise lcms2 < 2.15 reads invalid memory in
+     * cmsio1.c). */
+    if (intent < INTENT_PERCEPTUAL || intent > INTENT_ABSOLUTE_COLORIMETRIC) {
+        return PyLong_FromLong(0);
     }
 
     result = cmsIsIntentSupported(self->profile, intent, direction);

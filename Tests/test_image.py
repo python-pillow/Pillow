@@ -252,6 +252,57 @@ class TestImage:
             im.save(temp_file)
             assert im.readonly
 
+    def test_seek_with_readonly(self) -> None:
+        with Image.open("Tests/images/hopper_8bit.pgm") as im:
+            im.load()
+            assert im.readonly
+            assert im._im is not None
+
+            # A no-op seek should not clear the core image
+            im.seek(im.tell())
+
+            assert im._im is not None
+
+    def test_seek_with_different_readonly(self, tmp_path: Path) -> None:
+        class MockSeekableImageFile(ImageFile.SeekableImageFile):
+            def _open(self) -> None:
+                self.__frame = 0
+                self._mode = "L"
+                self._size = (1, 1)
+                self.n_frames = 2
+
+                # A tile that can be memory mapped
+                self.tile = [ImageFile._Tile("raw", None, 0, self.mode)]
+
+            def _seek_to(self, frame: int) -> None:
+                self.__frame = frame
+
+                # A tile that cannot be memory mapped
+                self.tile = [ImageFile._Tile("mock")]
+
+            def tell(self) -> int:
+                return self.__frame
+
+        f = tmp_path / "out.mock"
+        f.write_bytes(b"\x00" * 4)
+        im = MockSeekableImageFile(f)
+        im.load()
+
+        assert im.readonly
+        assert im._im is not None
+        im.seek(1)
+
+        # seek() has cleared the core image, because the original image was readonly
+        assert im._im is None
+
+    def test_deprecation(self) -> None:
+        im = Image.new("1", (1, 1))
+        im._mode = "L"
+        with pytest.warns(
+            DeprecationWarning, match="Clearing core image in Image.Image.seek()"
+        ):
+            im.seek(0)
+
     def test_dump(self, tmp_path: Path) -> None:
         im = Image.new("L", (10, 10))
         im._dump(str(tmp_path / "temp_L.ppm"))
@@ -303,6 +354,13 @@ class TestImage:
         assert_image_equal(Cb, im.getchannel("Cb"))
         assert_image_equal(Cr, im.getchannel(2))
         assert_image_equal(Cr, im.getchannel("Cr"))
+
+    @pytest.mark.parametrize("mode", ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"))
+    def test_getchannel_single_band(self, mode: str) -> None:
+        im = hopper(mode)
+
+        for channel in (0, im.getbands()[0]):
+            assert_image_equal(im.getchannel(channel), im)
 
     def test_getbbox(self) -> None:
         # Arrange
@@ -532,9 +590,10 @@ class TestImage:
         assert im.size == (128, 128)
         assert_image_similar_tofile(im2, "Tests/images/effect_spread.png", 110)
 
-    def test_effect_spread_zero(self) -> None:
+    @pytest.mark.parametrize("mode", ("RGB", "I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_zero(self, mode: str) -> None:
         # Arrange
-        im = hopper()
+        im = hopper(mode)
         distance = 0
 
         # Act
@@ -542,6 +601,31 @@ class TestImage:
 
         # Assert
         assert_image_equal(im, im2)
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_effect_spread_i16(self, mode: str) -> None:
+        im = Image.new(mode, (3, 3))
+        im.putdata(range(1000, 10000, 1000))
+
+        # Whole pixels are moved, so every value comes from the original image
+        im2 = im.effect_spread(2)
+        assert set(im2.get_flattened_data()) <= set(im.get_flattened_data())
+
+    @pytest.mark.parametrize("mode", ("I;16", "I;16L", "I;16B", "I;16N"))
+    def test_blend_i16(self, mode: str) -> None:
+        im1 = Image.new(mode, (2, 2), 10000)
+        im2 = Image.new(mode, (2, 2), 20000)
+
+        # Shortcuts
+        assert Image.blend(im1, im2, 0.0).getpixel((0, 0)) == 10000
+        assert Image.blend(im1, im2, 1.0).getpixel((0, 0)) == 20000
+
+        # Interpolation
+        assert Image.blend(im1, im2, 0.5).getpixel((0, 0)) == 15000
+
+        # Extrapolation with clipping
+        assert Image.blend(im1, im2, -2.0).getpixel((0, 0)) == 0
+        assert Image.blend(im1, im2, 6.0).getpixel((0, 0)) == 65535
 
     def test_check_size(self) -> None:
         # Checking that the _check_size function throws value errors when we want it to
@@ -670,6 +754,11 @@ class TestImage:
             with pytest.raises(ValueError):
                 im_hopper.remap_palette([])
 
+    def test_remap_palette_too_many_entries(self) -> None:
+        im = Image.new("P", (1, 1))
+        with pytest.raises(ValueError, match="more than 256 entries"):
+            im.remap_palette([0] * 257)
+
     @pytest.mark.parametrize("palette_mode", ("RGB", "RGBA"))
     def test_remap_palette_source_palette(self, palette_mode: str) -> None:
         # When source_palette is provided, mode is inferred from length.
@@ -745,6 +834,20 @@ class TestImage:
         im = Image.new("P", (100, 100), color)
         expected = Image.new(mode, (100, 100), color)
         assert_image_equal(im.convert(mode), expected)
+
+    @pytest.mark.parametrize(
+        "color, expected",
+        (
+            ("#DDEEFF", (221, 238, 255, 255)),
+            ((221, 238, 255), (221, 238, 255, 255)),
+            ((221, 238, 255, 128), (221, 238, 255, 128)),
+        ),
+    )
+    def test_pa_from_rgb_rgba(
+        self, color: str | tuple[int, ...], expected: tuple[int, ...]
+    ) -> None:
+        im = Image.new("PA", (100, 100), color)
+        assert_image_equal(im.convert("RGBA"), Image.new("RGBA", (100, 100), expected))
 
     def test_no_resource_warning_on_save(self, tmp_path: Path) -> None:
         # https://github.com/python-pillow/Pillow/issues/835
@@ -1202,8 +1305,7 @@ class TestImage:
 
     def test_fli_overrun2(self) -> None:
         with Image.open("Tests/images/fli_overrun2.bin") as im:
-            with pytest.raises(OSError, match="buffer overrun when reading image file"):
-                im.seek(1)
+            im.seek(1)
 
     def test_exit_fp(self) -> None:
         with Image.new("L", (1, 1)) as im:

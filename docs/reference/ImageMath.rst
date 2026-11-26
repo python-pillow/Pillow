@@ -31,21 +31,17 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
               b=im2
             )
 
-.. py:function:: lambda_eval(expression, options, **kw)
+.. py:function:: lambda_eval(expression, **kw)
 
     Returns the result of an image function.
 
     :param expression: A function that receives a dictionary.
-    :param options: Values to add to the function's dictionary. Note that the names
-                    must be valid Python identifiers. Deprecated.
-                    You can instead use one or more keyword arguments, as
-                    shown in the above example.
     :param \**kw: Values to add to the function's dictionary, mapping image names to
                  Image instances.
     :return: An image, an integer value, a floating point value,
              or a pixel tuple, depending on the expression.
 
-.. py:function:: unsafe_eval(expression, options, **kw)
+.. py:function:: unsafe_eval(expression, **kw)
 
     Evaluates an image expression.
 
@@ -62,10 +58,6 @@ Example: Using the :py:mod:`~PIL.ImageMath` module
     :param expression: A string which uses the standard Python expression
                        syntax. In addition to the standard operators, you can
                        also use the functions described below.
-    :param options: Values to add to the evaluation context. Note that the names must
-                    be valid Python identifiers. Deprecated.
-                    You can instead use one or more keyword arguments, as
-                    shown in the above example.
     :param \**kw: Values to add to the evaluation context, mapping image names to Image
                  instances.
     :return: An image, an integer value, a floating point value,
@@ -146,6 +138,11 @@ These functions are applied to each individual pixel.
     Convert image to the given mode. The mode must be given as a string
     constant.
 
+.. py:function:: equal(image1, image2)
+    :noindex:
+
+    1 where the values are equal, 0 elsewhere.
+
 .. py:function:: float(image)
     :noindex:
 
@@ -169,3 +166,8 @@ These functions are applied to each individual pixel.
     :noindex:
 
     Minimum value.
+
+.. py:function:: notequal(image1, image2)
+    :noindex:
+
+    1 where the values are not equal, 0 elsewhere.

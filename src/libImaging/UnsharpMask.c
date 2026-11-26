@@ -35,8 +35,12 @@ ImagingUnsharpMask(
     UINT8 *lineIn8 = NULL;
     UINT8 *lineOut8 = NULL;
 
+    if (imIn->type != IMAGING_TYPE_UINT8) {
+        return ImagingError_ModeError();
+    }
+
     /* First, do a gaussian blur on the image, putting results in imOut
-       temporarily. All format checks are in gaussian blur. */
+       temporarily. All other format checks are in gaussian blur. */
     result = ImagingGaussianBlur(imOut, imIn, radius, radius, 3);
     if (!result) {
         return NULL;

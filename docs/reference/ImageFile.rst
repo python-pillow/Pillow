@@ -8,9 +8,9 @@ The :py:mod:`~PIL.ImageFile` module provides support functions for the image ope
 and save functions.
 
 In addition, it provides a :py:class:`Parser` class which can be used to decode
-an image piece by piece (e.g. while receiving it over a network connection).
-This class implements the same consumer interface as the standard **sgmllib**
-and **xmllib** modules.
+an image piece by piece (e.g. while receiving it over a network connection),
+by passing data to :py:meth:`~PIL.ImageFile.Parser.feed` and then calling
+:py:meth:`~PIL.ImageFile.Parser.close`.
 
 Example: Parse an image
 -----------------------
@@ -62,6 +62,10 @@ Classes
     :undoc-members:
     :show-inheritance:
 
+.. autoclass:: PIL.ImageFile.SeekableImageFile()
+    :members:
+    :show-inheritance:
+
 .. autoclass:: PIL.ImageFile.StubHandler()
     :members:
     :show-inheritance:
@@ -75,5 +79,6 @@ Constants
 
 .. autodata:: PIL.ImageFile.LOAD_TRUNCATED_IMAGES
 .. autodata:: PIL.ImageFile.MAXBLOCK
+.. autodata:: PIL.ImageFile.SAFEBLOCK
 .. autodata:: PIL.ImageFile.ERRORS
     :annotation:

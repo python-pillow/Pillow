@@ -19,6 +19,7 @@ from PIL import (
 
 from .helper import (
     assert_image_equal,
+    assert_image_equal_tofile,
     assert_image_similar,
     assert_image_similar_tofile,
     skip_unless_feature,
@@ -155,7 +156,7 @@ def test_prog_res_rt(card: ImageFile.ImageFile) -> None:
 def test_unknown_progression(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown progression"):
         im.save(outfile, progression="invalid")
 
@@ -163,9 +164,18 @@ def test_unknown_progression(tmp_path: Path) -> None:
 def test_unknown_cinema_mode(tmp_path: Path) -> None:
     outfile = tmp_path / "temp.jp2"
 
-    im = Image.new("1", (1, 1))
+    im = Image.new("L", (1, 1))
     with pytest.raises(ValueError, match="unknown cinema mode"):
         im.save(outfile, cinema_mode="invalid")
+
+
+@pytest.mark.parametrize("mode", ("1", "P", "I", "F"))
+def test_unsupported_mode(mode: str, tmp_path: Path) -> None:
+    outfile = tmp_path / "temp.jp2"
+
+    im = Image.new(mode, (1, 1))
+    with pytest.raises(OSError, match=f"cannot write mode {mode} as JPEG2000"):
+        im.save(outfile)
 
 
 @pytest.mark.parametrize("num_resolutions", range(2, 6))
@@ -245,6 +255,28 @@ def test_oversized_box_length(tbox: bytes) -> None:
         Jpeg2KImagePlugin.Jpeg2KImageFile(BytesIO(data))
 
 
+def test_large_skipped_box() -> None:
+    xml = b" " * 2 * 1024 * 1024
+    box = _binary.o32be(8 + len(xml)) + b"xml " + xml
+    with open("Tests/images/test-card-lossless.jp2", "rb") as fp:
+        data = fp.read()
+    data = data[:326] + box + data[326:]
+
+    with Image.open(BytesIO(data)) as im:
+        assert_image_equal_tofile(im, "Tests/images/test-card-lossless.jp2")
+
+    class FailingSeek(BytesIO):
+        def seek(self, offset: int, whence: int = os.SEEK_SET) -> int:
+            if whence == os.SEEK_CUR and offset > 512 * 1024:
+                msg = "seek refused"
+                raise OSError(msg)
+            return super().seek(offset, whence)
+
+    with Image.open(FailingSeek(data)) as im:
+        with pytest.raises(OSError, match="seek refused"):
+            im.load()
+
+
 def test_layers_type(card: ImageFile.ImageFile, tmp_path: Path) -> None:
     outfile = tmp_path / "temp_layers.jp2"
     for quality_layers in [[100, 50, 10], (100, 50, 10), None]:
@@ -310,7 +342,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
         assert out.getvalue()[59] == val
         with Image.open(out) as im:
-            assert_image_similar(im, card, 1.0e-3)
+            assert_image_equal(im, card)
 
     # Single component should have MCT disabled
     for val in (0, 1):
@@ -320,7 +352,7 @@ def test_mct(card: ImageFile.ImageFile) -> None:
 
         assert out.getvalue()[53] == 0
         with Image.open(out) as im:
-            assert_image_similar(im, jp2, 1.0e-3)
+            assert_image_equal(im, jp2)
 
 
 def test_sgnd(tmp_path: Path) -> None:
@@ -393,20 +425,11 @@ def test_cmyk_save() -> None:
 
 
 @pytest.mark.parametrize("ext", (".j2k", ".jp2"))
-def test_16bit_monochrome_has_correct_mode(ext: str) -> None:
+def test_16bit_monochrome(ext: str) -> None:
     with Image.open("Tests/images/16bit.cropped" + ext) as im:
-        im.load()
         assert im.mode == "I;16"
 
-
-def test_16bit_monochrome_jp2_like_tiff() -> None:
-    with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.jp2", 1e-3)
-
-
-def test_16bit_monochrome_j2k_like_tiff() -> None:
-    with Image.open("Tests/images/16bit.cropped.tif") as tiff_16bit:
-        assert_image_similar_tofile(tiff_16bit, "Tests/images/16bit.cropped.j2k", 1e-3)
+        assert_image_equal_tofile(im, "Tests/images/16bit.cropped.tif")
 
 
 def test_16bit_j2k_roundtrips() -> None:
@@ -590,3 +613,37 @@ def test_9bit() -> None:
     with Image.open("Tests/images/9bit.j2k") as im:
         assert im.mode == "I;16"
         assert im.size == (128, 128)
+
+
+def test_xml_metadata() -> None:
+    im = Image.new("L", (1, 1))
+    xml_boxes = ["xml metadata1", b"xml metadata2"]
+    for xml in xml_boxes:
+        out = BytesIO()
+        im.save(out, "JPEG2000", xml=xml)
+
+        with Image.open(out) as reloaded:
+            expected = xml.encode() if isinstance(xml, str) else xml
+            assert reloaded.info["xml"] == expected
+
+    # Multiple XML boxes
+    out = BytesIO()
+    im.save(out, "JPEG2000", xml=xml_boxes, comment="comment")
+    with Image.open(out) as im:
+        if isinstance(xml_boxes[0], str):
+            xml_boxes[0] = xml_boxes[0].encode()
+        assert im.info["xml"] == xml_boxes
+        assert im.info["comment"] == b"comment"
+
+
+@pytest.mark.parametrize("xmp", ("xmp", b"xmp"))
+def test_xmp_metadata(xmp: str | bytes) -> None:
+    im = Image.new("L", (1, 1))
+
+    out = BytesIO()
+    im.save(out, "JPEG2000", xmp=xmp)
+
+    with Image.open(out) as im:
+        if isinstance(xmp, str):
+            xmp = xmp.encode()
+        assert im.info["xmp"] == xmp

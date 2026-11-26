@@ -35,7 +35,11 @@ if TYPE_CHECKING:
 
 
 class Pen:
-    """Stores an outline color and width."""
+    """Stores an outline color and width.
+
+    :param color: The outline color.
+    :param width: The line width, in pixels.
+    """
 
     def __init__(self, color: str, width: int = 1, opacity: int = 255) -> None:
         self.color = ImageColor.getrgb(color)
@@ -108,15 +112,14 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = tuple(path)
         # render the item
         if op in ("arc", "line"):
             kwargs.setdefault("fill", outline)
         else:
             kwargs.setdefault("fill", fill)
             kwargs.setdefault("outline", outline)
-        if op == "line":
-            kwargs.setdefault("width", width)
+        kwargs.setdefault("width", width)
         getattr(self.draw, op)(xy, **kwargs)
 
     def settransform(self, offset: tuple[float, float]) -> None:
@@ -218,7 +221,7 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = path[0]
         self.draw.text(xy, text, font=font.font, fill=font.color)
 
     def textbbox(
@@ -234,7 +237,7 @@ class Draw:
         if self.transform:
             path = ImagePath.Path(xy)
             path.transform(self.transform)
-            xy = path
+            xy = path[0]
         return self.draw.textbbox(xy, text, font=font.font)
 
     def textlength(self, text: AnyStr, font: Font) -> float:

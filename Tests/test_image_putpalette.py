@@ -59,6 +59,11 @@ def test_imagepalette() -> None:
     im.putpalette(ImagePalette.wedge())
     assert_image_equal_tofile(im.convert("RGB"), "Tests/images/palette_wedge.png")
 
+    # Check that rawmode is ignored
+    im.putpalette(ImagePalette.wedge(), "RGBA")
+    assert im.palette is not None
+    assert im.palette.mode == "RGB"
+
 
 def test_putpalette_with_alpha_values() -> None:
     with Image.open("Tests/images/transparent.gif") as im:
@@ -122,3 +127,10 @@ def test_undefined_palette_index() -> None:
     im = Image.new("P", (1, 1), 3)
     im.putpalette((1, 2, 3))
     assert im.convert("RGB").getpixel((0, 0)) == (0, 0, 0)
+
+
+@pytest.mark.parametrize("rawmode", ("P;2L", "P;4L"))
+def test_planar_rawmode_rejected(rawmode: str) -> None:
+    im = Image.new("P", (1, 1))
+    with pytest.raises(ValueError, match="unrecognized raw mode"):
+        im.putpalette(b"\x00", rawmode)

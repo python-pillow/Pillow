@@ -131,10 +131,9 @@ class PcxImageFile(ImageFile.ImageFile):
         if provided_stride != stride:
             stride += stride % 2
 
-        bbox = (0, 0, *self.size)
         logger.debug("size: %sx%s", *self.size)
 
-        self.tile = [ImageFile._Tile("pcx", bbox, offset, (rawmode, planes * stride))]
+        self.tile = [ImageFile._Tile("pcx", None, offset, (rawmode, planes * stride))]
 
 
 # --------------------------------------------------------------------
@@ -166,7 +165,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
     # stride should be even
     stride += stride % 2
     # Stride needs to be kept in sync with the PcxEncode.c version.
-    # Ideally it should be passed in in the state, but the bytes value
+    # Ideally it should be passed in the state, but the bytes value
     # gets overwritten.
 
     logger.debug(
@@ -208,9 +207,7 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
 
     assert fp.tell() == 128
 
-    ImageFile._save(
-        im, fp, [ImageFile._Tile("pcx", (0, 0, *im.size), 0, (rawmode, bits * planes))]
-    )
+    ImageFile._save(im, fp, [ImageFile._Tile("pcx", args=(rawmode, bits * planes))])
 
     if im.mode == "P":
         # colour palette

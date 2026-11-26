@@ -125,9 +125,7 @@ class IptcImageFile(ImageFile.ImageFile):
 
         # tile
         if tag == (8, 10):
-            self.tile = [
-                ImageFile._Tile("iptc", (0, 0, *self.size), offset, (compression, band))
-            ]
+            self.tile = [ImageFile._Tile("iptc", None, offset, (compression, band))]
 
     def load(self) -> Image.core.PixelAccess | None:
         if self.tile:
@@ -143,7 +141,10 @@ class IptcImageFile(ImageFile.ImageFile):
             if compression == "raw":
                 # To simplify access to the extracted file,
                 # prepend a PPM header
+                formats = ["PPM"]
                 o.write(b"P5\n%d %d\n255\n" % self.size)
+            else:
+                formats = ["JPEG"]
             while True:
                 type, size = self.field()
                 if type != (8, 10):
@@ -155,7 +156,7 @@ class IptcImageFile(ImageFile.ImageFile):
                     o.write(s)
                     size -= len(s)
 
-            with Image.open(o) as _im:
+            with Image.open(o, formats=formats) as _im:
                 if band is not None:
                     bands = [Image.new("L", _im.size)] * Image.getmodebands(self.mode)
                     bands[band] = _im

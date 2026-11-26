@@ -83,7 +83,7 @@ class ImageDraw:
             else:
                 msg = "mode mismatch"
                 raise ValueError(msg)
-        if mode == "P":
+        if mode in {"P", "PA"}:
             self.palette = im.palette
         else:
             self.palette = None
@@ -147,14 +147,18 @@ class ImageDraw:
             if ink is not None:
                 if isinstance(ink, str):
                     ink = ImageColor.getcolor(ink, self.mode)
-                if self.palette and isinstance(ink, tuple):
-                    ink = self.palette.getcolor(ink, self._image)
-                result_ink = self.draw.draw_ink(ink)
+                if self.mode in {"P", "PA"} and isinstance(ink, tuple):
+                    ink = self._image._get_palette_color(ink)
+                if isinstance(ink, tuple) and len(ink) == 4 and ink[3] == 0:
+                    # Do not use transparent ink
+                    result_ink = None
+                else:
+                    result_ink = self.draw.draw_ink(ink)
             if fill is not None:
                 if isinstance(fill, str):
                     fill = ImageColor.getcolor(fill, self.mode)
-                if self.palette and isinstance(fill, tuple):
-                    fill = self.palette.getcolor(fill, self._image)
+                if self.mode in {"P", "PA"} and isinstance(fill, tuple):
+                    fill = self._image._get_palette_color(fill)
                 result_fill = self.draw.draw_ink(fill)
         return result_ink, result_fill
 
@@ -224,15 +228,72 @@ class ImageDraw:
         ellipse_xy = (xy[0] - radius, xy[1] - radius, xy[0] + radius, xy[1] + radius)
         self.ellipse(ellipse_xy, fill, outline, width)
 
-    def _normalize_coords(self, xy: Coords) -> Sequence[Sequence[float]]:
+    def _normalize_coords(self, xy: Coords) -> list[tuple[float, float]]:
         """Normalize 1 or 2 dimensional coord sequence into 2d sequence."""
         if isinstance(xy[0], (list, tuple)):
-            return cast("Sequence[Sequence[float]]", xy)
+            return cast("list[tuple[float, float]]", list(xy))
         else:
             return [
-                cast("Sequence[float]", tuple(xy[i : i + 2]))
+                cast("tuple[float, float]", tuple(xy[i : i + 2]))
                 for i in range(0, len(xy), 2)
             ]
+
+    def _restrict_lines(
+        self, xy: list[tuple[float, float]]
+    ) -> list[list[tuple[float, float]]]:
+        """Restrict line coordinates to image using Liang–Barsky algorithm"""
+        w, h = self.im.size
+        if len(xy) == 1 or all(0 <= x <= w and 0 <= y <= h for x, y in xy):
+            return [xy]
+
+        lines = []
+        line: list[tuple[float, float]] = []
+        for (x0, y0), (x1, y1) in zip(xy, xy[1:]):
+            dx = x1 - x0
+            dy = y1 - y0
+
+            u1, u2 = 0.0, 1.0
+            for p, q in (
+                (-dx, x0),  # left side
+                (dx, w - x0),  # right side
+                (-dy, y0),  # top side
+                (dy, h - y0),  # bottom side
+            ):
+                if p == 0:
+                    # line is parallel to the side
+                    if q < 0:
+                        # line is outside. Ignore
+                        break
+                else:
+                    u = q / p
+                    if p < 0:
+                        u1 = max(u1, u)
+                    else:
+                        u2 = min(u2, u)
+
+                    if u1 > u2:
+                        # line is outside. Ignore
+                        break
+            else:
+                start = x0 + dx * u1, y0 + dy * u1
+                if line and start != line[-1]:
+                    if len(line) == 1:
+                        line *= 2
+                    lines.append(line)
+                    line = []
+                line.append(start)
+
+                end = x0 + dx * u2, y0 + dy * u2
+                if end != line[-1]:
+                    line.append(end)
+        if line:
+            lines.append(line)
+        return lines
+
+    def _validate_dash(self, dash: tuple[int, ...]) -> None:
+        if len(dash) == 0 or not all(isinstance(v, int) and v > 0 for v in dash):
+            msg = "dash must be a non-empty tuple of positive ints"
+            raise ValueError(msg)
 
     def line(
         self,
@@ -240,69 +301,77 @@ class ImageDraw:
         fill: _Ink | None = None,
         width: int = 1,
         joint: str | None = None,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a line, or a connected sequence of line segments."""
         ink = self._getink(fill)[0]
-        if ink is not None and width != 0:
-            self.draw.draw_lines(xy, ink, width)
-            if joint == "curve" and width > 4:
-                points = self._normalize_coords(xy)
-                for i in range(1, len(points) - 1):
-                    point = points[i]
-                    angles = [
-                        math.degrees(math.atan2(end[0] - start[0], start[1] - end[1]))
-                        % 360
-                        for start, end in (
-                            (points[i - 1], point),
-                            (point, points[i + 1]),
-                        )
-                    ]
-                    if angles[0] == angles[1]:
-                        # This is a straight line, so no joint is required
-                        continue
+        if ink is None or width == 0:
+            return
 
-                    def coord_at_angle(
-                        coord: Sequence[float], angle: float
-                    ) -> tuple[float, ...]:
-                        x, y = coord
-                        angle -= 90
-                        distance = width / 2 - 1
-                        return tuple(
-                            p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
-                            for p, p_d in (
-                                (x, distance * math.cos(math.radians(angle))),
-                                (y, distance * math.sin(math.radians(angle))),
+        if dash is not None:
+            self._validate_dash(dash)
+        normalized_xy = self._normalize_coords(xy)
+        if width == 1:
+            lines = self._restrict_lines(normalized_xy)
+        else:
+            lines = [normalized_xy]
+        for line in lines:
+            if dash is not None:
+                self.draw.draw_lines(line, ink, 1, dash)
+            else:
+                self.draw.draw_lines(line, ink, width)
+        if dash is None and joint == "curve" and width > 4:
+            points = self._normalize_coords(xy)
+            for i in range(1, len(points) - 1):
+                point = points[i]
+                angles = [
+                    math.degrees(math.atan2(end[0] - start[0], start[1] - end[1])) % 360
+                    for start, end in (
+                        (points[i - 1], point),
+                        (point, points[i + 1]),
+                    )
+                ]
+                if angles[0] == angles[1]:
+                    # This is a straight line, so no joint is required
+                    continue
+
+                flipped = (angles[1] > angles[0] and angles[1] - 180 > angles[0]) or (
+                    angles[1] < angles[0] and angles[1] + 180 > angles[0]
+                )
+                coords = [
+                    (point[0] - width / 2 + 1, point[1] - width / 2 + 1),
+                    (point[0] + width / 2 - 1, point[1] + width / 2 - 1),
+                ]
+                if flipped:
+                    start, end = (angles[1] + 90, angles[0] + 90)
+                else:
+                    start, end = (angles[0] - 90, angles[1] - 90)
+                self.pieslice(coords, start - 90, end - 90, fill)
+
+                if width > 8:
+                    # Cover potential gaps between the line and the joint
+                    gap_coords = []
+                    distance = width / 2 - 1
+                    for angle in angles:
+                        if flipped:
+                            angle -= 180
+                        gap_coords.append(
+                            tuple(
+                                p + (math.floor(p_d) if p_d > 0 else math.ceil(p_d))
+                                for p, p_d in (
+                                    (
+                                        point[0],
+                                        distance * math.cos(math.radians(angle)),
+                                    ),
+                                    (
+                                        point[1],
+                                        distance * math.sin(math.radians(angle)),
+                                    ),
+                                )
                             )
                         )
-
-                    flipped = (
-                        angles[1] > angles[0] and angles[1] - 180 > angles[0]
-                    ) or (angles[1] < angles[0] and angles[1] + 180 > angles[0])
-                    coords = [
-                        (point[0] - width / 2 + 1, point[1] - width / 2 + 1),
-                        (point[0] + width / 2 - 1, point[1] + width / 2 - 1),
-                    ]
-                    if flipped:
-                        start, end = (angles[1] + 90, angles[0] + 90)
-                    else:
-                        start, end = (angles[0] - 90, angles[1] - 90)
-                    self.pieslice(coords, start - 90, end - 90, fill)
-
-                    if width > 8:
-                        # Cover potential gaps between the line and the joint
-                        if flipped:
-                            gap_coords = [
-                                coord_at_angle(point, angles[0] + 90),
-                                point,
-                                coord_at_angle(point, angles[1] + 90),
-                            ]
-                        else:
-                            gap_coords = [
-                                coord_at_angle(point, angles[0] - 90),
-                                point,
-                                coord_at_angle(point, angles[1] - 90),
-                            ]
-                        self.line(gap_coords, fill, width=3)
+                    gap_coords.insert(1, point)
+                    self.line(gap_coords, fill, width=3)
 
     def shape(
         self,
@@ -346,23 +415,29 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a polygon."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_polygon(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
-            if width == 1:
-                self.draw.draw_polygon(xy, ink, 0, width)
-            elif self.im is not None:
-                # To avoid expanding the polygon outwards,
-                # use the fill as a mask
-                mask = Image.new("1", self.im.size)
-                mask_ink = self._getink(1)[0]
-                draw = Draw(mask)
-                draw.draw.draw_polygon(xy, mask_ink, 1)
+        if ink is None or ink == fill_ink or width == 0:
+            return
 
-                self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, mask.im)
+        if dash is not None:
+            self._validate_dash(dash)
+            self.draw.draw_polygon(xy, ink, 0, 1, dash)
+        elif width == 1:
+            self.draw.draw_polygon(xy, ink, 0, width)
+        elif self.im is not None:
+            # To avoid expanding the polygon outwards,
+            # use the fill as a mask
+            mask = Image.new("1", self.im.size)
+            mask_ink = self._getink(1)[0]
+            draw = Draw(mask)
+            draw.draw.draw_polygon(xy, mask_ink, 1)
+
+            self.draw.draw_polygon(xy, ink, 0, width * 2 - 1, None, mask.im)
 
     def regular_polygon(
         self,
@@ -383,12 +458,23 @@ class ImageDraw:
         fill: _Ink | None = None,
         outline: _Ink | None = None,
         width: int = 1,
+        dash: tuple[int, ...] | None = None,
     ) -> None:
         """Draw a rectangle."""
         ink, fill_ink = self._getink(outline, fill)
         if fill_ink is not None:
             self.draw.draw_rectangle(xy, fill_ink, 1)
-        if ink is not None and ink != fill_ink and width != 0:
+        if ink is None or ink == fill_ink or width == 0:
+            return
+
+        if dash is not None:
+            self._validate_dash(dash)
+            (x0, y0), (x1, y1) = self._normalize_coords(xy)
+            for xy in self._restrict_lines(
+                [(x0, y0), (x1, y0), (x1, y1), (x0, y1), (x0, y0)]
+            ):
+                self.draw.draw_lines(xy, ink, 1, dash)
+        else:
             self.draw.draw_rectangle(xy, ink, 0, width)
 
     def rounded_rectangle(
@@ -583,7 +669,7 @@ class ImageDraw:
 
             def draw_text(ink: int, stroke_width: float = 0) -> None:
                 mode = self.fontmode
-                if stroke_width == 0 and embedded_color:
+                if stroke_width == 0 and image_text.embedded_color:
                     mode = "RGBA"
                 x = int(line.x)
                 y = int(line.y)
@@ -823,16 +909,27 @@ def floodfill(
     """
     # based on an implementation by Eric S. Raymond
     # amended by yo1995 @20180806
+    image._ensure_mutable()
     pixel = image.load()
     assert pixel is not None
     x, y = xy
     try:
         background = pixel[x, y]
-        if _color_diff(value, background) <= thresh:
-            return  # seed point already has fill color
-        pixel[x, y] = value
-    except (ValueError, IndexError):
+    except IndexError:
         return  # seed point outside image
+
+    def _update_color(color: float | tuple[int, ...]) -> float | tuple[int, ...]:
+        if image.mode == "RGBA" and isinstance(color, tuple) and len(color) == 3:
+            color += (255,)
+        return color
+
+    value = _update_color(value)
+    if _color_diff(value, background) <= thresh:
+        return  # seed point already has fill color
+
+    if border is not None:
+        border = _update_color(border)
+    pixel[x, y] = value
     edge = {(x, y)}
     # use a set to keep record of current and previous edge pixels
     # to reduce memory consumption

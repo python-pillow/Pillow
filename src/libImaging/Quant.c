@@ -1262,7 +1262,7 @@ error_1:
  * Contract: im is read-only.
  */
 Imaging
-ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
+ImagingQuantize(Imaging im, int colors, ImagingQuantizeMethod method, int kmeans) {
     int i, j;
     int x, y, v;
     UINT8 *pp;
@@ -1290,7 +1290,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     }
 
     /* only octree and imagequant supports RGBA */
-    if (im->mode == IMAGING_MODE_RGBA && mode != 2 && mode != 3) {
+    if (im->mode == IMAGING_MODE_RGBA && method != IMAGING_QUANTIZE_FASTOCTREE &&
+        method != IMAGING_QUANTIZE_LIBIMAGEQUANT) {
         return ImagingError_ModeError();
     }
 
@@ -1316,6 +1317,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
 
         /* FIXME: converting a "L" image to "P" with 256 colors
            should be done by a simple copy... */
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
 
         for (i = y = 0; y < ysize; y++) {
             UINT8 *in = im->image8[y];
@@ -1324,9 +1327,13 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 p[i].c.a = 255;
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else if (im->mode == IMAGING_MODE_P) {
         /* palette */
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
 
         pp = im->palette->palette;
 
@@ -1340,9 +1347,13 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 p[i].c.a = pp[v * 4 + 3];
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else if (im->mode == IMAGING_MODE_RGB || im->mode == IMAGING_MODE_RGBA) {
         /* true colour */
+        ImagingSectionEnter(&cookie);
+        MUTEX_LOCK(&im->mutex);
 
         withAlpha = im->mode == IMAGING_MODE_RGBA;
         int transparency = 0;
@@ -1371,6 +1382,8 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
                 }
             }
         }
+        MUTEX_UNLOCK(&im->mutex);
+        ImagingSectionLeave(&cookie);
 
     } else {
         free(p);
@@ -1378,26 +1391,23 @@ ImagingQuantize(Imaging im, int colors, int mode, int kmeans) {
     }
 
     ImagingSectionEnter(&cookie);
-
-    switch (mode) {
-        case 0:
-            /* median cut */
+    switch (method) {
+        case IMAGING_QUANTIZE_MEDIANCUT:
             result = quantize(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
-        case 1:
-            /* maximum coverage */
+        case IMAGING_QUANTIZE_MAXCOVERAGE:
             result = quantize2(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, kmeans
             );
             break;
-        case 2:
+        case IMAGING_QUANTIZE_FASTOCTREE:
             result = quantize_octree(
                 p, xsize * ysize, colors, &palette, &paletteLength, &newData, withAlpha
             );
             break;
-        case 3:
+        case IMAGING_QUANTIZE_LIBIMAGEQUANT:
 #ifdef HAVE_LIBIMAGEQUANT
             result = quantize_pngquant(
                 p, xsize, ysize, colors, &palette, &paletteLength, &newData, withAlpha

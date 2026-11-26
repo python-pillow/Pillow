@@ -81,7 +81,7 @@ class GdImageFile(ImageFile.ImageFile):
         self.tile = [
             ImageFile._Tile(
                 "raw",
-                (0, 0, *self.size),
+                None,
                 7 + true_color_offset + 6 + 256 * 4,
                 "L",
             )
@@ -96,7 +96,7 @@ def open(fp: StrOrBytesPath | IO[bytes], mode: str = "r") -> GdImageFile:
     :param mode: Optional mode.  In this version, if the mode argument
         is given, it must be "r".
     :returns: An image instance.
-    :raises OSError: If the image could not be read.
+    :exception OSError: If the image could not be read.
     """
     if mode != "r":
         msg = "bad mode"
