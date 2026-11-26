@@ -808,7 +808,6 @@ class FreeTypeFontFamily(BaseImageFont):
             )
             layout_engine = Layout.BASIC
         self.layout_engine = layout_engine
-        self.fonts = fonts
 
         font_tuples: list[tuple[Any, ...]] = []
         for font in fonts:
