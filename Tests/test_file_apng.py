@@ -1012,3 +1012,30 @@ def test_different_durations(tmp_path: Path) -> None:
 
         reloaded.seek(1)
         assert reloaded.info["duration"] == 1000
+
+
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+def test_apng_save_delta_after_background_disposal_without_alpha(
+    mode: str, tmp_path: Path
+) -> None:
+    # OP_BACKGROUND clears to transparent black, so black pixels in the next frame
+    # are not already present on the canvas, even though the frames have no alpha
+    test_file = tmp_path / "temp.png"
+    frame0 = Image.new(mode, (8, 8), 0)
+    frame1 = frame0.copy()
+    frame1.putpixel((7, 7), 255 if mode == "L" else (255, 255, 255))
+
+    frame0.save(
+        test_file,
+        save_all=True,
+        append_images=[frame1],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
+        assert reread.n_frames == 2
+        reread.seek(1)
+        # The whole frame has to be written, not just the changed pixel
+        assert reread.tile[0].extents == (0, 0, 8, 8)
+        assert_image_equal(reread, frame1)
