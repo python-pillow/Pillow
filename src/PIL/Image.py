@@ -2827,6 +2827,9 @@ class Image:
             # If there is an unloaded tile, then drop the current read-only core image
             or (getattr(self, "tile", None) and self.readonly)
         ):
+            deprecate(
+                "Clearing core image in Image.Image.seek()", 15, "SeekableImageFile"
+            )
             self._im = None
 
     def show(self, title: str | None = None) -> None:
