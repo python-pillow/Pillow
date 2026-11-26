@@ -122,7 +122,6 @@ nitpicky = True
 # if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 nitpick_ignore = [
-    ("py:class", "CapsuleType"),
     ("py:class", "ImageQt.QImage"),
     ("py:class", "ImageQt.QPixmap"),
     ("py:class", "_CmsProfileCompatible"),

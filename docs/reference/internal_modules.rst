@@ -37,6 +37,10 @@ on some Python versions.
 
     Typing alias.
 
+.. py:class:: CapsuleType
+
+    Typing alias.
+
 .. py:class:: Coords
 
     Typing alias.
