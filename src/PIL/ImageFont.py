@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
     from . import ImageFile
     from ._imaging import ImagingFont
-    from ._imagingft import Font
+    from ._imagingft import Font, FontFamily
     from ._typing import StrOrBytesPath
 
 
@@ -249,34 +249,10 @@ class ImageFont(BaseImageFont):
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont(BaseImageFont):
-    """FreeType font wrapper (requires _imagingft service)"""
+class BaseFreeTypeFont(BaseImageFont):
+    font: Font | FontFamily
 
-    font: Font
-    font_bytes: bytes
-
-    def __init__(
-        self,
-        font: StrOrBytesPath | BinaryIO,
-        size: float = 10,
-        index: int = 0,
-        encoding: str = "",
-        layout_engine: Layout | None = None,
-    ) -> None:
-        # FIXME: use service provider instead
-
-        if isinstance(core, DeferredError):
-            raise core.ex
-
-        if size <= 0:
-            msg = f"font size must be greater than 0, not {size}"
-            raise ValueError(msg)
-
-        self.path = font
-        self.size = size
-        self.index = index
-        self.encoding = encoding
-
+    def _set_layout_engine(self, layout_engine: Layout | None) -> None:
         if layout_engine not in (Layout.BASIC, Layout.RAQM):
             layout_engine = Layout.BASIC
             if core.HAVE_RAQM:
@@ -289,42 +265,6 @@ class FreeTypeFont(BaseImageFont):
             layout_engine = Layout.BASIC
 
         self.layout_engine = layout_engine
-
-        def load_from_bytes(f: IO[bytes]) -> None:
-            self.font_bytes = f.read()
-            self.font = core.getfont(
-                "", size, index, encoding, layout_engine, self.font_bytes
-            )
-
-        if is_path(font):
-            font = os.fspath(font)
-            if sys.platform == "win32":
-                font_bytes_path = font if isinstance(font, bytes) else font.encode()
-                try:
-                    font_bytes_path.decode("ascii")
-                except UnicodeDecodeError:
-                    # FreeType cannot load fonts with non-ASCII characters on Windows
-                    # So load it into memory first
-                    with open(font, "rb") as f:
-                        load_from_bytes(f)
-                    return
-            self.font = core.getfont(font, size, index, encoding, layout_engine)
-        else:
-            load_from_bytes(cast("IO[bytes]", font))
-
-    def __getstate__(self) -> list[Any]:
-        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
-
-    def __setstate__(self, state: list[Any]) -> None:
-        path, size, index, encoding, layout_engine = state
-        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
-
-    def getname(self) -> tuple[str | None, str | None]:
-        """
-        :return: A tuple of the font family (e.g. Helvetica) and the font style
-            (e.g. Bold)
-        """
-        return self.font.family, self.font.style
 
     def getmetrics(self) -> tuple[int, int]:
         """
@@ -689,6 +629,73 @@ class FreeTypeFont(BaseImageFont):
             start,
         )
 
+
+class FreeTypeFont(BaseFreeTypeFont):
+    """FreeType font wrapper (requires _imagingft service)"""
+
+    font: Font
+    font_bytes: bytes
+
+    def __init__(
+        self,
+        font: StrOrBytesPath | BinaryIO,
+        size: float = 10,
+        index: int = 0,
+        encoding: str = "",
+        layout_engine: Layout | None = None,
+    ) -> None:
+        # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
+
+        if size <= 0:
+            msg = f"font size must be greater than 0, not {size}"
+            raise ValueError(msg)
+
+        self.path = font
+        self.size = size
+        self.index = index
+        self.encoding = encoding
+
+        self._set_layout_engine(layout_engine)
+
+        def load_from_bytes(f: IO[bytes]) -> None:
+            self.font_bytes = f.read()
+            self.font = core.getfont(
+                "", size, index, encoding, self.layout_engine, self.font_bytes
+            )
+
+        if is_path(font):
+            font = os.fspath(font)
+            if sys.platform == "win32":
+                font_bytes_path = font if isinstance(font, bytes) else font.encode()
+                try:
+                    font_bytes_path.decode("ascii")
+                except UnicodeDecodeError:
+                    # FreeType cannot load fonts with non-ASCII characters on Windows
+                    # So load it into memory first
+                    with open(font, "rb") as f:
+                        load_from_bytes(f)
+                    return
+            self.font = core.getfont(font, size, index, encoding, self.layout_engine)
+        else:
+            load_from_bytes(cast("IO[bytes]", font))
+
+    def __getstate__(self) -> list[Any]:
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state: list[Any]) -> None:
+        path, size, index, encoding, layout_engine = state
+        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
+
+    def getname(self) -> tuple[str | None, str | None]:
+        """
+        :return: A tuple of the font family (e.g. Helvetica) and the font style
+            (e.g. Bold)
+        """
+        return self.font.family, self.font.style
+
     def font_variant(
         self,
         font: StrOrBytesPath | BinaryIO | None = None,
@@ -771,7 +778,7 @@ class FreeTypeFont(BaseImageFont):
         self.font.setvaraxes(axes)
 
 
-class FreeTypeFontFamily(BaseImageFont):
+class FreeTypeFontFamily(BaseFreeTypeFont):
     """
     A family of FreeType fonts. When drawing or measuring text, each character
     uses the first font in the family that contains it, falling back to the next
@@ -797,17 +804,7 @@ class FreeTypeFontFamily(BaseImageFont):
             msg = "At least one font is required"
             raise ValueError(msg)
 
-        if layout_engine not in (Layout.BASIC, Layout.RAQM):
-            layout_engine = Layout.BASIC
-            if core.HAVE_RAQM:
-                layout_engine = Layout.RAQM
-        elif layout_engine == Layout.RAQM and not core.HAVE_RAQM:
-            warnings.warn(
-                "Raqm layout was requested, but Raqm is not available. "
-                "Falling back to basic layout."
-            )
-            layout_engine = Layout.BASIC
-        self.layout_engine = layout_engine
+        self._set_layout_engine(layout_engine)
 
         font_tuples: list[tuple[Any, ...]] = []
         for font in fonts:
@@ -821,132 +818,6 @@ class FreeTypeFontFamily(BaseImageFont):
             else:
                 font_tuples.append((font.path, font.size, font.index, font.encoding))
         self.font = core.getfamily(tuple(font_tuples), layout_engine)
-
-    def _has_separator(self, text: str | bytes) -> bool:
-        if self.layout_engine != Layout.RAQM:
-            return False
-        if isinstance(text, str):
-            return any(separator in text for separator in _separators)
-        return any(separator.encode() in text for separator in _separators)
-
-    def getmetrics(self) -> tuple[int, int]:
-        """
-        :return: A tuple of the largest font ascent and the lowest font descent
-            in the family. See :py:meth:`FreeTypeFont.getmetrics`.
-        """
-        return self.font.ascent, self.font.descent
-
-    def getlength(
-        self,
-        text: str | bytes,
-        mode: str = "",
-        direction: str | None = None,
-        features: list[str] | None = None,
-        language: str | None = None,
-    ) -> float:
-        """
-        Returns length (in pixels with 1/64 precision) of given text when rendered
-        with the fonts in this family. See :py:meth:`FreeTypeFont.getlength`.
-        """
-        _string_length_check(text)
-        if self._has_separator(text):
-            msg = "can't measure length of multiline text with Raqm"
-            raise ValueError(msg)
-        return self.font.getlength(text, mode, direction, features, language) / 64
-
-    def getbbox(
-        self,
-        text: str | bytes,
-        mode: str = "",
-        direction: str | None = None,
-        features: list[str] | None = None,
-        language: str | None = None,
-        stroke_width: float = 0,
-        anchor: str | None = None,
-    ) -> tuple[float, float, float, float]:
-        """
-        Returns bounding box (in pixels) of given text relative to given anchor
-        when rendered with the fonts in this family. See
-        :py:meth:`FreeTypeFont.getbbox`.
-        """
-        _string_length_check(text)
-        if self._has_separator(text):
-            msg = "can't measure bounding box of multiline text with Raqm"
-            raise ValueError(msg)
-        size, offset = self.font.getsize(
-            text, mode, direction, features, language, anchor
-        )
-        left, top = offset[0] - stroke_width, offset[1] - stroke_width
-        width, height = size[0] + 2 * stroke_width, size[1] + 2 * stroke_width
-        return left, top, left + width, top + height
-
-    def getmask(
-        self,
-        text: str | bytes,
-        mode: str = "",
-        direction: str | None = None,
-        features: list[str] | None = None,
-        language: str | None = None,
-        stroke_width: float = 0,
-        anchor: str | None = None,
-        ink: int = 0,
-        start: tuple[float, float] | None = None,
-    ) -> Image.core.ImagingCore:
-        """
-        Create a bitmap for the text. See :py:meth:`FreeTypeFont.getmask`.
-        """
-        return self.getmask2(
-            text,
-            mode,
-            direction=direction,
-            features=features,
-            language=language,
-            stroke_width=stroke_width,
-            anchor=anchor,
-            ink=ink,
-            start=start,
-        )[0]
-
-    def getmask2(
-        self,
-        text: str | bytes,
-        mode: str = "",
-        direction: str | None = None,
-        features: list[str] | None = None,
-        language: str | None = None,
-        stroke_width: float = 0,
-        anchor: str | None = None,
-        ink: int = 0,
-        start: tuple[float, float] | None = None,
-        *args: Any,
-        **kwargs: Any,
-    ) -> tuple[Image.core.ImagingCore, tuple[int, int]]:
-        """
-        Create a bitmap for the text, and return it with the offset of the text.
-        See :py:meth:`FreeTypeFont.getmask2`.
-        """
-        _string_length_check(text)
-        if start is None:
-            start = (0, 0)
-
-        def fill(width: int, height: int) -> Image.core.ImagingCore:
-            size = (width, height)
-            Image._decompression_bomb_check(size)
-            return Image.core.fill("RGBA" if mode == "RGBA" else "L", size)
-
-        return self.font.render(
-            text,
-            fill,
-            mode,
-            direction,
-            features,
-            language,
-            stroke_width,
-            kwargs.get("stroke_filled", False),
-            anchor,
-            ink,
-            start,
-        )
 
 
 class TransposedFont(BaseImageFont):

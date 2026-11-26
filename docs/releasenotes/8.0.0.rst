@@ -122,7 +122,7 @@ SVG fonts are not yet supported.
 ImageDraw.textlength
 ^^^^^^^^^^^^^^^^^^^^
 
-Two new methods :py:meth:`.ImageDraw.textlength` and :py:meth:`.FreeTypeFont.getlength`
+Two new methods :py:meth:`.ImageDraw.textlength` and ``FreeTypeFont.getlength()``
 were added, returning the exact advance length of text with 1/64 pixel precision.
 
 These can be used for word-wrapping or rendering text in parts.
@@ -131,7 +131,7 @@ ImageDraw.textbbox
 ^^^^^^^^^^^^^^^^^^
 
 Three new methods :py:meth:`.ImageDraw.textbbox`, :py:meth:`.ImageDraw.multiline_textbbox`,
-and :py:meth:`.FreeTypeFont.getbbox` return the bounding box of rendered text.
+and ``FreeTypeFont.getbbox()`` return the bounding box of rendered text.
 
 These functions accept an ``anchor`` parameter, see :ref:`text-anchors` for details.
 

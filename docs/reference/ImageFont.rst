@@ -73,6 +73,10 @@ Methods
     :members:
     :show-inheritance:
 
+.. autoclass:: PIL.ImageFont.BaseFreeTypeFont
+    :members:
+    :show-inheritance:
+
 .. autoclass:: PIL.ImageFont.FreeTypeFont
     :members:
     :show-inheritance:

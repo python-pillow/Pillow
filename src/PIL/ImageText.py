@@ -126,6 +126,7 @@ class Text(Generic[AnyStr]):
         :param text: String to be drawn.
         :param font: Either an :py:class:`~PIL.ImageFont.ImageFont` instance,
                      :py:class:`~PIL.ImageFont.FreeTypeFont` instance,
+                     :py:class:`~PIL.ImageFont.FreeTypeFontFamily` instance,
                      :py:class:`~PIL.ImageFont.TransposedFont` instance or ``None``. If
                      ``None``, the default font from :py:meth:`.ImageFont.load_default`
                      will be used.

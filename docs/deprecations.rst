@@ -452,7 +452,7 @@ Several functions for computing the size and offset of rendered text have been r
 =============================================================== =============================================================================================================
 Removed                                                         Use instead
 =============================================================== =============================================================================================================
-``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     ``FreeTypeFont.getbbox()`` and ``FreeTypeFont.getlength()``
 ``FreeTypeFont.getsize_multiline()``                            :py:meth:`.ImageDraw.multiline_textbbox`
 ``ImageFont.getsize()``                                         :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
 ``TransposedFont.getsize()``                                    :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
@@ -528,8 +528,7 @@ FreeTypeFont.getmask2 fill parameter
 .. deprecated:: 9.2.0
 .. versionremoved:: 10.0.0
 
-The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2` has been
-removed.
+The undocumented ``fill`` parameter of ``FreeTypeFont.getmask2()`` has been removed.
 
 PhotoImage.paste box parameter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
