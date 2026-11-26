@@ -205,5 +205,7 @@ def test_seek_decompression_bomb() -> None:
         second_frame[: 1 * 4] + struct.pack("<f", 65535) + second_frame[2 * 4 :]
     )
     with Image.open(BytesIO(first_frame + b"\x00" * 1024 + second_frame)) as im:
+        size = im.size
         with pytest.raises(Image.DecompressionBombError):
             im.seek(1)
+        assert im.size == size
