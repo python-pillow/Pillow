@@ -499,7 +499,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             fp = self.fp
         return _get_fp_length(fp)
 
-    def _seek_check(self, frame: int) -> None:
+    def _seek_check(self, frame: int) -> bool:
         deprecate("ImageFile.ImageFile._seek_check", 15, "SeekableImageFile")
         if (
             frame < 0
@@ -512,6 +512,8 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         ):
             msg = "attempt to seek outside sequence"
             raise EOFError(msg)
+
+        return self.tell() != frame
 
 
 class SeekableImageFile(ImageFile):
