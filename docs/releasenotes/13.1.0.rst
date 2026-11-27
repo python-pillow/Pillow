@@ -233,3 +233,15 @@ rectangle. Previously, if ``width`` was more than the size of the rectangle, the
 outline could extend outside it, drawing a larger rectangle than requested. The
 rectangle is now filled with the outline color instead. Wide outlines are also drawn
 faster.
+
+More descriptive errors from the C core
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many errors raised by Pillow's C core now describe the problem,
+rather than only saying "image has wrong mode" or "images do not match".
+Code that matches on those messages may need to be updated.
+
+Errors for operations that are currently not supported are now raised
+as ``PIL._imaging.NotSupportedError``, which is a subclass of both
+:py:exc:`ValueError` and :py:exc:`NotImplementedError`, so existing
+``except ValueError`` handlers still catch them.
