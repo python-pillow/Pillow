@@ -199,6 +199,8 @@ class Text(Generic[AnyStr]):
         """
         Wrap text to fit within a given width.
 
+        This modifies the text of this object, and font size if ``scaling`` is used.
+
         :param width: The width to fit within.
         :param height: An optional height limit. Any text that does not fit within this
                        will be returned as a new :py:class:`.Text` object.
@@ -207,7 +209,11 @@ class Text(Generic[AnyStr]):
                         fits. It can also be a tuple of (direction, limit), with an
                         integer limit to stop scaling at.
 
-        :returns: An :py:class:`.Text` object, or None.
+        :returns: A :py:class:`.Text` object, or None.
+        :exception ValueError: If the font is a
+                               :py:class:`~PIL.ImageFont.TransposedFont`, the
+                               direction is not "ltr" or None, or the text cannot be
+                               scaled as requested.
         """
         if isinstance(self.font, ImageFont.TransposedFont):
             msg = "TransposedFont not supported"

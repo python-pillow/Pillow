@@ -47,8 +47,8 @@ Colors
 To specify colors, you can use numbers or tuples just as you would use with
 :py:meth:`PIL.Image.new`. See :ref:`colors` for more information.
 
-For palette images (mode "P"), use integers as color indexes. In 1.1.4 and
-later, you can also use RGB 3-tuples or color names (see below). The drawing
+For palette images (mode "P"), use integers as color indexes. You can also use
+RGB 3-tuples or color names (see below). The drawing
 layer will automatically assign color indexes, as long as you don’t draw with
 more than 256 colors.
 
@@ -164,7 +164,7 @@ Example: Draw multiline text
 Functions
 ---------
 
-.. py:method:: Draw(im, mode=None)
+.. py:function:: Draw(im, mode=None)
 
     Creates an object that can be used to draw in the given image.
 
@@ -246,7 +246,7 @@ Methods
     for the non-zero portions. The bitmap should be a valid transparency mask
     (mode “1”) or matte (mode “L” or “RGBA”).
 
-    This is equivalent to doing ``image.paste(xy, color, bitmap)``.
+    This is equivalent to doing ``image.paste(color, xy, bitmap)``.
 
     To paste pixel data into an image, use the
     :py:meth:`~PIL.Image.Image.paste` method on the image itself.
@@ -434,6 +434,11 @@ Methods
     :param text: String to be drawn. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_text`.
+
+                 It may also be an :py:class:`~PIL.ImageText.Text` object, in
+                 which case ``font``, ``spacing``, ``direction``, ``features``,
+                 ``language``, ``stroke_width``, ``stroke_fill`` and
+                 ``embedded_color`` are taken from that object instead.
     :param fill: Color to use for the text.
     :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
@@ -647,7 +652,6 @@ Methods
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
-    Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with
     1/64 pixel precision. The bounding box includes extra margins for
@@ -659,7 +663,7 @@ Methods
     :param text: Text to be measured. If it contains any newline characters,
                  the text is passed on to
                  :py:meth:`~PIL.ImageDraw.ImageDraw.multiline_textbbox`.
-    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left,
                    specifically ``la`` for horizontal text and ``lt`` for
@@ -707,7 +711,6 @@ Methods
 
     Returns bounding box (in pixels) of given text relative to given anchor
     when rendered in font with provided direction, features, and language.
-    Only supported for TrueType fonts.
 
     Use :py:meth:`textlength` to get the offset of following text with
     1/64 pixel precision. The bounding box includes extra margins for
@@ -719,7 +722,7 @@ Methods
 
     :param xy: The anchor coordinates of the text.
     :param text: Text to be measured.
-    :param font: A :py:class:`~PIL.ImageFont.FreeTypeFont` instance.
+    :param font: An :py:class:`~PIL.ImageFont.ImageFont` instance.
     :param anchor: The text anchor alignment. Determines the relative location of
                    the anchor to the text. The default alignment is top left,
                    specifically ``la`` for horizontal text and ``lt`` for
@@ -759,7 +762,7 @@ Methods
 
     :return: ``(left, top, right, bottom)`` bounding box
 
-.. py:method:: getdraw(im=None)
+.. py:function:: getdraw(im=None)
 
     .. warning:: This method is experimental.
 

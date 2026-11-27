@@ -188,6 +188,17 @@ def test_save_to_bytes_bmp(mode: str) -> None:
         assert_image_equal(reloaded, im)
 
 
+@pytest.mark.parametrize("mode", ("1", "L", "P", "RGB"))
+def test_save_bmp_mask(mode: str) -> None:
+    output = io.BytesIO()
+    im = Image.new(mode, (16, 16), 1)
+    im.save(output, "ico", bitmap_format="bmp", sizes=[(16, 16)])
+
+    output.seek(0)
+    with Image.open(output) as reloaded:
+        assert reloaded.getchannel("A").getextrema() == (255, 255)
+
+
 def test_incorrect_size() -> None:
     with Image.open(TEST_ICO_FILE) as im:
         assert isinstance(im, IcoImagePlugin.IcoImageFile)

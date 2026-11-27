@@ -20,9 +20,20 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
     UINT8 n;
     UINT8 *ptr;
 
-    if ((state->xsize * state->bits + 7) / 8 > state->bytes) {
-        state->errcode = IMAGING_CODEC_OVERRUN;
-        return -1;
+    // Check that the buffer holds one line of input.
+    // Row size is computed in 64-bit arithmetic to prevent overflow for wide images
+    if (state->planes) {
+        // Planar raw modes (P;2L/P;4L) store each line
+        // as state->planes padded bit planes, not as packed pixels
+        if ((int64_t)state->planes * (((int64_t)state->xsize + 7) / 8) > state->bytes) {
+            state->errcode = IMAGING_CODEC_OVERRUN;
+            return -1;
+        }
+    } else {
+        if (((int64_t)state->bits * state->xsize + 7) / 8 > state->bytes) {
+            state->errcode = IMAGING_CODEC_OVERRUN;
+            return -1;
+        }
     }
 
     ptr = buf;
@@ -62,9 +73,9 @@ ImagingPcxDecode(Imaging im, ImagingCodecState state, UINT8 *buf, Py_ssize_t byt
         if (state->x >= state->bytes) {
             int bands;
             int xsize = 0;
-            if (state->bits == 2 || state->bits == 4) {
+            if (state->planes) {
                 xsize = (state->xsize + 7) / 8;
-                bands = state->bits;
+                bands = state->planes;
             } else {
                 xsize = state->xsize;
                 bands = im->bands;

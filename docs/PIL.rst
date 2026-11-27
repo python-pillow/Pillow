@@ -101,9 +101,9 @@ can be found here.
     :undoc-members:
     :show-inheritance:
 
-    .. method:: __new__(cls, text, lang, tkey)
+    .. method:: __new__(cls, text, lang=None, tkey=None)
 
-        :param value: value for this key
+        :param text: value for this key
         :param lang: language code
         :param tkey: UTF-8 version of the key name
 

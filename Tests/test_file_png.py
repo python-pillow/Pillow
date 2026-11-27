@@ -621,6 +621,14 @@ class TestFilePng:
                 im = roundtrip(im, icc_profile=expected_icc)
                 assert im.info["icc_profile"] == expected_icc
 
+    def test_multiple_icc_profiles(self) -> None:
+        iccp = chunk(b"iCCP", b"first\0\0", zlib.compress(b"profile"))
+        # An unknown compression method would raise an error if not ignored
+        second_iccp = chunk(b"iCCP", b"second\0\1", zlib.compress(b"other"))
+
+        with Image.open(BytesIO(HEAD + iccp + second_iccp + TAIL)) as im:
+            assert im.info["icc_profile"] == b"profile"
+
     def test_discard_icc_profile(self) -> None:
         with Image.open("Tests/images/icc_profile.png") as im:
             assert "icc_profile" in im.info

@@ -294,8 +294,10 @@ def test_seek_decompression_bomb() -> None:
         data = fp.read()
     data = data[:89957] + b"\xff\xff\xff\xff" + data[89961:]
     im = MpoImagePlugin.MpoImageFile(BytesIO(data))
+    size = im.size
     with pytest.raises(Image.DecompressionBombError):
         im.seek(1)
+    assert im.size == size
 
 
 def test_seek_mode_change() -> None:

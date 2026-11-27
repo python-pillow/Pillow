@@ -18,6 +18,7 @@ from __future__ import annotations
 __lazy_modules__ = {"PIL._binary", "math"}
 
 import math
+import re
 
 from . import Image, ImageFile
 from ._binary import i16be as i16
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
 # --------------------------------------------------------------------
 
 b_whitespace = b"\x20\x09\x0a\x0b\x0c\x0d"
+comment_end = re.compile(rb"[\r\n]")
 
 MODES = {
     # standard
@@ -173,10 +175,9 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
         return self.fd.read(ImageFile.SAFEBLOCK)
 
     def _find_comment_end(self, block: bytes, start: int = 0) -> int:
-        a = block.find(b"\n", start)
-        b = block.find(b"\r", start)
-        # lowest nonnegative index (or -1)
-        return max(a, b) if -1 in {a, b} else min(a, b)
+        # Stop at the first line ending
+        m = comment_end.search(block, start)
+        return m.start() if m else -1  # lowest nonnegative index (or -1)
 
     def _ignore_comments(self, block: bytes) -> bytes:
         if self._comment_spans:
@@ -195,22 +196,25 @@ class PpmPlainDecoder(ImageFile.PyDecoder):
 
         # Search for any further comments
         self._comment_spans = False
+        data: list[bytes] = []
+        data_start = 0
         while True:
-            comment_start = block.find(b"#")
+            comment_start = block.find(b"#", data_start)
             if comment_start == -1:
                 # No comment found
+                data.append(block[data_start:])
                 break
+            data.append(block[data_start:comment_start])
             comment_end = self._find_comment_end(block, comment_start)
             if comment_end != -1:
                 # Comment ends in this block
-                # Delete comment
-                block = block[:comment_start] + block[comment_end + 1 :]
+                # Skip comment
+                data_start = comment_end + 1
             else:
                 # Comment continues to next block(s)
-                block = block[:comment_start]
                 self._comment_spans = True
                 break
-        return block
+        return b"".join(data)
 
     def _decode_bitonal(self) -> bytearray:
         """
