@@ -46,7 +46,7 @@ def test_sanity() -> None:
 
 def test_unsupported_conversion() -> None:
     im = hopper()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unrecognized image mode"):
         im.convert("INVALID")
 
 

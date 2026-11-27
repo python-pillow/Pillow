@@ -1075,6 +1075,11 @@ _convert_impl(ImagingObject *self, PyObject *args) {
 
     const ModeID mode = findModeID(mode_name);
 
+    // An empty mode name means "expand palette image to its palette's mode"
+    if (mode == IMAGING_MODE_UNKNOWN && mode_name[0] != '\0') {
+        return ImagingError_ValueError("unrecognized image mode");
+    }
+
     return PyImagingNew(ImagingConvertUsingAllocator(
         self->image,
         mode,
