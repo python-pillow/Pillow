@@ -231,7 +231,7 @@ def test_binary_mod() -> None:
     )
 
 
-def test_binary_div_mod_int32_min() -> None:
+def test_binary_int32_min() -> None:
     # INT32_MIN / -1 does not fit in 32 bits
     M = Image.new("I", (1, 1), -(2**31))
     N = Image.new("I", (1, 1), -1)
