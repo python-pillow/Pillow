@@ -112,8 +112,10 @@ class FitsImageFile(ImageFile.ImageFile):
         if number_of_bits == 8:
             self._mode = rawmode = "L"
         elif number_of_bits == 16:
-            self._mode = "I;16"
-            rawmode = "I;16B"
+            # FITS 16-bit integers are signed (FITS Standard 4.0, Section 5.2);
+            # unsigned data is stored as signed with BZERO=32768
+            self._mode = "I"
+            rawmode = "I;16BS"
         elif number_of_bits == 32:
             self._mode = "I"
             rawmode = "I;32B"
@@ -123,6 +125,23 @@ class FitsImageFile(ImageFile.ImageFile):
         else:
             msg = "Unsupported number of bits"
             raise OSError(msg)
+
+        # The physical value is BZERO + BSCALE * array value (FITS Standard 4.0,
+        # Section 4.4.2.5). Scaling is left to the caller; the keywords are
+        # exposed in im.info.
+        for keyword in (b"BZERO", b"BSCALE"):
+            value = headers.get(keyword)
+            if value is None:
+                continue
+            try:
+                # parse integers directly, so values beyond float precision survive
+                number: int | float = int(value)
+            except ValueError:
+                try:
+                    number = float(value.replace(b"D", b"E"))
+                except ValueError:
+                    continue
+            self.info[keyword.decode("ascii")] = number
 
         args: tuple[str | int, ...]
         if decoder_name == "raw":
@@ -150,15 +169,36 @@ class FitsGzipDecoder(ImageFile.PyDecoder):
             rows = []
             offset = 0
             number_of_bytes = abs(self.args[0]) // 8
+            # The decompressed payload is either widened to 4-byte groups, as in
+            # existing files, or holds consecutive samples (see #10309)
+            widened = len(value) == self.state.xsize * self.state.ysize * 4
             for y in range(self.state.ysize):
                 row = bytearray()
                 for x in range(self.state.xsize):
-                    row += value[
-                        offset + 4 - 1 : offset + (4 - number_of_bytes) - 1 : -1
-                    ]
-                    offset += 4
+                    if number_of_bytes == 2:
+                        # 16-bit integers are signed; expand to the 4-byte "I" rawmode
+                        sample = (
+                            value[offset + 2 : offset + 4]
+                            if widened
+                            else value[offset : offset + 2]
+                        )
+                        pixel = int.from_bytes(sample, "big", signed=True)
+                        row += pixel.to_bytes(4, "little", signed=True)
+                    elif widened:
+                        row += value[offset + 4 - number_of_bytes : offset + 4][::-1]
+                    else:
+                        row += value[offset : offset + number_of_bytes][::-1]
+                    offset += 4 if widened else number_of_bytes
                 rows.append(row)
-        self.set_as_raw(bytes([pixel for row in rows[::-1] for pixel in row]))
+        data = bytes([pixel for row in rows[::-1] for pixel in row])
+        # The rows are little-endian; the default rawmodes for "I" and "F"
+        # are native-endian, so pass explicit little-endian ones for big-endian hosts
+        if self.mode == "I":
+            self.set_as_raw(data, "I;32S")
+        elif self.mode == "F":
+            self.set_as_raw(data, "F;32F")
+        else:
+            self.set_as_raw(data)
         return -1, 0
 
 
