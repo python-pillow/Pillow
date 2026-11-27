@@ -83,10 +83,12 @@
  * PyFPE_END_PROTECT(result)
  */
 
-#define DIV_I(type, v1, v2) ((v2) != 0) ? (v1) / (v2) : 0
+/* INT32_MIN / -1 overflows; return INT32_MIN, as two's complement wraps */
+#define DIV_I(type, v1, v2) \
+    ((v2) == 0) ? 0 : ((v2) == -1 && (v1) == INT32_MIN) ? INT32_MIN : (v1) / (v2)
 #define DIV_F(type, v1, v2) ((v2) != 0.0F) ? (v1) / (v2) : 0.0F
 
-#define MOD_I(type, v1, v2) ((v2) != 0) ? (v1) % (v2) : 0
+#define MOD_I(type, v1, v2) ((v2) != 0 && (v2) != -1) ? (v1) % (v2) : 0
 #define MOD_F(type, v1, v2) ((v2) != 0.0F) ? fmod((v1), (v2)) : 0.0F
 
 static int
