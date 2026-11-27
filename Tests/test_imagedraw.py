@@ -748,6 +748,26 @@ def test_polygon_translucent() -> None:
     assert_image_equal_tofile(im, expected)
 
 
+@timeout_unless_slower_valgrind(4)
+def test_polygon_fill_many_points() -> None:
+    im = Image.new("L", (100, 100))
+    draw = ImageDraw.Draw(im)
+
+    draw.polygon([(i, i % 2) for i in range(32_000)], fill=255)
+
+    assert im.getbbox() is not None
+
+
+@timeout_unless_slower_valgrind(4)
+def test_polygon_fill_many_points_translucent() -> None:
+    im = Image.new("RGB", (100, 100))
+    draw = ImageDraw.Draw(im, "RGBA")
+
+    draw.polygon([(i, (i % 2) * 99) for i in range(10_000)], fill=(255, 0, 0, 127))
+
+    assert im.getbbox() is not None
+
+
 @pytest.mark.parametrize("bbox", BBOX)
 def test_rectangle(bbox: Coords) -> None:
     # Arrange
