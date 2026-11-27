@@ -120,14 +120,7 @@ def _get_fp_length(fp: IO[bytes]) -> int:
             return length
         else:
             return fp.getbuffer().nbytes
-    try:
-        return os.fstat(fp.fileno()).st_size
-    except (AttributeError, OSError):
-        pos = fp.tell()
-        fp.seek(0, io.SEEK_END)
-        length = fp.tell()
-        fp.seek(pos)
-        return length
+    return os.fstat(fp.fileno()).st_size
 
 
 def _tilesort(t: _Tile) -> int:

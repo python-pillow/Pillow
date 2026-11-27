@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-import io
-
 import pytest
 
 from PIL import ContainerIO, Image
+
+from .helper import assert_image_equal_tofile, skip_unless_feature
+
+TYPE_CHECKING = False
+if TYPE_CHECKING:
+    from pathlib import Path
 
 TEST_FILE = "Tests/images/dummy.container"
 
@@ -194,7 +198,21 @@ def test_file(bytesmode: bool) -> None:
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 0, 120)
 
-        with pytest.raises(io.UnsupportedOperation):
-            container.fileno()
+        assert isinstance(container.fileno(), int)
         container.flush()
         container.close()
+
+
+@skip_unless_feature("libtiff")
+def test_libtiff_with_offset(tmp_path: Path) -> None:
+    # libtiff must read the tar file from the ContainerIO offset, rather than the start
+    with open("Tests/images/tiff_adobe_deflate.tif", "rb") as fp:
+        data = fp.read()
+
+    f = tmp_path / "temp"
+    f.write_bytes(b"\x00" + data)
+    with open(f, "rb") as fp:
+        container = ContainerIO.ContainerIO(fp, 1, 1 + len(data))
+
+        with Image.open(container) as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.tif")

@@ -165,10 +165,7 @@ class ContainerIO(IO[AnyStr]):
         return line
 
     def fileno(self) -> int:
-        # The parent file descriptor is not limited to this region,
-        # so it cannot stand in for the container
-        msg = "ContainerIO does not have a file descriptor"
-        raise io.UnsupportedOperation(msg)
+        return self.fh.fileno()
 
     def flush(self) -> None:
         self.fh.flush()
