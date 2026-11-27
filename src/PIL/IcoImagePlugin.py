@@ -131,11 +131,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             frame.save(image_io, "dib")
 
             if bits != 32:
-                and_mask = Image.new("1", size)
+                and_mask = Image.new("1", frame.size)
                 ImageFile._save(
                     and_mask,
                     image_io,
-                    [ImageFile._Tile("raw", args=("1", 0, -1))],
+                    [ImageFile._Tile("raw", args=("1", (width + 31) // 32 * 4, -1))],
                 )
         else:
             frame.save(image_io, "png")
@@ -293,15 +293,13 @@ class IcoFile:
                         raise
             else:
                 # get AND image from end of bitmap
-                w = im.size[0]
-                if (w % 32) > 0:
-                    # bitmap row data is aligned to word boundaries
-                    w += 32 - (im.size[0] % 32)
+                # bitmap row data is aligned to word boundaries
+                stride = (im.size[0] + 31) // 32 * 4
 
                 # the total mask data is
                 # padded row size * height / bits per char
 
-                total_bytes = int((w * im.size[1]) / 8)
+                total_bytes = stride * im.size[1]
                 and_mask_offset = header.offset + header.size - total_bytes
 
                 self.buf.seek(and_mask_offset)
@@ -314,7 +312,7 @@ class IcoFile:
                         im.size,  # (w, h)
                         mask_data,  # source chars
                         "raw",  # raw decoder
-                        ("1;I", int(w / 8), -1),  # 1bpp inverted, padded, reversed
+                        ("1;I", stride, -1),  # 1bpp inverted, padded, reversed
                     )
                 except ValueError:
                     if ImageFile.LOAD_TRUNCATED_IMAGES:
