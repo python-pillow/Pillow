@@ -53,6 +53,9 @@ typedef struct {
 
     int interlaced; /* is the image interlaced? (PNG) */
 
+    int has_rgb_transparency;
+    int rgb_transparency[3];
+
     int pass; /* current pass of the interlaced image (PNG) */
 
 } ZIPSTATE;
