@@ -135,20 +135,32 @@ class PcfFontFile(FontFile.FontFile):
         properties = {}
 
         fp, format, i16, i32 = self._getformat(PCF_PROPERTIES)
+        table_size = self.toc[PCF_PROPERTIES][1]
 
         nprops = i32(fp.read(4))
 
+        # Each property record is 9 bytes. The table also holds the format,
+        # the property count and the string table size, so the count cannot
+        # be more than the table has room for.
+        if nprops * 9 > table_size - 12:
+            msg = "PCF property count exceeds table size"
+            raise OSError(msg)
+
         # read property description
-        p = [(i32(fp.read(4)), i8(fp.read(1)), i32(fp.read(4))) for _ in range(nprops)]
+        records = fp.read(nprops * 9)
+        if len(records) < nprops * 9:
+            msg = "Truncated PCF properties"
+            raise OSError(msg)
 
         if nprops & 3:
             fp.seek(4 - (nprops & 3), io.SEEK_CUR)  # pad
 
         data = fp.read(i32(fp.read(4)))
 
-        # Read each distinct string only once, and do not let the strings add up
-        # to more than the table holds, so that the work done here is bounded
-        # by the size of the table rather than the number of properties.
+        # Property names and string values are offsets into the string table.
+        # Read each distinct string only once, and do not let the strings add
+        # up to more than the table holds, so the work here stays bounded by
+        # the size of the table rather than the number of properties.
         strings: dict[int, bytes] = {}
         remaining = len(data)
 
@@ -165,7 +177,12 @@ class PcfFontFile(FontFile.FontFile):
                     raise OSError(msg)
             return strings[o]
 
-        for k, s, v in p:
+        for i in range(0, len(records), 9):
+            k, s, v = (
+                i32(records[i : i + 4]),
+                records[i + 4],
+                i32(records[i + 5 : i + 9]),
+            )
             property_value: bytes | int = string_at(v) if s else v
             properties[string_at(k)] = property_value
 
