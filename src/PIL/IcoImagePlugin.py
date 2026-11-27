@@ -131,11 +131,11 @@ def _save(im: Image.Image, fp: IO[bytes], filename: str | bytes) -> None:
             frame.save(image_io, "dib")
 
             if bits != 32:
-                and_mask = Image.new("1", size)
+                and_mask = Image.new("1", frame.size)
                 ImageFile._save(
                     and_mask,
                     image_io,
-                    [ImageFile._Tile("raw", args=("1", 0, -1))],
+                    [ImageFile._Tile("raw", args=("1", (width + 31) // 32 * 4, -1))],
                 )
         else:
             frame.save(image_io, "png")
