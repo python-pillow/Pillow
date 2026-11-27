@@ -226,14 +226,14 @@ class TestImage:
             im.save(io.BytesIO(), "UNKNOWN", dpi=(72, 72))
         with pytest.raises(KeyError):
             im.save(io.BytesIO(), "BMP", save_all=True, dpi=(72, 72))
-        with pytest.raises(OSError):
+        with pytest.raises(FileNotFoundError):
             im.save(tmp_path / "missing" / "temp.bmp", dpi=(72, 72))
-        assert getattr(im, "encoderinfo", {}) == {}
+        assert not hasattr(im, "encoderinfo")
 
-        b = io.BytesIO()
-        im.save(b, "BMP", dpi=(300, 300))
-        with Image.open(b) as reloaded:
-            assert reloaded.info["dpi"] == pytest.approx((300, 300), abs=0.01)
+        f = tmp_path / "temp.bmp"
+        im.save(f, dpi=(300, 300))
+        with Image.open(f) as reloaded:
+            assert reloaded.info["dpi"] == pytest.approx((300, 300), abs=0.001)
 
     def test_internals(self) -> None:
         im = Image.new("L", (100, 100))
