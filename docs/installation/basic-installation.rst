@@ -73,7 +73,7 @@ and :pypi:`olefile` for Pillow to read FPX and MIC images::
 
 .. tab:: Android
 
-    We provide binaries for Android in the wheel format, for x86 and arm64 devices.
+    We provide binaries for Android in the wheel format, for x86-64 and arm64 devices.
 
 .. tab:: Windows
 
