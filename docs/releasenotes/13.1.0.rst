@@ -68,6 +68,13 @@ Two new image processing operations are available in ImageOps.
 Other changes
 =============
 
+PCF font properties
+^^^^^^^^^^^^^^^^^^^
+
+When loading a PCF font, each property string is now read from the string table only
+once. If the property strings add up to more than the size of the string table, or an
+offset is beyond the end of it, an :py:exc:`OSError` is raised.
+
 PCX and ZIP decoder row sizes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

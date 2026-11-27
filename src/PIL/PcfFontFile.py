@@ -146,9 +146,28 @@ class PcfFontFile(FontFile.FontFile):
 
         data = fp.read(i32(fp.read(4)))
 
+        # Read each distinct string only once, and do not let the strings add up
+        # to more than the table holds, so that the work done here is bounded
+        # by the size of the table rather than the number of properties.
+        strings: dict[int, bytes] = {}
+        remaining = len(data)
+
+        def string_at(o: int) -> bytes:
+            nonlocal remaining
+            if o not in strings:
+                if o >= len(data):
+                    msg = "PCF property string offset out of range"
+                    raise OSError(msg)
+                strings[o] = sz(data, o)
+                remaining -= len(strings[o]) + 1
+                if remaining < 0:
+                    msg = "PCF property strings exceed string table size"
+                    raise OSError(msg)
+            return strings[o]
+
         for k, s, v in p:
-            property_value: bytes | int = sz(data, v) if s else v
-            properties[sz(data, k)] = property_value
+            property_value: bytes | int = string_at(v) if s else v
+            properties[string_at(k)] = property_value
 
         return properties
 
