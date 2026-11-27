@@ -938,13 +938,20 @@ ImagingDrawBitmap(Imaging im, int x0, int y0, Imaging bitmap, const void *ink, i
 
 typedef struct {
     int32_t a, b, cx, cy, ex, ey;
-    int64_t a2, b2, a2b2;
+    uint64_t a2, b2, a2b2;
     int8_t finished;
 } quarter_state;
 
 void
 quarter_init(quarter_state *s, int32_t a, int32_t b) {
-    if (a < 0 || b < 0) {
+    // quarter_delta() is only evaluated next to the curve, where its value is
+    // at most about one step, 4 * (a^2 * (b + 2) + b^2 * (a + 2)). Make sure
+    // that fits comfortably in int64_t, otherwise the walk below can go wrong
+    // and never finish. Such ellipses are far too large to draw, so draw
+    // nothing, as for invalid (negative) input.
+    double da = a, db = b;
+    if (a < 0 || b < 0 ||
+        4.0 * (da * da * (db + 2) + db * db * (da + 2)) > 4611686018427387904.0) {
         s->finished = 1;
     } else {
         s->a = a;
@@ -953,8 +960,8 @@ quarter_init(quarter_state *s, int32_t a, int32_t b) {
         s->cy = b % 2;
         s->ex = a % 2;
         s->ey = b;
-        s->a2 = (int64_t)a * a;
-        s->b2 = (int64_t)b * b;
+        s->a2 = (uint64_t)a * a;
+        s->b2 = (uint64_t)b * b;
         s->a2b2 = s->a2 * s->b2;
         s->finished = 0;
     }
@@ -964,7 +971,24 @@ quarter_init(quarter_state *s, int32_t a, int32_t b) {
 // of the point into the ellipse equation
 int64_t
 quarter_delta(quarter_state *s, int64_t x, int64_t y) {
-    return llabs(s->a2 * y * y + s->b2 * x * x - s->a2b2);
+    // The terms can exceed INT64_MAX, so calculate with wrapping unsigned
+    // arithmetic. The result itself fits in int64_t (see quarter_init()).
+    uint64_t d = s->a2 * (uint64_t)(y * y) + s->b2 * (uint64_t)(x * x) - s->a2b2;
+    return llabs((int64_t)d);
+}
+
+// Whether the walk moves horizontally, to (x - 2, y), from point (x, y)
+static int
+quarter_horizontal(quarter_state *s, int32_t x, int32_t y) {
+    if (x <= 1) {
+        return 0;
+    }
+    int64_t ndelta = quarter_delta(s, x, y + 2);
+    int64_t newdelta = quarter_delta(s, x - 2, y + 2);
+    if (ndelta > newdelta) {
+        ndelta = newdelta;
+    }
+    return ndelta > quarter_delta(s, x - 2, y);
 }
 
 int8_t
@@ -995,10 +1019,69 @@ quarter_next(quarter_state *s, int32_t *ret_x, int32_t *ret_y) {
                 ny = s->cy;
             }
         }
+        if (ny == s->cy) {
+            // A horizontal move. Along a flat part of a wide ellipse there can
+            // be a very long run of these, and callers only use the first and
+            // last point of each row, so skip to the end of the run. Moving
+            // left only makes the next move less likely to be horizontal, so
+            // binary search for the last point that moves horizontally.
+            int32_t lo = 0, hi = nx / 2;
+            while (lo < hi) {
+                int32_t mid = lo + (hi - lo + 1) / 2;
+                if (quarter_horizontal(s, nx - 2 * (mid - 1), ny)) {
+                    lo = mid;
+                } else {
+                    hi = mid - 1;
+                }
+            }
+            nx -= 2 * lo;
+        }
         s->cx = nx;
         s->cy = ny;
     }
     return 0;
+}
+
+// Whether the walk moves vertically, to (x, y + 2), from point (x, y)
+static int
+quarter_vertical(quarter_state *s, int32_t x, int32_t y) {
+    if (x <= 1) {
+        return 1;
+    }
+    int64_t ndelta = quarter_delta(s, x, y + 2);
+    return ndelta <= quarter_delta(s, x - 2, y + 2) &&
+           ndelta <= quarter_delta(s, x - 2, y);
+}
+
+// Advance the walk so that the next point returned is the first one with
+// cy >= y0, where y0 has the same parity as b. Along a steep part of a tall
+// ellipse there can be a very long run of vertical moves, so skip over them.
+// Moving up only makes the next move less likely to be vertical, so binary
+// search for the last point that moves vertically.
+static void
+quarter_skip(quarter_state *s, int32_t y0) {
+    int32_t x, y;
+    while (!s->finished && s->cy < y0) {
+        int32_t hi = (y0 - s->cy) / 2;
+        if (hi > (s->ey - s->cy) / 2) {
+            hi = (s->ey - s->cy) / 2;
+        }
+        if (hi >= 1 && !(s->cx == s->ex && s->cy == s->ey) &&
+            quarter_vertical(s, s->cx, s->cy)) {
+            int32_t lo = 1;
+            while (lo < hi) {
+                int32_t mid = lo + (hi - lo + 1) / 2;
+                if (quarter_vertical(s, s->cx, s->cy + 2 * (mid - 1))) {
+                    lo = mid;
+                } else {
+                    hi = mid - 1;
+                }
+            }
+            s->cy += 2 * lo;
+        } else {
+            quarter_next(s, &x, &y);
+        }
+    }
 }
 
 // quarter_* stuff can "draw" a quarter of an ellipse with thickness 1, great.
@@ -1012,6 +1095,7 @@ quarter_next(quarter_state *s, int32_t *ret_x, int32_t *ret_y) {
 typedef struct {
     quarter_state st_o, st_i;
     int32_t py, pl, pr;
+    int32_t ymax;
     int32_t cy[4], cl[4], cr[4];
     int8_t bufcnt;
     int8_t finished;
@@ -1022,6 +1106,7 @@ void
 ellipse_init(ellipse_state *s, int32_t a, int32_t b, int32_t w) {
     s->bufcnt = 0;
     s->leftmost = a % 2;
+    s->ymax = INT32_MAX;
     quarter_init(&s->st_o, a, b);
     if (w < 1 || quarter_next(&s->st_o, &s->pr, &s->py) == -1) {
         s->finished = 1;
@@ -1032,10 +1117,58 @@ ellipse_init(ellipse_state *s, int32_t a, int32_t b, int32_t w) {
     }
 }
 
+// Only produce rows with ymin <= |y| <= ymax. Rows below ymin are skipped
+// without walking over each of them, rows above ymax are not produced.
+// Must be called before the first ellipse_next().
+static void
+ellipse_rows(ellipse_state *s, int32_t ymin, int32_t ymax) {
+    s->ymax = ymax;
+    if (s->finished || ymin <= s->py) {
+        return;
+    }
+    // first row at or above ymin, rows having the same parity as py
+    ymin += (ymin - s->py) % 2;
+    quarter_skip(&s->st_o, ymin);
+    if (quarter_next(&s->st_o, &s->pr, &s->py) == -1) {
+        s->finished = 1;
+        return;
+    }
+    // as if ellipse_next() had just produced the row before
+    int32_t cx, cy;
+    quarter_skip(&s->st_i, s->py);
+    s->pl = quarter_next(&s->st_i, &cx, &cy) == -1 ? s->leftmost : cx;
+}
+
+// Rows |y| of an ellipse with bounding box (x0, y0, x0 + a, y0 + b) that can
+// land on the image. Returns 0 if no row can.
+static int
+ellipse_visible_rows(Imaging im, int y0, int b, int32_t *ymin, int32_t *ymax) {
+    // Row for y is y0 + (b + y) / 2, row for -y is y0 + (b - y) / 2
+    int64_t lo1 = -2 * (int64_t)y0 - b - 2;
+    int64_t hi1 = 2 * ((int64_t)im->ysize - y0) - b + 2;
+    int64_t lo2 = b - 2 * ((int64_t)im->ysize - y0) - 2;
+    int64_t hi2 = b + 2 * (int64_t)y0 + 2;
+    int64_t lo = INT64_MAX, hi = -1;
+    if (hi1 >= 0 && hi1 >= lo1) {
+        lo = lo1;
+        hi = hi1;
+    }
+    if (hi2 >= 0 && hi2 >= lo2) {
+        lo = lo2 < lo ? lo2 : lo;
+        hi = hi2 > hi ? hi2 : hi;
+    }
+    if (hi < 0) {
+        return 0;
+    }
+    *ymin = lo < 0 ? 0 : (int32_t)(lo > INT32_MAX ? INT32_MAX : lo);
+    *ymax = hi > INT32_MAX ? INT32_MAX : (int32_t)hi;
+    return 1;
+}
+
 int8_t
 ellipse_next(ellipse_state *s, int32_t *ret_x0, int32_t *ret_y, int32_t *ret_x1) {
     if (s->bufcnt == 0) {
-        if (s->finished) {
+        if (s->finished || s->py > s->ymax) {
             return -1;
         }
         int32_t y = s->py;
@@ -1555,8 +1688,14 @@ ellipseNew(
         width = a + b;
     }
 
+    int32_t ymin, ymax;
+    if (!ellipse_visible_rows(im, y0, b, &ymin, &ymax)) {
+        return 0;
+    }
+
     ellipse_state st;
     ellipse_init(&st, a, b, width);
+    ellipse_rows(&st, ymin, ymax);
     int32_t X0, Y, X1;
     while (ellipse_next(&st, &X0, &Y, &X1) != -1) {
         draw->hline(
@@ -1590,8 +1729,14 @@ clipEllipseNew(
         return 0;
     }
 
+    int32_t ymin, ymax;
+    if (!ellipse_visible_rows(im, y0, b, &ymin, &ymax)) {
+        return 0;
+    }
+
     clip_ellipse_state st;
     init(&st, a, b, width, start, end);
+    ellipse_rows(&st.st, ymin, ymax);
     int32_t X0, Y, X1;
     int next_code;
     while ((next_code = clip_ellipse_next(&st, &X0, &Y, &X1)) >= 0) {
