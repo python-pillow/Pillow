@@ -220,6 +220,21 @@ class TestImage:
             with pytest.raises(ValueError):
                 im.save(temp_file)
 
+    def test_failed_save_does_not_affect_next_save(self, tmp_path: Path) -> None:
+        im = Image.new("RGB", (1, 1))
+        with pytest.raises(KeyError):
+            im.save(io.BytesIO(), "UNKNOWN", dpi=(72, 72))
+        with pytest.raises(KeyError):
+            im.save(io.BytesIO(), "BMP", save_all=True, dpi=(72, 72))
+        with pytest.raises(OSError):
+            im.save(tmp_path / "missing" / "temp.bmp", dpi=(72, 72))
+        assert getattr(im, "encoderinfo", {}) == {}
+
+        b = io.BytesIO()
+        im.save(b, "BMP", dpi=(300, 300))
+        with Image.open(b) as reloaded:
+            assert reloaded.info["dpi"] == pytest.approx((300, 300), abs=0.01)
+
     def test_internals(self) -> None:
         im = Image.new("L", (100, 100))
         im.readonly = 1
