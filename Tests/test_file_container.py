@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+
 import pytest
 
 from PIL import ContainerIO, Image
@@ -192,6 +194,7 @@ def test_file(bytesmode: bool) -> None:
     with open(TEST_FILE, "rb" if bytesmode else "r") as fh:
         container = ContainerIO.ContainerIO(fh, 0, 120)
 
-        assert isinstance(container.fileno(), int)
+        with pytest.raises(io.UnsupportedOperation):
+            container.fileno()
         container.flush()
         container.close()

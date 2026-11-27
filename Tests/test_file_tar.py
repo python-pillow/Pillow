@@ -7,7 +7,7 @@ import pytest
 
 from PIL import Image, TarIO, features
 
-from .helper import is_pypy
+from .helper import assert_image_equal_tofile, is_pypy, skip_unless_feature
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -93,3 +93,15 @@ def test_zero_length_member(tmp_path: Path) -> None:
         with Image.open(tar) as im:
             im.load()
             assert im.size == (128, 128)
+
+
+@skip_unless_feature("libtiff")
+def test_libtiff_member(tmp_path: Path) -> None:
+    # libtiff must not read the tar file from its start
+    tmpfile = tmp_path / "temp.tar"
+    with tarfile.open(tmpfile, "w") as tar:
+        tar.add("Tests/images/tiff_adobe_deflate.tif", "test.tif")
+
+    with TarIO.TarIO(str(tmpfile), "test.tif") as tar:
+        with Image.open(tar) as im:
+            assert_image_equal_tofile(im, "Tests/images/tiff_adobe_deflate.png")
