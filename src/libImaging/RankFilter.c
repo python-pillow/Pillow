@@ -191,7 +191,7 @@ ImagingRankFilter(Imaging im, int size, int rank) {
     } else {
         /* safety net (we shouldn't end up here) */
         ImagingDelete(imOut);
-        return (Imaging)ImagingError_NotSupportedError("unsupported pixel type");
+        return (Imaging)ImagingError_NotSupportedError("unsupported image mode");
     }
 
     ImagingCopyPalette(imOut, im);

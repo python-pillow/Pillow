@@ -791,8 +791,9 @@ ImagingResample(
                 ResampleVertical = _ImagingResampleVertical_32bpc;
                 break;
             default:
+                /* safety net (we shouldn't end up here) */
                 return (Imaging)ImagingError_NotSupportedError(
-                    "special image types are not supported"
+                    "unsupported image mode"
                 );
         }
     }

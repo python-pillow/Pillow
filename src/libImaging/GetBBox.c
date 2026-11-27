@@ -379,7 +379,7 @@ getcolors32(Imaging im, int maxcolors, int *size) {
     }
 
     if (!im->image32) {
-        return ImagingError_ModeError("image must have 32-bit data");
+        return ImagingError_ModeError("unsupported image mode");
     }
 
     table = calloc(code_size + 1, sizeof(ImagingColorItem));

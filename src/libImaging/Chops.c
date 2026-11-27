@@ -80,9 +80,7 @@ create(Imaging im1, Imaging im2, const ModeID mode) {
         return (Imaging)ImagingError_ModeError("both images must have mode 1");
     }
     if (im1->type != im2->type || im1->bands != im2->bands) {
-        return (Imaging)ImagingError_Mismatch(
-            "images must have the same type and band count"
-        );
+        return (Imaging)ImagingError_Mismatch("images must have compatible modes");
     }
 
     xsize = (im1->xsize < im2->xsize) ? im1->xsize : im2->xsize;

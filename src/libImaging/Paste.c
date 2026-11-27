@@ -320,7 +320,7 @@ ImagingPaste(
         return -1;
     }
     if (pixelsize != imIn->pixelsize) {
-        (void)ImagingError_Mismatch("images must have the same pixel size");
+        (void)ImagingError_Mismatch("images must have compatible modes");
         return -1;
     }
 
