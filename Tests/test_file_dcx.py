@@ -150,5 +150,7 @@ def test_seek_decompression_bomb() -> None:
         + second_frame
     )
     with Image.open(b) as im:
+        size = im.size
         with pytest.raises(Image.DecompressionBombError):
             im.seek(1)
+        assert im.size == size

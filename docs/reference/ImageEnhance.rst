@@ -20,9 +20,6 @@ Example: Vary the sharpness of an image
         factor = i / 4.0
         enhancer.enhance(factor).show(f"Sharpness {factor:f}")
 
-Also see the :file:`enhancer.py` demo program in the :file:`Scripts/`
-directory.
-
 Classes
 -------
 

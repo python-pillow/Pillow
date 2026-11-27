@@ -231,6 +231,20 @@ def test_binary_mod() -> None:
     )
 
 
+def test_binary_int32_min() -> None:
+    # INT32_MIN / -1 does not fit in 32 bits
+    M = Image.new("I", (1, 1), -(2**31))
+    N = Image.new("I", (1, 1), -1)
+    assert (
+        pixel(ImageMath.lambda_eval(lambda args: args["M"] / args["N"], M=M, N=N))
+        == "I -2147483648"
+    )
+    assert (
+        pixel(ImageMath.lambda_eval(lambda args: args["M"] % args["N"], M=M, N=N))
+        == "I 0"
+    )
+
+
 def test_bitwise_invert() -> None:
     assert pixel(ImageMath.lambda_eval(lambda args: ~args["Z"], Z=Z)) == "I -1"
     assert pixel(ImageMath.lambda_eval(lambda args: ~args["A"], A=A)) == "I -2"

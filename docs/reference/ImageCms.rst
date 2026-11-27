@@ -234,14 +234,14 @@ can be easily displayed in a chromaticity diagram, for example).
         one in (X, Y, Z) space and one in (x, y, Y) space.
 
     .. py:attribute:: colorant_table
-        :type: list[str]
+        :type: list[str] | None
 
         This tag identifies the colorants used in the profile by a unique
         name and set of PCSXYZ or PCSLAB values (see 9.2.19 of
         ICC.1:2010).
 
     .. py:attribute:: colorant_table_out
-        :type: list[str]
+        :type: list[str] | None
 
         This tag identifies the colorants used in the profile by a unique
         name and set of PCSLAB values (for DeviceLink profiles only, see
@@ -304,6 +304,18 @@ can be easily displayed in a chromaticity diagram, for example).
 
         The (English) display string for the viewing conditions (see
         9.2.48 of ICC.1:2010).
+
+    .. py:attribute:: icc_measurement_condition
+        :type: dict | None
+
+        The measurement conditions, as a dictionary with ``observer``,
+        ``backing``, ``geo``, ``flare`` and ``illuminant_type`` keys.
+
+    .. py:attribute:: icc_viewing_condition
+        :type: dict | None
+
+        The viewing conditions, as a dictionary with ``illuminant``,
+        ``surround`` and ``illuminant_type`` keys.
 
     .. py:attribute:: screening_description
         :type: str | None
@@ -393,4 +405,4 @@ can be easily displayed in a chromaticity diagram, for example).
         :param direction: One of ``ImageCms.Direction.INPUT``,
                   ``ImageCms.Direction.OUTPUT``
                   and ``ImageCms.Direction.PROOF``
-        :return: Boolean if the intent and direction is supported.
+        :return: 1 if the intent and direction is supported, 0 otherwise.

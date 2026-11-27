@@ -29,8 +29,8 @@ from . import Image
 @lru_cache
 def getrgb(color: str) -> tuple[int, int, int] | tuple[int, int, int, int]:
     """
-     Convert a color string to an RGB or RGBA tuple. If the string cannot be
-     parsed, this function raises a :py:exc:`ValueError` exception.
+    Convert a color string to an RGB or RGBA tuple. If the string cannot be
+    parsed, this function raises a :py:exc:`ValueError` exception.
 
     .. versionadded:: 1.1.4
 

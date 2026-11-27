@@ -86,6 +86,9 @@ class PcxImageFile(ImageFile.ImageFile):
             provided_stride,
         )
 
+        size = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        Image._decompression_bomb_check(size)
+        self._size = size
         self.info["dpi"] = i16(s, 12), i16(s, 14)
 
         if bits == 1 and planes == 1:
@@ -119,7 +122,6 @@ class PcxImageFile(ImageFile.ImageFile):
             raise OSError(msg)
 
         self._mode = mode
-        self._size = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
         # Don't trust the passed in stride.
         # Calculate the approximate position for ourselves.

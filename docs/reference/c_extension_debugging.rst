@@ -1,6 +1,12 @@
 C extension debugging on Linux, with GDB/Valgrind
 =================================================
 
+.. note::
+
+    This guide was written using Python 3.8 on Ubuntu 18.04 and 20.04, and the
+    example commands and output reflect that. Package names, Python versions and
+    paths will differ on current systems.
+
 Install the tools
 -----------------
 
@@ -321,7 +327,7 @@ Take your test image, and make a really simple harness.
 
 -  Now that we've confirmed that there's something odd/bad going on,
    it's time to gdb.
--  Start with ``gdb python``
+-  Start with ``gdb python3``
 -  Set a break point starting with the valgrind stack trace.
    ``b TiffDecode.c:269``
 -  Run the script with ``r test_tiff.py``

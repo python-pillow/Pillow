@@ -40,6 +40,7 @@ import sys
 from typing import NamedTuple, cast
 
 from . import ExifTags, Image
+from ._deprecate import deprecate
 from ._util import DeferredError, is_path
 
 TYPE_CHECKING = False
@@ -280,7 +281,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     im, TiffImagePlugin.TiffImageFile
                 ):
                     im._frame_pos = {ifd_offset: None}
-                    im._seek(0)
+                    im._seek_to(0)
                 im.load()
                 child_images.append(im)
 
@@ -413,6 +414,11 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                     self.tile, lambda tile: (tile[0], tile[1], tile[3])
                 )
             ]
+            fp_length = None
+            if not hasattr(self, "load_seek"):
+                # Some file objects allocate the requested size before reading,
+                # so reads are limited to the length of the file
+                fp_length = self._get_fp_length()
             for i, (decoder_name, extents, offset, args) in enumerate(self.tile):
                 seek(offset)
                 decoder = Image._getdecoder(
@@ -431,6 +437,8 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
                                 next_offset = self.tile[i + 1].offset
                                 if next_offset > offset:
                                     read_bytes = next_offset - offset
+                            if fp_length is not None:
+                                read_bytes = min(read_bytes, max(fp_length - offset, 0))
                             try:
                                 s = read(read_bytes)
                             except (IndexError, struct.error) as e:
@@ -499,6 +507,7 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
         return _get_fp_length(fp)
 
     def _seek_check(self, frame: int) -> bool:
+        deprecate("ImageFile.ImageFile._seek_check", 15, "SeekableImageFile")
         if (
             frame < 0
             # Only check upper limit on frames if additional seek operations
@@ -512,6 +521,40 @@ class ImageFile(Image.Image, metaclass=abc.ABCMeta):
             raise EOFError(msg)
 
         return self.tell() != frame
+
+
+class SeekableImageFile(ImageFile):
+    _tile_size: tuple[int, int] | None = None
+
+    def seek(self, frame: int) -> None:
+        if (
+            frame < 0
+            # Only check upper limit on frames if additional seek operations
+            # are not required to do so
+            or (
+                not (hasattr(self, "_n_frames") and self._n_frames is None)
+                and frame >= getattr(self, "n_frames")
+            )
+        ):
+            msg = "attempt to seek outside sequence"
+            raise EOFError(msg)
+
+        if self.tell() == frame:
+            return
+
+        self._seek_to(frame)
+
+        if self._im is not None and (
+            self.im.size != (self._tile_size or self.size)
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (self.tile and self.readonly)
+        ):
+            self._im = None
+
+    @abc.abstractmethod
+    def _seek_to(self, frame: int) -> None:
+        pass
 
 
 class StubHandler(abc.ABC):
@@ -934,7 +977,7 @@ class PyDecoder(PyCodec):
 class PyEncoder(PyCodec):
     """
     Python implementation of a format encoder. Override this class and
-    add the decoding logic in the :meth:`encode` method.
+    add the encoding logic in the :meth:`encode` method.
 
     See :ref:`Writing Your Own File Codec in Python<file-codecs-py>`
     """

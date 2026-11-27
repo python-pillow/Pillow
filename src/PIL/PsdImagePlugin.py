@@ -68,7 +68,7 @@ def _accept(prefix: bytes) -> bool:
 # Image plugin for Photoshop images.
 
 
-class PsdImageFile(ImageFile.ImageFile):
+class PsdImageFile(ImageFile.SeekableImageFile):
     format = "PSD"
     format_description = "Adobe Photoshop"
     _close_exclusive_fp_after_loading = False
@@ -176,9 +176,7 @@ class PsdImageFile(ImageFile.ImageFile):
     def is_animated(self) -> bool:
         return len(self.layers) != 0
 
-    def seek(self, layer: int) -> None:
-        if not self._seek_check(layer):
-            return
+    def _seek_to(self, layer: int) -> None:
         if isinstance(self._fp, DeferredError):
             raise self._fp.ex
 
@@ -192,7 +190,6 @@ class PsdImageFile(ImageFile.ImageFile):
             _, self._mode, _, self.tile = self.layers[layer - 1]
         self.frame = layer
         self.fp = self._fp
-        Image.Image.seek(self, layer)
 
     def tell(self) -> int:
         # return layer number (0=image, 1..max=layers)

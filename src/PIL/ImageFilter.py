@@ -97,7 +97,7 @@ class RankFilter(Filter):
 
     :param size: The kernel size, in pixels.
     :param rank: What pixel value to pick.  Use 0 for a min filter,
-                 ``size * size / 2`` for a median filter, ``size * size - 1``
+                 ``size * size // 2`` for a median filter, ``size * size - 1``
                  for a max filter, etc.
     """
 
