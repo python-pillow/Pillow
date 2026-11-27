@@ -62,7 +62,7 @@ from fractions import Fraction
 from numbers import Number, Rational
 from typing import IO, Any, cast
 
-from . import ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
+from . import ContainerIO, ExifTags, Image, ImageFile, ImageOps, ImagePalette, TiffTags
 from ._binary import i16be as i16
 from ._binary import i32be as i32
 from ._util import DeferredError, is_path
@@ -1431,7 +1431,11 @@ class TiffImageFile(ImageFile.SeekableImageFile):
         # into a string in python.
         assert self.fp is not None
         try:
-            fp = hasattr(self.fp, "fileno") and self.fp.fileno()
+            fp = (
+                hasattr(self.fp, "fileno")
+                and not isinstance(self.fp, ContainerIO.ContainerIO)
+                and self.fp.fileno()
+            )
             # flush the file descriptor, prevents error on pypy 2.4+
             # should also eliminate the need for fp.tell
             # in _seek
