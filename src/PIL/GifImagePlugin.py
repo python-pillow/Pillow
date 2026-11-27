@@ -667,6 +667,7 @@ def _write_multiple_frames(
 
     im_frames: list[_Frame] = []
     previous_im: Image.Image | None = None
+    restore_im: Image.Image | None = None
     frame_count = 0
     background_im = None
     for imSequence in itertools.chain([im], im.encoderinfo.get("append_images", [])):
@@ -694,6 +695,8 @@ def _write_multiple_frames(
 
             diff_frame = None
             if im_frames and previous_im:
+                previous_disposal = im_frames[-1].encoderinfo.get("disposal")
+
                 # delta frame
                 delta, bbox = _getbbox(previous_im, im_frame)
                 if not bbox:
@@ -704,7 +707,7 @@ def _write_multiple_frames(
                             + encoderinfo["duration"]
                         )
                     continue
-                if im_frames[-1].encoderinfo.get("disposal") == 2:
+                if previous_disposal == 2:
                     # To appear correctly in viewers using a convention,
                     # only consider transparency, and not background color
                     color = im.encoderinfo.get(
@@ -718,6 +721,12 @@ def _write_multiple_frames(
                             assert first_palette is not None
                             background_im.putpalette(first_palette)
                         bbox = _getbbox(background_im, im_frame)[1]
+                    else:
+                        bbox = (0, 0, *im_frame.size)
+                elif previous_disposal == 3:
+                    # Restore to previous
+                    if restore_im is not None:
+                        bbox = _getbbox(restore_im, im_frame)[1]
                     else:
                         bbox = (0, 0, *im_frame.size)
                 elif encoderinfo.get("optimize") and im_frame.mode != "1":
@@ -743,8 +752,15 @@ def _write_multiple_frames(
                         unchanged = delta.point([255, *(0,) * 255], "1")
                         diff_frame = im_frame.copy()
                         diff_frame.paste(encoderinfo["transparency"], mask=unchanged)
+                if not bbox:
+                    bbox = (0, 0, 1, 1)
             else:
                 bbox = None
+            if im_frames:
+                if previous_disposal == 2:
+                    restore_im = None
+                elif previous_disposal != 3:
+                    restore_im = previous_im
             previous_im = im_frame
             im_frames.append(_Frame(diff_frame or im_frame, bbox, encoderinfo))
 

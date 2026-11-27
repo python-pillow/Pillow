@@ -667,6 +667,27 @@ def test_save_dispose(tmp_path: Path) -> None:
             assert img.disposal_method == i + 1
 
 
+@pytest.mark.parametrize("disposal", (3, [1, 3, 3, 1, 3]))
+def test_save_dispose3_restores_previous_frame(
+    disposal: int | list[int], tmp_path: Path
+) -> None:
+    frame0 = Image.new("RGB", (8, 8), (255, 0, 0))
+    frame1 = frame0.copy()
+    frame1.paste((0, 255, 0), (0, 0, 4, 4))
+    frame2 = frame1.copy()
+    frame2.paste((0, 0, 255), (4, 4, 8, 8))
+    frames = [frame0, frame1, frame2, frame0, frame2]
+
+    out = tmp_path / "temp.gif"
+    frames[0].save(out, save_all=True, append_images=frames[1:], disposal=disposal)
+
+    with Image.open(out) as reread:
+        assert isinstance(reread, GifImagePlugin.GifImageFile)
+        assert reread.n_frames == len(frames)
+        for i, frame in enumerate(ImageSequence.Iterator(reread)):
+            assert_image_equal(frame.convert("RGB"), frames[i])
+
+
 def test_dispose2_palette(tmp_path: Path) -> None:
     out = tmp_path / "temp.gif"
 
