@@ -45,25 +45,13 @@ The ImageColor module supports the following string formats:
   can be given as ``hsb(hue, saturation%, brightness%)``, where each of the
   values are used as they are in HSV.
 
-* Common HTML color names. The :py:mod:`~PIL.ImageColor` module provides some
-  140 standard color names, based on the colors supported by the X Window
+* Common HTML color names. The :py:mod:`~PIL.ImageColor` module provides about
+  150 standard color names, based on the colors supported by the X Window
   system and most web browsers. Color names are case insensitive. For example,
   ``red`` and ``Red`` both specify pure red.
 
 Functions
 ---------
 
-.. py:function:: getrgb(color)
-
-    Convert a color string to an RGB tuple. If the string cannot be parsed,
-    this function raises a :py:exc:`ValueError` exception.
-
-    .. versionadded:: 1.1.4
-
-.. py:function:: getcolor(color, mode)
-
-    Same as :py:func:`~PIL.ImageColor.getrgb`, but converts the RGB value to a
-    grayscale value if the mode is not color or a palette image. If the string
-    cannot be parsed, this function raises a :py:exc:`ValueError` exception.
-
-    .. versionadded:: 1.1.4
+.. autofunction:: PIL.ImageColor.getrgb
+.. autofunction:: PIL.ImageColor.getcolor

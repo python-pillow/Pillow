@@ -286,10 +286,10 @@ class PdfDict(_DictBase):
                 value = value[2:]
 
             relationship = "Z"
-            if len(value) > 17:
+            if len(value) >= 17:
                 relationship = value[14]
                 offset = int(value[15:17]) * 60
-                if len(value) > 20:
+                if len(value) >= 20:
                     offset += int(value[18:20])
 
             format = "%Y%m%d%H%M%S"[: len(value) - 2]
@@ -799,7 +799,7 @@ class PdfParser:
 
     @classmethod
     def interpret_name(cls, raw: bytes, as_text: bool = False) -> str | bytes:
-        name = b""
+        name = bytearray()
         for m in cls.re_hashes_in_name.finditer(raw):
             if m.group(3):
                 name += m.group(1) + bytearray.fromhex(m.group(3).decode("us-ascii"))

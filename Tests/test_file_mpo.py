@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 import warnings
 from io import BytesIO
 from typing import Any
@@ -12,6 +13,7 @@ from PIL import (
     JpegImagePlugin,
     MpoImagePlugin,
     TiffImagePlugin,
+    TiffTags,
     _binary,
 )
 
@@ -174,6 +176,37 @@ def test_truncated_makernote() -> None:
         check(ifd)
 
 
+def test_makernote_duplicate_offset() -> None:
+    # Two LONG tags that contain the same offset
+    tag_numbers = (1, 2)
+    offset = 8 + 4 + 2 + len(tag_numbers) * 12
+    data = (
+        b"FUJIFILM"
+        + _binary.o32le(12)  # offset
+        + _binary.o16le(len(tag_numbers))
+        + b"".join(
+            _binary.o16le(tag)
+            + _binary.o16le(TiffTags.LONG)
+            + _binary.o32le(16)  # count
+            + _binary.o32le(offset)
+            for tag in tag_numbers
+        )
+        + bytes(range(16 * 4))
+    )
+
+    ifd = TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[34665] = {37500: data}
+    fp = BytesIO()
+    ifd.save(fp)
+
+    e = Image.Exif()
+    e.load(fp.getvalue())
+    with pytest.warns(UserWarning, match="Tag data larger than MakerNote"):
+        makernote = e.get_ifd(37500)
+    assert makernote[1] == struct.unpack("<16L", bytes(range(64)))
+    assert 2 not in makernote
+
+
 def test_reload_exif_after_seek() -> None:
     with Image.open("Tests/images/sugarshack.mpo") as im:
         exif = im.getexif()
@@ -261,8 +294,10 @@ def test_seek_decompression_bomb() -> None:
         data = fp.read()
     data = data[:89957] + b"\xff\xff\xff\xff" + data[89961:]
     im = MpoImagePlugin.MpoImageFile(BytesIO(data))
+    size = im.size
     with pytest.raises(Image.DecompressionBombError):
         im.seek(1)
+    assert im.size == size
 
 
 def test_seek_mode_change() -> None:

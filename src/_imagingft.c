@@ -432,7 +432,7 @@ text_layout_fallback(
     }
     for (i = 0; i < count; i++) {
         if (buffer) {
-            ch = buffer[i];
+            ch = (unsigned char)buffer[i];
         } else {
             ch = PyUnicode_READ_CHAR(string, i);
         }
@@ -454,8 +454,8 @@ text_layout_fallback(
                     ft_kerning_default,
                     &delta
                 ) == 0) {
-                (*glyph_info)[i - 1].x_advance += PIXEL(delta.x);
-                (*glyph_info)[i - 1].y_advance += PIXEL(delta.y);
+                (*glyph_info)[i - 1].x_advance += delta.x;
+                (*glyph_info)[i - 1].y_advance += delta.y;
             }
         }
 
@@ -1466,7 +1466,6 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
     PyObject *axes, *item;
     Py_ssize_t i, num_coords;
     FT_Fixed *coords;
-    FT_Fixed coord;
     if (!PyArg_ParseTuple(args, "O", &axes)) {
         return NULL;
     }
@@ -1489,11 +1488,11 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
         }
 
         if (PyFloat_Check(item)) {
-            coord = PyFloat_AS_DOUBLE(item);
+            coords[i] = lround(PyFloat_AS_DOUBLE(item) * 65536);
         } else if (PyLong_Check(item)) {
-            coord = (float)PyLong_AsLong(item);
+            coords[i] = PyLong_AsLong(item) * 65536;
         } else if (PyNumber_Check(item)) {
-            coord = PyFloat_AsDouble(item);
+            coords[i] = lround(PyFloat_AsDouble(item) * 65536);
         } else {
             Py_DECREF(item);
             free(coords);
@@ -1501,7 +1500,6 @@ font_setvaraxes_impl(FontObject *self, PyObject *args) {
             return NULL;
         }
         Py_DECREF(item);
-        coords[i] = coord * 65536;
     }
 
     error = FT_Set_Var_Design_Coordinates(self->face, num_coords, coords);

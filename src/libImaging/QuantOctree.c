@@ -167,7 +167,7 @@ avg_color_from_color_bucket(const ColorBucket bucket, Pixel *dst) {
 
 static int
 compare_bucket_count(const ColorBucket a, const ColorBucket b) {
-    return b->count - a->count;
+    return a->count == b->count ? 0 : (a->count > b->count ? -1 : 1);
 }
 
 static ColorBucket

@@ -235,7 +235,7 @@ class QoiEncoder(ImageFile.PyEncoder):
             data += self._write_run()
         data += bytes((0, 0, 0, 0, 0, 0, 0, 1))  # padding
 
-        return len(data), 0, bytes(data)
+        return len(data), 1, bytes(data)
 
 
 Image.register_open(QoiImageFile.format, QoiImageFile, _accept)

@@ -746,13 +746,17 @@ class Image:
         if self.__class__ is not other.__class__:
             return False
         assert isinstance(other, Image)
-        return (
-            self.mode == other.mode
-            and self.size == other.size
-            and self.info == other.info
-            and self.getpalette() == other.getpalette()
-            and self.tobytes() == other.tobytes()
-        )
+        if self is other:
+            return True
+        if (
+            self.mode != other.mode
+            or self.size != other.size
+            or self.info != other.info
+        ):
+            return False
+        self.load()
+        other.load()
+        return self.im == other.im
 
     def __repr__(self) -> str:
         return (
@@ -870,7 +874,7 @@ class Image:
 
         self.load()
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return b""
 
         # unpack data
@@ -880,7 +884,13 @@ class Image:
 
             from . import ImageFile
 
-            bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
+            if encoder_name == "raw":
+                # Special case: allow the raw encoder to allocate
+                # a single buffer as large as it needs to encode
+                # the entire image in one shot.
+                bufsize = -1
+            else:
+                bufsize = max(ImageFile.MAXBLOCK, self.size[0] * 4)  # see RawEncode.c
 
             output = []
             while True:
@@ -903,8 +913,8 @@ class Image:
         .. note:: This method only works for mode "1" images.
 
         :param name: The name prefix to use for the bitmap variables.
-        :returns: A string containing an X11 bitmap.
-        :raises ValueError: If the mode is not "1"
+        :returns: A bytes object containing an X11 bitmap.
+        :exception ValueError: If the mode is not "1"
         """
 
         self.load()
@@ -935,7 +945,7 @@ class Image:
         but loads data into this image instead of creating a new image object.
         """
 
-        if self.width == 0 or self.height == 0:
+        if 0 in self.size:
             return
 
         decoder_args: Any = args
@@ -1036,8 +1046,8 @@ class Image:
         The default method of converting a grayscale ("L") or "RGB"
         image into a bilevel (mode "1") image uses Floyd-Steinberg
         dither to approximate the original image luminosity levels. If
-        dither is ``None``, all values larger than 127 are set to 255 (white),
-        all other values to 0 (black). To use other thresholds, use the
+        dither is :data:`Dither.NONE`, all values larger than 127 are set to 255
+        (white), all other values to 0 (black). To use other thresholds, use the
         :py:meth:`~PIL.Image.Image.point` method.
 
         When converting from "RGBA" to "P" without a ``matrix`` argument,
@@ -1423,11 +1433,22 @@ class Image:
         :returns: A core image object.
         """
 
-        x0, y0, x1, y1 = map(int, map(round, box))
+        import decimal
 
-        absolute_values = (abs(x1 - x0), abs(y1 - y0))
+        x0, y0, x1, y1 = (
+            (
+                v
+                if isinstance(v, int)
+                else int(
+                    decimal.Decimal(v).quantize(
+                        0, decimal.ROUND_HALF_DOWN if v < 0 else decimal.ROUND_HALF_UP
+                    )
+                )
+            )
+            for v in box
+        )
 
-        _decompression_bomb_check(absolute_values)
+        _decompression_bomb_check((x1 - x0, y1 - y0))
 
         return im.crop((x0, y0, x1, y1))
 
@@ -1547,8 +1568,10 @@ class Image:
 
         Note that the sequence object returned by this method is an
         internal PIL data type, which only supports certain sequence
-        operations.  To convert it to an ordinary sequence (e.g. for
-        printing), use ``list(im.getdata())``.
+        operations.
+
+        .. deprecated:: 12.1.0
+           Use :py:meth:`~PIL.Image.Image.get_flattened_data` instead.
 
         :param band: What band to return.  The default is to return
            all bands.  To return a single band, pass in the index
@@ -1826,7 +1849,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A list containing pixel counts.
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return [0] * 256 * getmodebands(self.mode)
 
         self.load()
@@ -1857,7 +1880,7 @@ class Image:
         :param extrema: An optional tuple of manually-specified extrema.
         :returns: A float value representing the image entropy
         """
-        if min(self.size) == 0:
+        if 0 in self.size:
             return 0.0
 
         self.load()
@@ -1946,7 +1969,7 @@ class Image:
             source = ImageColor.getcolor(im, self.mode)
         elif isinstance(im, Image):
             if self.mode != im.mode and (
-                self.mode != "RGB" or im.mode not in {"LA", "RGBA", "RGBa"}
+                self.mode != "RGB" or im.mode not in {"RGBA", "RGBa"}
             ):
                 # should use an adapter for this!
                 im = im.convert(self.mode)
@@ -2275,6 +2298,10 @@ class Image:
             msg = "illegal image mode"
             raise ValueError(msg)
 
+        if len(dest_map) > 256:
+            msg = "dest_map must not have more than 256 entries"
+            raise ValueError(msg)
+
         bands = 3
         palette_mode = "RGB"
         if source_palette is None:
@@ -2290,7 +2317,7 @@ class Image:
             bands = 4
             palette_mode = "RGBA"
 
-        palette_bytes = b""
+        palette_bytes = bytearray()
         new_positions = [0] * 256
 
         # pick only the used colors from the palette
@@ -2673,6 +2700,7 @@ class Image:
         :returns: None
         :exception ValueError: If the output format could not be determined
            from the file name.  Use the format option to solve this.
+        :exception KeyError: If the ``format`` is not supported for saving.
         :exception OSError: If the file could not be written.  The file
            may have been created, and may contain partial data.
         """
@@ -2721,10 +2749,6 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self._default_encoderinfo = params
-        encoderinfo = getattr(self, "encoderinfo", {})
-        self._attach_default_encoderinfo(self)
-        self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
             init()
@@ -2749,6 +2773,10 @@ class Image:
         else:
             fp = cast("IO[bytes]", fp)
 
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
+        self.encoderconfig: tuple[Any, ...] = ()
         try:
             save_handler(self, fp, filename)
         except Exception:
@@ -2794,8 +2822,14 @@ class Image:
             raise EOFError(msg)
 
         if self._im is not None and (
-            self.im.size != self.size or self.im.mode != self.mode
+            self.im.size != self.size
+            or self.im.mode != self.mode
+            # If there is an unloaded tile, then drop the current read-only core image
+            or (getattr(self, "tile", None) and self.readonly)
         ):
+            deprecate(
+                "Clearing core image in Image.Image.seek()", 15, "SeekableImageFile"
+            )
             self._im = None
 
     def show(self, title: str | None = None) -> None:
@@ -2931,6 +2965,8 @@ class Image:
                 return None
             if self.height == 0:
                 return x, self.height
+            if y == 0:
+                return x, 0
 
             aspect = self.width / self.height
             if x / y >= aspect:
@@ -2955,7 +2991,7 @@ class Image:
                 box = res[1]
 
         if self.size != final_size:
-            if min(final_size) == 0:
+            if 0 in final_size:
                 im = self.crop((0, 0, *final_size))
             else:
                 im = self.resize(
@@ -2998,7 +3034,7 @@ class Image:
           object::
 
             class Example(Image.ImageTransformHandler):
-                def transform(self, size, data, resample, fill=1):
+                def transform(self, size, image, resample, fill):
                     # Return result
 
           Implementations of :py:class:`~PIL.Image.ImageTransformHandler`
@@ -3085,6 +3121,10 @@ class Image:
         resample: int = Resampling.NEAREST,
         fill: bool = True,
     ) -> None:
+        if any(math.isinf(v) or math.isnan(v) for v in (*box, *data)):
+            msg = "invalid data"
+            raise ValueError(msg)
+
         w = box[2] - box[0]
         h = box[3] - box[1]
 
@@ -3377,19 +3417,14 @@ def frombuffer(
     If you have an entire image file in a string, wrap it in a
     :py:class:`~io.BytesIO` object, and use :py:func:`~PIL.Image.open` to load it.
 
-    The default parameters used for the "raw" decoder differs from that used for
-    :py:func:`~PIL.Image.frombytes`. This is a bug, and will probably be fixed in a
-    future release. The current release issues a warning if you do this; to disable
-    the warning, you should provide the full set of parameters. See below for details.
-
     :param mode: The image mode. See: :ref:`concept-modes`.
     :param size: The image size.
     :param data: A bytes or other buffer object containing raw
         data for the given mode.
     :param decoder_name: What decoder to use.
     :param args: Additional parameters for the given decoder.  For the
-        default encoder ("raw"), it's recommended that you provide the
-        full set of parameters::
+        default decoder ("raw"), if no parameters are given, the following
+        are used::
 
             frombuffer(mode, size, data, "raw", mode, 0, 1)
 
@@ -3404,7 +3439,7 @@ def frombuffer(
     if len(args) == 1 and isinstance(args[0], tuple):
         args = args[0]
 
-    if decoder_name == "raw" and min(size) != 0:
+    if decoder_name == "raw" and 0 not in size:
         if args == ():
             args = mode, 0, 1
         if args[0] == mode and args[0] in _MAPMODES:
@@ -3458,7 +3493,8 @@ def fromarray(obj: SupportsArrayInterface, mode: str | None = None) -> Image:
 
     In the case of NumPy, be aware that Pillow modes do not always correspond
     to NumPy dtypes. Pillow modes only offer 1-bit pixels, 8-bit pixels,
-    32-bit signed integer pixels, and 32-bit floating point pixels.
+    16-bit unsigned integer pixels, 32-bit signed integer pixels, and 32-bit
+    floating point pixels.
 
     Pillow images can also be converted to arrays::
 
@@ -4312,6 +4348,7 @@ class Exif(_ExifBase):
                             ifd_data = tag_data[ifd_offset:]
 
                             makernote = {}
+                            total_size = 0
                             for i in range(struct.unpack("<H", ifd_data[:2])[0]):
                                 ifd_tag, typ, count, data = struct.unpack(
                                     "<HHL4s", ifd_data[i * 12 + 2 : (i + 1) * 12 + 2]
@@ -4325,6 +4362,15 @@ class Exif(_ExifBase):
                                     continue
                                 size = count * unit_size
                                 if size > 4:
+                                    # Values should fit within the MakerNote,
+                                    # even before accounting for overlaps
+                                    total_size += size
+                                    if total_size > len(ifd_data):
+                                        warnings.warn(
+                                            "Tag data larger than MakerNote. "
+                                            f"Skipping tag {ifd_tag}"
+                                        )
+                                        continue
                                     (offset,) = struct.unpack("<L", data)
                                     data = ifd_data[offset - 12 : offset + size - 12]
                                 else:

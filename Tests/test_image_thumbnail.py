@@ -72,6 +72,10 @@ def test_division_by_zero() -> None:
     im.thumbnail((75, 75))
     assert im.size == (75, 0)
 
+    im = Image.new("L", (200, 2))
+    im.thumbnail((75, 0))
+    assert im.size == (75, 0)
+
 
 def test_zero_dimension() -> None:
     im = Image.new("L", (5, 0))

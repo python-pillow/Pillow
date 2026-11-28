@@ -137,7 +137,7 @@ def read_png_or_jpeg2000(
             raise ValueError(msg)
         # j2k, jpc or j2c
         fobj.seek(start)
-        jp2kstream = fobj.read(length)
+        jp2kstream = ImageFile._safe_read(fobj, length)
         f = io.BytesIO(jp2kstream)
         im = Jpeg2KImagePlugin.Jpeg2KImageFile(f)
         Image._decompression_bomb_check(im.size)

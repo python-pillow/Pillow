@@ -18,10 +18,8 @@ descriptors (X Window font formats) to this format::
         font = PcfFontFile.PcfFontFile(fp)
         imagefont = font.to_imagefont()
 
-Starting with version 1.1.4, PIL can be configured to support TrueType and
-OpenType fonts (as well as other font formats supported by the FreeType
-library). For earlier versions, TrueType support is only available as part of
-the imToolkit package.
+Pillow can also support TrueType and OpenType fonts (as well as other font
+formats supported by the FreeType library).
 
 When measuring text sizes, this module will not break at newline characters. For
 multiline text, see the :py:mod:`~PIL.ImageDraw` module.
@@ -102,8 +100,8 @@ Constants
 
 .. data:: MAX_STRING_LENGTH
 
-    Set to 1,000,000, to protect against potential DOS attacks. Pillow will
-    raise a :py:exc:`ValueError` if the number of characters is over this limit. The
+    To protect against potential DOS attacks, Pillow will raise a
+    :py:exc:`ValueError` if the number of characters is over this limit. The
     check can be disabled by setting ``ImageFont.MAX_STRING_LENGTH = None``.
 
 Dictionaries

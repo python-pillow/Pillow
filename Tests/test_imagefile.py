@@ -155,11 +155,14 @@ class TestImageFile:
         fp = FP(data)
         with Image.open(fp) as im:
             assert len(im.tile) == 7
+            last_offset = max(tile.offset for tile in im.tile)
 
             im.load()
 
-        # Despite multiple tiles, assert only one tile caused a read of maxblock size
-        assert reads.count(im.decodermaxblock) == 1
+        # Despite multiple tiles, no more than one should cause a read of maxblock size
+        assert reads.count(im.decodermaxblock) <= 1
+        # Assert the last tile only tried to read until the end of the file
+        assert reads.count(len(data) - last_offset) == 1
 
     def test_raise_typeerror(self) -> None:
         with pytest.raises(TypeError):
@@ -178,6 +181,29 @@ class TestImageFile:
         with Image.open("Tests/images/raw_negative_stride.bin") as im:
             with pytest.raises(ValueError, match="Tile offset cannot be negative"):
                 im.load()
+
+    @pytest.mark.parametrize("size", ((1, 0), (0, 1), (0, 0)))
+    def test_zero_dimension_seek(self, size: tuple[int, int]) -> None:
+        class ZeroImageFile(ImageFile.SeekableImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self._frame = 0
+                self.n_frames = 2
+                self._im = Image.core.fill(self.mode, self.size)
+
+            def _seek_to(self, frame: int) -> None:
+                self._size = (0, 0)
+                self.tile = [ImageFile._Tile("raw")]
+
+                self._frame = frame
+
+            def tell(self) -> int:
+                return self._frame
+
+        im = ZeroImageFile(BytesIO(b""))
+        im.seek(1)
+        im.load()
 
     @pytest.mark.parametrize("xy", ((-1, 0), (0, -1)))
     def test_negative_tile_extents(self, xy: tuple[int, int]) -> None:
@@ -318,11 +344,10 @@ xoff, yoff, xsize, ysize = 10, 20, 100, 100
 
 class MockImageFile(ImageFile.ImageFile):
     def _open(self) -> None:
-        self.rawmode = "RGBA"
         self._mode = "RGBA"
         self._size = (200, 200)
         self.tile = [
-            ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32, None)
+            ImageFile._Tile("MOCK", (xoff, yoff, xoff + xsize, yoff + ysize), 32)
         ]
 
 
@@ -364,7 +389,7 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", extents, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", extents, 32)]
 
         with pytest.raises(ValueError):
             im.load()
@@ -373,7 +398,7 @@ class TestPyDecoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32)]
 
         im.load()
 
@@ -442,7 +467,7 @@ class TestPyEncoder(CodecsTest):
         buf = BytesIO(b"\x00" * 255)
 
         im = MockImageFile(buf)
-        im.tile = [ImageFile._Tile("MOCK", None, 32, None)]
+        im.tile = [ImageFile._Tile("MOCK", None, 32)]
 
         fp = BytesIO()
         ImageFile._save(im, fp, [ImageFile._Tile("MOCK", None, 0, "RGB")])
@@ -481,17 +506,17 @@ class TestPyEncoder(CodecsTest):
             Image.open("Tests/images/zero_height.j2k")
 
     def test_load_prepare(self) -> None:
-        class TestImageFile(ImageFile.ImageFile):
+        class TestImageFile(ImageFile.SeekableImageFile):
             def _open(self) -> None:
                 self._mode = "1"
                 self._size = (1, 1)
                 self._frame = 0
+                self.n_frames = 2
 
-            def seek(self, frame: int) -> None:
+            def _seek_to(self, frame: int) -> None:
                 self._mode = "L"
                 self._size = (2, 2)
                 self._frame = frame
-                super().seek(frame)
 
             def tell(self) -> int:
                 return self._frame
@@ -510,3 +535,16 @@ class TestPyEncoder(CodecsTest):
         assert im._im is not None
         assert im._im.mode == im.mode
         assert im._im.size == im.size
+
+    def test_deprecation(self) -> None:
+        class TestImageFile(ImageFile.ImageFile):
+            def _open(self) -> None:
+                self._mode = "1"
+                self._size = (1, 1)
+                self.n_frames = 1
+
+        fp = BytesIO()
+        im = TestImageFile(fp)
+        with pytest.warns(DeprecationWarning, match="ImageFile.ImageFile._seek_check"):
+            with pytest.raises(EOFError, match="attempt to seek outside sequence"):
+                im._seek_check(-1)

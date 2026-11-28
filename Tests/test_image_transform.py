@@ -251,6 +251,18 @@ class TestImageTransform:
             with pytest.raises(ValueError):
                 im.transform((100, 100), None)  # type: ignore[arg-type]
 
+    def test_invalid_data(self) -> None:
+        with hopper() as im:
+            # Test __transformer data
+            for data in ([math.nan], [math.inf]):
+                with pytest.raises(ValueError, match="invalid data"):
+                    im.transform((100, 100), Image.Transform.EXTENT, data)
+
+            # Test __transformer box
+            for mesh_data in ([[(0, 0, 0, math.nan), []]], [[(0, 0, 0, math.inf), []]]):
+                with pytest.raises(ValueError, match="invalid data"):
+                    im.transform((100, 100), Image.Transform.MESH, mesh_data)
+
     @pytest.mark.parametrize("resample", (Image.Resampling.BOX, "unknown"))
     def test_unknown_resampling_filter(self, resample: Image.Resampling | str) -> None:
         with hopper() as im:

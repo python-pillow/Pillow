@@ -16,19 +16,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-class Deformer(ImageOps.SupportsGetMesh):
-    def getmesh(
-        self, im: Image.Image
-    ) -> list[
-        tuple[tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]]
-    ]:
-        x, y = im.size
-        return [((0, 0, x, y), (0, 0, x, 0, x, y, y, 0))]
-
-
-deformer = Deformer()
-
-
 def test_sanity() -> None:
     ImageOps.autocontrast(hopper("L"))
     ImageOps.autocontrast(hopper("RGB"))
@@ -53,9 +40,6 @@ def test_sanity() -> None:
 
     ImageOps.crop(hopper("L"), 1)
     ImageOps.crop(hopper("RGB"), 1)
-
-    ImageOps.deform(hopper("L"), deformer)
-    ImageOps.deform(hopper("RGB"), deformer)
 
     ImageOps.equalize(hopper("L"))
     ImageOps.equalize(hopper("RGB"))
@@ -84,11 +68,54 @@ def test_sanity() -> None:
     ImageOps.posterize(hopper("L"), 4)
     ImageOps.posterize(hopper("RGB"), 4)
 
-    ImageOps.solarize(hopper("L"))
-    ImageOps.solarize(hopper("RGB"))
+    for mode in ("L", "RGB"):
+        im = hopper(mode)
+        ImageOps.solarize(im)
 
-    ImageOps.exif_transpose(hopper("L"))
-    ImageOps.exif_transpose(hopper("RGB"))
+        ImageOps.exif_transpose(im)
+
+        ImageOps.sepia(im)
+
+        ImageOps.neon(im)
+
+
+def test_sobel() -> None:
+    im = Image.new("L", (6, 4))
+    im.paste(30, (3, 0, 6, 4))
+    im.paste(200, (5, 0, 6, 4))
+
+    edges = ImageOps._sobel(im)
+
+    # Next to a step, the result is the step times 4, the sum of one side of Kx.
+    # So 4 * 30 = 120 next to the step from 0 to 30, while next to the step from
+    # 30 to 200, 4 * (200 - 30) = 680 is clipped to 255. The border stays 0.
+    row = [0, 0, 120, 120, 255, 0]
+    assert edges.tobytes() == bytes([0] * 6 + row * 2 + [0] * 6)
+
+    # Mirrored and rotated edges go through the other three kernels
+    for method in Image.Transpose:
+        assert_image_equal(
+            ImageOps._sobel(im.transpose(method)), edges.transpose(method)
+        )
+
+
+@pytest.mark.parametrize("mode", ("L", "RGB"))
+def test_deform(mode: str) -> None:
+    class Deformer(ImageOps.SupportsGetMesh):
+        def getmesh(
+            self, im: Image.Image
+        ) -> list[
+            tuple[
+                tuple[int, int, int, int], tuple[int, int, int, int, int, int, int, int]
+            ]
+        ]:
+            w, h = im.size
+            return [((0, 0, w, h), (0, 0, 0, h, w, h, w, 0))]
+
+    deformer = Deformer()
+
+    im = hopper(mode)
+    assert_image_equal(ImageOps.deform(im, deformer), im)
 
 
 @pytest.mark.parametrize(
@@ -189,6 +216,20 @@ def test_cover(image_name: str, expected_size: tuple[int, int]) -> None:
     with Image.open("Tests/images/" + image_name) as im:
         new_im = ImageOps.cover(im, (256, 256))
         assert new_im.size == expected_size
+
+
+def test_cover_decompression_bomb(monkeypatch: pytest.MonkeyPatch) -> None:
+    # An extreme aspect ratio should not lead to a very large image
+    for size in ((1, 100_000), (100_000, 1)):
+        im = Image.new("L", size)
+        with pytest.raises(Image.DecompressionBombError):
+            ImageOps.cover(im, (256, 256))
+
+    # But if the image has the same aspect ratio as the requested size,
+    # then this will be the size the user asked for, so allow it
+    im = hopper()
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 10)
+    assert ImageOps.cover(im, (64, 64)).size == (64, 64)
 
 
 def test_pad() -> None:
@@ -592,6 +633,13 @@ def test_autocontrast_cutoff() -> None:
 
         assert autocontrast(10) == autocontrast((10, 10))
         assert autocontrast(10) != autocontrast((1, 10))
+
+
+@pytest.mark.parametrize("cutoff", ((), (10,), (10, 10, 10)))
+def test_autocontrast_invalid_cutoff(cutoff: tuple[int, ...]) -> None:
+    im = Image.new("L", (1, 1))
+    with pytest.raises(ValueError, match="cutoff must be either a tuple"):
+        ImageOps.autocontrast(im, cutoff=cutoff)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("ignore", (-1, 256, [0, -1], [0, 256]))

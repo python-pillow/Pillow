@@ -80,7 +80,7 @@ class GbrImageFile(ImageFile.ImageFile):
                 raise SyntaxError(msg)
             self.info["spacing"] = i32(self.fp.read(4))
 
-        self.info["comment"] = self.fp.read(comment_length)[:-1]
+        self.info["comment"] = ImageFile._safe_read(self.fp, comment_length)[:-1]
 
         self.tile = [ImageFile._Tile("raw", None, self.fp.tell(), self.mode)]
 

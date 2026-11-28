@@ -97,7 +97,7 @@ class RankFilter(Filter):
 
     :param size: The kernel size, in pixels.
     :param rank: What pixel value to pick.  Use 0 for a min filter,
-                 ``size * size / 2`` for a median filter, ``size * size - 1``
+                 ``size * size // 2`` for a median filter, ``size * size - 1``
                  for a max filter, etc.
     """
 
@@ -120,7 +120,11 @@ class RankFilter(Filter):
         if image.mode == "P":
             msg = "cannot filter palette images"
             raise ValueError(msg)
-        image = image.expand(self.size // 2)
+        from . import Image
+
+        margin = self.size // 2
+        Image._decompression_bomb_check(tuple(d + 2 * margin for d in image.size))
+        image = image.expand(margin)
         return image.rankfilter(self.size, self.rank)
 
 

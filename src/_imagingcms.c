@@ -636,6 +636,12 @@ cms_profile_is_intent_supported(CmsProfileObject *self, PyObject *args) {
         return NULL;
     }
 
+    /* Only valid for ICC Intents (otherwise lcms2 < 2.15 reads invalid memory in
+     * cmsio1.c). */
+    if (intent < INTENT_PERCEPTUAL || intent > INTENT_ABSOLUTE_COLORIMETRIC) {
+        return PyLong_FromLong(0);
+    }
+
     result = cmsIsIntentSupported(self->profile, intent, direction);
     return PyLong_FromLong(result != 0);
 }
