@@ -26,7 +26,11 @@ ImagingModeFilter(Imaging im, int size) {
     UINT8 maxpixel;
     int histogram[256];
 
-    if (!im || im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (im->bands != 1 || im->type != IMAGING_TYPE_UINT8) {
         return (Imaging)ImagingError_ModeError();
     }
 

@@ -29,7 +29,11 @@ ImagingConvertMatrix(Imaging im, const ModeID mode, const float m[12]) {
     ImagingSectionCookie cookie;
 
     /* Assume there's enough data in the buffer */
-    if (!im || im->bands != 3) {
+    if (!im) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+
+    if (im->bands != 3) {
         return (Imaging)ImagingError_ModeError();
     }
 
