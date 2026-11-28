@@ -7,8 +7,10 @@ from io import BytesIO
 import pytest
 
 from PIL.PdfParser import (
+    MAX_NESTING,
     IndirectObjectDef,
     IndirectReference,
+    PdfArray,
     PdfBinary,
     PdfDict,
     PdfFormatError,
@@ -292,3 +294,30 @@ def test_long_trailer_chain(tmp_path: Path) -> None:
 
     with PdfParser(f=b) as pdf:
         pass
+
+
+def test_pdf_repr_max_nesting() -> None:
+    x = PdfArray([0])
+    for _ in range(MAX_NESTING - 2):
+        x = PdfArray([x])
+    pdf_repr(x)
+
+    x = PdfArray([x])
+    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
+        pdf_repr(x)
+
+
+def test_read_indirect_missing_object() -> None:
+    b = BytesIO()
+    with PdfParser(f=b, mode="wb") as pdf:
+        pdf.start_writing()
+        pdf.write_header()
+
+        pdf.write_catalog()
+        pdf.write_xref_and_trailer()
+
+    with PdfParser(f=b) as pdf:
+        with pytest.raises(
+            PdfFormatError, match="object ID 999 not found in xref table"
+        ):
+            pdf.read_indirect(IndirectReference(999, 0))

@@ -11,7 +11,7 @@ import re
 import sys
 import time
 import zlib
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 from . import ImageFile
 
@@ -22,6 +22,8 @@ if TYPE_CHECKING:
     _DictBase = collections.UserDict[str | bytes, Any]
 else:
     _DictBase = collections.UserDict
+
+MAX_NESTING = 100
 
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
@@ -264,7 +266,7 @@ class PdfName:
 
 class PdfArray(list[Any]):
     def __bytes__(self) -> bytes:
-        return b"[ " + b" ".join(pdf_repr(x) for x in self) + b" ]"
+        return pdf_repr(self)
 
 
 class PdfDict(_DictBase):
@@ -302,17 +304,7 @@ class PdfDict(_DictBase):
         return value
 
     def __bytes__(self) -> bytes:
-        out = bytearray(b"<<")
-        for key, value in self.items():
-            if value is None:
-                continue
-            value = pdf_repr(value)
-            out.extend(b"\n")
-            out.extend(bytes(PdfName(key)))
-            out.extend(b" ")
-            out.extend(value)
-        out.extend(b"\n>>")
-        return bytes(out)
+        return pdf_repr(self)
 
 
 class PdfBinary:
@@ -345,25 +337,32 @@ class PdfStream:
             raise NotImplementedError(msg)
 
 
-def pdf_repr(x: Any) -> bytes:
+def pdf_repr(x: Any, max_nesting: int | None = None) -> bytes:
+    if max_nesting is None:
+        max_nesting = MAX_NESTING
+    if max_nesting == 0:
+        msg = "maximum nesting depth exceeded"
+        raise PdfFormatError(msg)
     if x is True:
         return b"true"
     elif x is False:
         return b"false"
     elif x is None:
         return b"null"
-    elif isinstance(x, (PdfName, PdfDict, PdfArray, PdfBinary)):
+    elif isinstance(x, (PdfName, PdfBinary)):
         return bytes(x)
+    elif isinstance(x, PdfDict):
+        return _pdf_dict_repr(x, max_nesting)
+    elif isinstance(x, dict):
+        return _pdf_dict_repr(cast("dict[PdfName | bytes | str, Any]", x), max_nesting)
+    elif isinstance(x, list):
+        return _pdf_array_repr(x, max_nesting)
     elif isinstance(x, (int, float)):
         return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
-    elif isinstance(x, dict):
-        return bytes(PdfDict(x))
-    elif isinstance(x, list):
-        return bytes(PdfArray(x))
     elif isinstance(x, str):
-        return pdf_repr(encode_text(x))
+        return pdf_repr(encode_text(x), max_nesting)
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
         x = x.replace(b"\\", b"\\\\")
@@ -372,6 +371,26 @@ def pdf_repr(x: Any) -> bytes:
         return b"(" + x + b")"
     else:
         return bytes(x)
+
+
+def _pdf_array_repr(x: list[Any], max_nesting: int) -> bytes:
+    return b"[ " + b" ".join(pdf_repr(item, max_nesting - 1) for item in x) + b" ]"
+
+
+def _pdf_dict_repr(
+    x: PdfDict | dict[PdfName | bytes | str, Any], max_nesting: int
+) -> bytes:
+    out = bytearray(b"<<")
+    for key, value in x.items():
+        if value is None:
+            continue
+        value = pdf_repr(value, max_nesting - 1)
+        out.extend(b"\n")
+        out.extend(bytes(PdfName(key)))
+        out.extend(b" ")
+        out.extend(value)
+    out.extend(b"\n>>")
+    return bytes(out)
 
 
 class PdfParser:
@@ -845,8 +864,10 @@ class PdfParser:
         data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
-        max_nesting: int = 900,
+        max_nesting: int | None = None,
     ) -> tuple[Any, int | None]:
+        if max_nesting is None:
+            max_nesting = MAX_NESTING
         if max_nesting == 0:
             return None, None
         m = cls.re_comment.match(data, offset)
@@ -1073,7 +1094,13 @@ class PdfParser:
                         self.xref_table[i] = new_entry
         return offset
 
-    def read_indirect(self, ref: IndirectReference, max_nesting: int = 900) -> Any:
+    def read_indirect(
+        self, ref: IndirectReference, max_nesting: int | None = None
+    ) -> Any:
+        check_format_condition(
+            ref[0] in self.xref_table,
+            f"object ID {ref[0]} not found in xref table",
+        )
         offset, generation = self.xref_table[ref[0]]
         check_format_condition(
             generation == ref[1],

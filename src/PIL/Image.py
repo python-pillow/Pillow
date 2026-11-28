@@ -2749,10 +2749,6 @@ class Image:
             self.load()
 
         save_all = params.pop("save_all", None)
-        self._default_encoderinfo = params
-        encoderinfo = getattr(self, "encoderinfo", {})
-        self._attach_default_encoderinfo(self)
-        self.encoderconfig: tuple[Any, ...] = ()
 
         if format.upper() not in SAVE:
             init()
@@ -2777,6 +2773,10 @@ class Image:
         else:
             fp = cast("IO[bytes]", fp)
 
+        self._default_encoderinfo = params
+        encoderinfo = getattr(self, "encoderinfo", {})
+        self._attach_default_encoderinfo(self)
+        self.encoderconfig: tuple[Any, ...] = ()
         try:
             save_handler(self, fp, filename)
         except Exception:
