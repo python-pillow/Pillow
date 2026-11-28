@@ -775,6 +775,81 @@ def test_apng_save_disposal_previous(tmp_path: Path) -> None:
         assert im.getpixel((64, 32)) == (0, 255, 0, 255)
 
 
+@pytest.mark.parametrize("mode", ("RGB", "RGBA", "L"))
+@pytest.mark.parametrize(
+    "disposal",
+    (
+        [
+            PngImagePlugin.Disposal.OP_NONE,
+            PngImagePlugin.Disposal.OP_PREVIOUS,
+            PngImagePlugin.Disposal.OP_NONE,
+        ],
+        [
+            PngImagePlugin.Disposal.OP_NONE,
+            PngImagePlugin.Disposal.OP_BACKGROUND,
+            PngImagePlugin.Disposal.OP_NONE,
+        ],
+    ),
+)
+def test_apng_save_delta_after_disposal(
+    mode: str, disposal: list[PngImagePlugin.Disposal], tmp_path: Path
+) -> None:
+    # Frames are saved as deltas, so each delta has to be taken against the canvas
+    # after the previous frame has been disposed of, not against the previous frame
+    test_file = tmp_path / "temp.png"
+    frame0 = Image.new("RGBA", (8, 8), (255, 0, 0, 255))
+    frame1 = frame0.copy()
+    frame1.paste((0, 255, 0, 255), (0, 0, 4, 4))
+    frame2 = frame1.copy()
+    frame2.paste((0, 0, 255, 255), (4, 4, 8, 8))
+    frames = [frame.convert(mode) for frame in (frame0, frame1, frame2)]
+
+    frames[0].save(
+        test_file,
+        save_all=True,
+        append_images=frames[1:],
+        disposal=disposal,
+        duration=100,
+    )
+    with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
+        assert reread.n_frames == 3
+        for i, frame in enumerate(frames):
+            reread.seek(i)
+            assert_image_equal(reread.convert("RGBA"), frame.convert("RGBA"))
+
+
+@pytest.mark.parametrize("mode", ("RGB", "RGBA", "L"))
+def test_apng_save_delta_after_disposal_previous_chain(
+    mode: str, tmp_path: Path
+) -> None:
+    # OP_PREVIOUS restores the canvas as it was before the frame, which is not
+    # necessarily the previous frame itself when that frame was disposed of
+    test_file = tmp_path / "temp.png"
+    frame0 = Image.new("RGBA", (8, 8), (255, 0, 0, 255))
+    frame1 = frame0.copy()
+    frame1.paste((0, 255, 0, 255), (0, 0, 4, 4))
+    frame2 = frame1.copy()
+    frame2.paste((0, 0, 255, 255), (4, 4, 8, 8))
+    frame3 = frame2.copy()
+    frame3.paste((255, 255, 255, 255), (0, 4, 4, 8))
+    frames = [frame.convert(mode) for frame in (frame0, frame1, frame2, frame3)]
+
+    frames[0].save(
+        test_file,
+        save_all=True,
+        append_images=frames[1:],
+        disposal=PngImagePlugin.Disposal.OP_PREVIOUS,
+        duration=100,
+    )
+    with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
+        assert reread.n_frames == 4
+        for i, frame in enumerate(frames):
+            reread.seek(i)
+            assert_image_equal(reread.convert("RGBA"), frame.convert("RGBA"))
+
+
 def test_apng_save_disposal_background(tmp_path: Path) -> None:
     test_file = tmp_path / "temp.png"
     im = Image.new("L", (32, 32), 128)
@@ -937,3 +1012,30 @@ def test_different_durations(tmp_path: Path) -> None:
 
         reloaded.seek(1)
         assert reloaded.info["duration"] == 1000
+
+
+@pytest.mark.parametrize("mode", ("RGB", "L"))
+def test_apng_save_delta_after_background_disposal_without_alpha(
+    mode: str, tmp_path: Path
+) -> None:
+    # OP_BACKGROUND clears to transparent black, so black pixels in the next frame
+    # are not already present on the canvas, even though the frames have no alpha
+    test_file = tmp_path / "temp.png"
+    frame0 = Image.new(mode, (8, 8), 0)
+    frame1 = frame0.copy()
+    frame1.putpixel((7, 7), 255 if mode == "L" else (255, 255, 255))
+
+    frame0.save(
+        test_file,
+        save_all=True,
+        append_images=[frame1],
+        disposal=PngImagePlugin.Disposal.OP_BACKGROUND,
+        duration=100,
+    )
+    with Image.open(test_file) as reread:
+        assert isinstance(reread, PngImagePlugin.PngImageFile)
+        assert reread.n_frames == 2
+        reread.seek(1)
+        # The whole frame has to be written, not just the changed pixel
+        assert reread.tile[0].extents == (0, 0, 8, 8)
+        assert_image_equal(reread, frame1)
