@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
     from . import ImageFile
     from ._imaging import ImagingFont
-    from ._imagingft import Font
+    from ._imagingft import Font, FontFamily
     from ._typing import StrOrBytesPath
 
 
@@ -249,34 +249,10 @@ class ImageFont(BaseImageFont):
 # <b>truetype</b> factory function to create font objects.
 
 
-class FreeTypeFont(BaseImageFont):
-    """FreeType font wrapper (requires _imagingft service)"""
+class BaseFreeTypeFont(BaseImageFont):
+    font: Font | FontFamily
 
-    font: Font
-    font_bytes: bytes
-
-    def __init__(
-        self,
-        font: StrOrBytesPath | BinaryIO,
-        size: float = 10,
-        index: int = 0,
-        encoding: str = "",
-        layout_engine: Layout | None = None,
-    ) -> None:
-        # FIXME: use service provider instead
-
-        if isinstance(core, DeferredError):
-            raise core.ex
-
-        if size <= 0:
-            msg = f"font size must be greater than 0, not {size}"
-            raise ValueError(msg)
-
-        self.path = font
-        self.size = size
-        self.index = index
-        self.encoding = encoding
-
+    def _set_layout_engine(self, layout_engine: Layout | None) -> None:
         if layout_engine not in (Layout.BASIC, Layout.RAQM):
             layout_engine = Layout.BASIC
             if core.HAVE_RAQM:
@@ -289,42 +265,6 @@ class FreeTypeFont(BaseImageFont):
             layout_engine = Layout.BASIC
 
         self.layout_engine = layout_engine
-
-        def load_from_bytes(f: IO[bytes]) -> None:
-            self.font_bytes = f.read()
-            self.font = core.getfont(
-                "", size, index, encoding, layout_engine, self.font_bytes
-            )
-
-        if is_path(font):
-            font = os.fspath(font)
-            if sys.platform == "win32":
-                font_bytes_path = font if isinstance(font, bytes) else font.encode()
-                try:
-                    font_bytes_path.decode("ascii")
-                except UnicodeDecodeError:
-                    # FreeType cannot load fonts with non-ASCII characters on Windows
-                    # So load it into memory first
-                    with open(font, "rb") as f:
-                        load_from_bytes(f)
-                    return
-            self.font = core.getfont(font, size, index, encoding, layout_engine)
-        else:
-            load_from_bytes(cast("IO[bytes]", font))
-
-    def __getstate__(self) -> list[Any]:
-        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
-
-    def __setstate__(self, state: list[Any]) -> None:
-        path, size, index, encoding, layout_engine = state
-        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
-
-    def getname(self) -> tuple[str | None, str | None]:
-        """
-        :return: A tuple of the font family (e.g. Helvetica) and the font style
-            (e.g. Bold)
-        """
-        return self.font.family, self.font.style
 
     def getmetrics(self) -> tuple[int, int]:
         """
@@ -689,6 +629,73 @@ class FreeTypeFont(BaseImageFont):
             start,
         )
 
+
+class FreeTypeFont(BaseFreeTypeFont):
+    """FreeType font wrapper (requires _imagingft service)"""
+
+    font: Font
+    font_bytes: bytes
+
+    def __init__(
+        self,
+        font: StrOrBytesPath | BinaryIO,
+        size: float = 10,
+        index: int = 0,
+        encoding: str = "",
+        layout_engine: Layout | None = None,
+    ) -> None:
+        # FIXME: use service provider instead
+
+        if isinstance(core, DeferredError):
+            raise core.ex
+
+        if size <= 0:
+            msg = f"font size must be greater than 0, not {size}"
+            raise ValueError(msg)
+
+        self.path = font
+        self.size = size
+        self.index = index
+        self.encoding = encoding
+
+        self._set_layout_engine(layout_engine)
+
+        def load_from_bytes(f: IO[bytes]) -> None:
+            self.font_bytes = f.read()
+            self.font = core.getfont(
+                "", size, index, encoding, self.layout_engine, self.font_bytes
+            )
+
+        if is_path(font):
+            font = os.fspath(font)
+            if sys.platform == "win32":
+                font_bytes_path = font if isinstance(font, bytes) else font.encode()
+                try:
+                    font_bytes_path.decode("ascii")
+                except UnicodeDecodeError:
+                    # FreeType cannot load fonts with non-ASCII characters on Windows
+                    # So load it into memory first
+                    with open(font, "rb") as f:
+                        load_from_bytes(f)
+                    return
+            self.font = core.getfont(font, size, index, encoding, self.layout_engine)
+        else:
+            load_from_bytes(cast("IO[bytes]", font))
+
+    def __getstate__(self) -> list[Any]:
+        return [self.path, self.size, self.index, self.encoding, self.layout_engine]
+
+    def __setstate__(self, state: list[Any]) -> None:
+        path, size, index, encoding, layout_engine = state
+        FreeTypeFont.__init__(self, path, size, index, encoding, layout_engine)
+
+    def getname(self) -> tuple[str | None, str | None]:
+        """
+        :return: A tuple of the font family (e.g. Helvetica) and the font style
+            (e.g. Bold)
+        """
+        return self.font.family, self.font.style
+
     def font_variant(
         self,
         font: StrOrBytesPath | BinaryIO | None = None,
@@ -769,6 +776,48 @@ class FreeTypeFont(BaseImageFont):
         :exception OSError: If the font is not a variation font.
         """
         self.font.setvaraxes(axes)
+
+
+class FreeTypeFontFamily(BaseFreeTypeFont):
+    """
+    A family of FreeType fonts. When drawing or measuring text, each character
+    uses the first font in the family that contains it, falling back to the next
+    font if it is missing.
+
+    The fonts are used at the sizes, indexes and encodings they were loaded with.
+
+    .. versionadded:: 13.1.0
+    """
+
+    def __init__(
+        self, *fonts: FreeTypeFont, layout_engine: Layout | None = None
+    ) -> None:
+        """
+        :param fonts: :py:class:`FreeTypeFont` instances, in order of preference.
+        :param layout_engine: Which layout engine to use, if available:
+                              :attr:`.ImageFont.Layout.BASIC` or
+                              :attr:`.ImageFont.Layout.RAQM`. If it is available,
+                              Raqm layout will be used by default. Otherwise, basic
+                              layout will be used.
+        """
+        if not fonts:
+            msg = "At least one font is required"
+            raise ValueError(msg)
+
+        self._set_layout_engine(layout_engine)
+
+        font_tuples: list[tuple[Any, ...]] = []
+        for font in fonts:
+            if not isinstance(font, FreeTypeFont):
+                msg = "Only FreeTypeFont instances can be used in a font family"  # type: ignore[unreachable]
+                raise TypeError(msg)
+            if hasattr(font, "font_bytes"):
+                font_tuples.append(
+                    ("", font.size, font.index, font.encoding, font.font_bytes)
+                )
+            else:
+                font_tuples.append((font.path, font.size, font.index, font.encoding))
+        self.font = core.getfamily(tuple(font_tuples), layout_engine)
 
 
 class TransposedFont(BaseImageFont):

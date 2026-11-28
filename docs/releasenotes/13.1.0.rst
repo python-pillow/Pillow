@@ -43,6 +43,24 @@ TODO
 API additions
 =============
 
+Font fallback
+^^^^^^^^^^^^^
+
+:py:class:`~PIL.ImageFont.FreeTypeFontFamily` combines several
+:py:class:`~PIL.ImageFont.FreeTypeFont` instances. When drawing or measuring text, each
+character uses the first font that contains it, so that text can mix scripts or
+symbols that no single font covers::
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    latin = ImageFont.truetype("FreeMono.ttf", 24)
+    japanese = ImageFont.truetype("NotoSansJP-Regular.otf", 24)
+    family = ImageFont.FreeTypeFontFamily(latin, japanese)
+
+    im = Image.new("RGB", (200, 50), "white")
+    draw = ImageDraw.Draw(im)
+    draw.text((10, 10), "abあいcd", "black", family)
+
 ImageFile.SeekableImageFile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

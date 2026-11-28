@@ -27,7 +27,7 @@ FreeTypeFont.getmask2 fill parameter
 
 .. deprecated:: 9.2.0
 
-The undocumented ``fill`` parameter of :py:meth:`.FreeTypeFont.getmask2`
+The undocumented ``fill`` parameter of ``FreeTypeFont.getmask2()``
 has been deprecated and will be removed in Pillow 10 (2023-07-01).
 
 PhotoImage.paste box parameter
@@ -56,7 +56,7 @@ have been deprecated and will be removed in Pillow 10 (2023-07-01):
 =============================================================== =============================================================================================================
 Deprecated                                                      Use instead
 =============================================================== =============================================================================================================
-``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     :py:meth:`.FreeTypeFont.getbbox` and :py:meth:`.FreeTypeFont.getlength`
+``FreeTypeFont.getsize()`` and ``FreeTypeFont.getoffset()``     ``FreeTypeFont.getbbox()`` and ``FreeTypeFont.getlength()``
 ``FreeTypeFont.getsize_multiline()``                            :py:meth:`.ImageDraw.multiline_textbbox`
 ``ImageFont.getsize()``                                         :py:meth:`.ImageFont.getbbox` and :py:meth:`.ImageFont.getlength`
 ``TransposedFont.getsize()``                                    :py:meth:`.TransposedFont.getbbox` and :py:meth:`.TransposedFont.getlength`
