@@ -25,6 +25,6 @@ if __name__ == "__main__":
     run_module(*pytest_args, "checks/check_wheel.py")
 
     # Mobile platforms don't support multiple processes.
-    if sys.platform not in ["android", "ios"]:
+    if sys.platform not in {"android", "ios"}:
         pytest_args += ["--numprocesses=logical", "--dist=worksteal"]
     run_module(*pytest_args, "Tests")
