@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 else:
     _DictBase = collections.UserDict
 
+MAX_NESTING = 100
+
 
 # see 7.9.2.2 Text String Type on page 86 and D.3 PDFDocEncoding Character Set
 # on page 656
@@ -335,12 +337,8 @@ class PdfStream:
             raise NotImplementedError(msg)
 
 
-# Maximum object-nesting depth accepted when serializing PDF values
-MAX_SERIALIZE_NESTING = 100
-
-
 def pdf_repr(x: Any, depth: int = 0) -> bytes:
-    if depth > MAX_SERIALIZE_NESTING:
+    if depth > MAX_NESTING:
         msg = "maximum nesting depth exceeded"
         raise PdfFormatError(msg)
     if x is True:
@@ -862,8 +860,10 @@ class PdfParser:
         data: bytes | bytearray | memoryview | mmap.mmap,
         offset: int,
         expect_indirect: IndirectReference | None = None,
-        max_nesting: int = 900,
+        max_nesting: int | None = None,
     ) -> tuple[Any, int | None]:
+        if max_nesting is None:
+            max_nesting = MAX_NESTING
         if max_nesting == 0:
             return None, None
         m = cls.re_comment.match(data, offset)
@@ -1090,7 +1090,9 @@ class PdfParser:
                         self.xref_table[i] = new_entry
         return offset
 
-    def read_indirect(self, ref: IndirectReference, max_nesting: int = 900) -> Any:
+    def read_indirect(
+        self, ref: IndirectReference, max_nesting: int | None = None
+    ) -> Any:
         check_format_condition(
             ref[0] in self.xref_table,
             f"object ID {ref[0]} not found in xref table",
