@@ -493,12 +493,15 @@ class PdfParser:
         assert self.f is not None
         self.f.write(f"% {s}\n".encode())
 
-    def write_catalog(self) -> IndirectReference:
+    def _start_catalog(self) -> IndirectReference:
         assert self.f is not None
         self.del_root()
         self.root_ref = self.next_object_id(self.f.tell())
         self.pages_ref = self.next_object_id(0)
         self.rewrite_pages()
+        return self.root_ref
+
+    def _end_catalog(self) -> None:
         self.write_obj(self.root_ref, Type=PdfName(b"Catalog"), Pages=self.pages_ref)
         self.write_obj(
             self.pages_ref,
@@ -506,7 +509,11 @@ class PdfParser:
             Count=len(self.pages),
             Kids=self.pages,
         )
-        return self.root_ref
+
+    def write_catalog(self) -> IndirectReference:
+        root_ref = self._start_catalog()
+        self._end_catalog()
+        return root_ref
 
     def rewrite_pages(self) -> None:
         pages_tree_nodes_to_delete = []

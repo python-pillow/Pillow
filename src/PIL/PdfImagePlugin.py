@@ -238,22 +238,10 @@ def _save(
         for append_im in append_images:
             append_im.encoderinfo = im.encoderinfo.copy()
             ims.append(append_im)
-    number_of_pages = 0
-    page_refs = []
-    contents_refs = []
-    for im in ims:
-        im_number_of_pages = 1
-        if save_all:
-            im_number_of_pages = getattr(im, "n_frames", 1)
-        number_of_pages += im_number_of_pages
-        for i in range(im_number_of_pages):
-            page_refs.append(existing_pdf.next_object_id(0))
-            contents_refs.append(existing_pdf.next_object_id(0))
-            existing_pdf.pages.append(page_refs[-1])
 
     #
-    # catalog and list of pages
-    existing_pdf.write_catalog()
+    # list of pages and catalog
+    existing_pdf._start_catalog()
 
     page_number = 0
     for im_sequence in ims:
@@ -266,8 +254,10 @@ def _save(
             #
             # page
 
+            page_ref = existing_pdf.next_object_id(0)
+            contents_ref = existing_pdf.next_object_id(0)
             existing_pdf.write_page(
-                page_refs[page_number],
+                page_ref,
                 Resources=PdfParser.PdfDict(
                     ProcSet=[PdfParser.PdfName("PDF"), PdfParser.PdfName(procset)],
                     XObject=PdfParser.PdfDict(image=image_ref),
@@ -278,8 +268,9 @@ def _save(
                     im.width * 72.0 / x_resolution,
                     im.height * 72.0 / y_resolution,
                 ],
-                Contents=contents_refs[page_number],
+                Contents=contents_ref,
             )
+            existing_pdf.pages.append(page_ref)
 
             #
             # page contents
@@ -289,9 +280,11 @@ def _save(
                 im.height * 72.0 / y_resolution,
             )
 
-            existing_pdf.write_obj(contents_refs[page_number], stream=page_contents)
+            existing_pdf.write_obj(contents_ref, stream=page_contents)
 
             page_number += 1
+
+    existing_pdf._end_catalog()
 
     #
     # trailer
