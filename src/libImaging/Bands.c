@@ -29,7 +29,7 @@ ImagingGetBand(Imaging imIn, int band) {
 
     /* Check arguments */
     if (!imIn) {
-        return (Imaging)ImagingError_ModeError();
+        return (Imaging)ImagingError_ValueError(NULL);
     }
 
     if (band < 0 || band >= imIn->bands) {

@@ -29,8 +29,11 @@ ImagingAlphaComposite(Imaging imDst, Imaging imSrc) {
     Imaging imOut;
 
     /* Check arguments */
-    if (!imDst || !imSrc ||
-        (imDst->mode != IMAGING_MODE_RGBA && imDst->mode != IMAGING_MODE_LA)) {
+    if (!imDst || !imSrc) {
+        return ImagingError_ValueError(NULL);
+    }
+
+    if (imDst->mode != IMAGING_MODE_RGBA && imDst->mode != IMAGING_MODE_LA) {
         return ImagingError_ModeError();
     }
 
