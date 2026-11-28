@@ -1226,6 +1226,18 @@ class _Frame(NamedTuple):
     encoderinfo: dict[str, Any]
 
 
+def _getbbox(
+    base_im: Image.Image, im_frame: Image.Image
+) -> tuple[int, int, int, int] | None:
+    if im_frame.mode.startswith("I;16"):
+        base_im = Image.frombytes("LA", base_im.size, base_im.tobytes())
+        im_frame = Image.frombytes("LA", im_frame.size, im_frame.tobytes())
+    elif im_frame.mode != base_im.mode:
+        im_frame = im_frame.convert(base_im.mode)
+    delta = ImageChops.subtract_modulo(im_frame, base_im)
+    return delta.getbbox(alpha_only=False)
+
+
 def _write_multiple_frames(
     im: Image.Image,
     fp: IO[bytes],
@@ -1268,14 +1280,7 @@ def _write_multiple_frames(
 
             if im_frames:
                 previous = im_frames[-1]
-                if mode.startswith("I;16"):
-                    delta = ImageChops.subtract_modulo(
-                        Image.frombytes("LA", im.size, im_frame.tobytes()),
-                        Image.frombytes("LA", im.size, previous.im.tobytes()),
-                    )
-                else:
-                    delta = ImageChops.subtract_modulo(im_frame, previous.im)
-                bbox = delta.getbbox(alpha_only=False)
+                bbox = _getbbox(previous.im, im_frame)
                 if not bbox and "duration" in encoderinfo:
                     new_duration = (
                         previous.encoderinfo["duration"] + encoderinfo["duration"]
@@ -1285,16 +1290,7 @@ def _write_multiple_frames(
                         previous.encoderinfo["duration"] = new_duration
                         continue
                 if disposed is not None:
-                    if mode.startswith("I;16"):
-                        delta = ImageChops.subtract_modulo(
-                            Image.frombytes("LA", im.size, im_frame.tobytes()),
-                            Image.frombytes("LA", im.size, disposed.tobytes()),
-                        )
-                    else:
-                        delta = ImageChops.subtract_modulo(
-                            im_frame.convert(disposed.mode), disposed
-                        )
-                    bbox = delta.getbbox(alpha_only=False)
+                    bbox = _getbbox(disposed, im_frame)
             else:
                 bbox = None
             im_frames.append(_Frame(im_frame, bbox, encoderinfo))
