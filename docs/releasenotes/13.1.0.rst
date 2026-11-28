@@ -118,6 +118,17 @@ Coordinates ending in .5 were rounded to the nearest even integer, so a box of t
 size could give an image one pixel larger or smaller depending on where it was. They
 are now always rounded up.
 
+Android
+^^^^^^^
+
+Android ARM64 and x86_64 wheels are now built for Python 3.13 and later. Free-threaded
+wheels are not currently included for this platform.
+
+iOS
+^^^
+
+iOS wheels no longer include XCB, because there's no X server on iOS devices.
+
 Scaling empty text
 ^^^^^^^^^^^^^^^^^^
 
