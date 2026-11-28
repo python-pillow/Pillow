@@ -1122,7 +1122,7 @@ frompalette(Imaging imIn, const ModeID mode, ImagingAllocator new_image) {
     void (*convert)(UINT8 *, const UINT8 *, int, ImagingPalette);
 
     if (!imIn->palette) {
-        return (Imaging)ImagingError_ValueError("no palette");
+        return (Imaging)ImagingError_ModeError("image has no palette");
     }
 
     alpha = imIn->mode == IMAGING_MODE_PA;
@@ -1152,7 +1152,7 @@ frompalette(Imaging imIn, const ModeID mode, ImagingAllocator new_image) {
     } else if (mode == IMAGING_MODE_HSV) {
         convert = alpha ? pa2hsv : p2hsv;
     } else {
-        return (Imaging)ImagingError_ValueError("conversion not supported");
+        return (Imaging)ImagingError_NotSupportedError("conversion not supported");
     }
 
     Imaging imOut = new_image(mode, imIn->xsize, imIn->ysize);
@@ -1198,7 +1198,7 @@ topalette(
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_LA &&
         imIn->mode != IMAGING_MODE_RGB && imIn->mode != IMAGING_MODE_RGBX &&
         imIn->mode != IMAGING_MODE_RGBA && imIn->mode != IMAGING_MODE_RGBa) {
-        return (Imaging)ImagingError_ValueError("conversion not supported");
+        return (Imaging)ImagingError_NotSupportedError("conversion not supported");
     }
 
     alpha = mode == IMAGING_MODE_PA;
@@ -1414,7 +1414,7 @@ tobilevel(Imaging imIn, ImagingAllocator new_image) {
     int *errors;
 
     if (imIn->mode != IMAGING_MODE_L && imIn->mode != IMAGING_MODE_RGB) {
-        return (Imaging)ImagingError_ValueError("conversion not supported");
+        return (Imaging)ImagingError_NotSupportedError("conversion not supported");
     }
 
     Imaging imOut = new_image(IMAGING_MODE_1, imIn->xsize, imIn->ysize);
@@ -1715,7 +1715,7 @@ ImagingConvertUsingAllocator(
     if (mode == IMAGING_MODE_UNKNOWN) {
         /* Map palette image to full depth */
         if (!imIn->palette) {
-            return (Imaging)ImagingError_ModeError();
+            return (Imaging)ImagingError_ModeError("image has no palette");
         }
         mode = imIn->palette->mode;
     } else {

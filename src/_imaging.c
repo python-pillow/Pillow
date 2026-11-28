@@ -359,14 +359,27 @@ ImagingError_MemoryError(void) {
 }
 
 void *
-ImagingError_Mismatch(void) {
-    PyErr_SetString(PyExc_ValueError, "images do not match");
+ImagingError_Mismatch(const char *message) {
+    PyErr_SetString(PyExc_ValueError, message ? message : "images do not match");
     return NULL;
 }
 
 void *
-ImagingError_ModeError(void) {
-    PyErr_SetString(PyExc_ValueError, "image has wrong mode");
+ImagingError_ModeError(const char *message) {
+    PyErr_SetString(PyExc_ValueError, message ? message : "image has wrong mode");
+    return NULL;
+}
+
+// Derives from both NotImplementedError and ValueError
+// (as the functions above raise ValueErrors).
+static PyObject *ImagingNotSupportedError = NULL;
+
+void *
+ImagingError_NotSupportedError(const char *message) {
+    PyErr_SetString(
+        ImagingNotSupportedError ? ImagingNotSupportedError : PyExc_NotImplementedError,
+        message ? message : "operation not supported"
+    );
     return NULL;
 }
 
@@ -1061,6 +1074,11 @@ _convert_impl(ImagingObject *self, PyObject *args) {
     }
 
     const ModeID mode = findModeID(mode_name);
+
+    // An empty mode name means "expand palette image to its palette's mode"
+    if (mode == IMAGING_MODE_UNKNOWN && mode_name[0] != '\0') {
+        return ImagingError_ValueError("unrecognized image mode");
+    }
 
     return PyImagingNew(ImagingConvertUsingAllocator(
         self->image,
@@ -2043,8 +2061,7 @@ _putpalette_impl(ImagingObject *self, PyObject *args) {
 
     if (self->image->mode != IMAGING_MODE_L && self->image->mode != IMAGING_MODE_LA &&
         self->image->mode != IMAGING_MODE_P && self->image->mode != IMAGING_MODE_PA) {
-        PyErr_SetString(PyExc_ValueError, wrong_mode);
-        return NULL;
+        return ImagingError_ModeError("image must have mode L, LA, P or PA");
     }
 
     const ModeID palette_mode = findModeID(palette_mode_name);
@@ -2377,7 +2394,7 @@ static PyObject *
 im_setalpha_impl(ImagingObject *self, PyObject *args) {
     Imaging im = self->image;
     if (im->mode != IMAGING_MODE_RGB && im->mode != IMAGING_MODE_RGBX) {
-        return ImagingError_ModeError();
+        return ImagingError_NotSupportedError("only modes RGB/RGBX supported");
     }
     im->mode = IMAGING_MODE_RGBA;
     im->bands = 4;
@@ -5162,6 +5179,23 @@ setup_module(PyObject *m) {
         return -1;
     }
     if (display_setup() < 0) {
+        return -1;
+    }
+    if (ImagingNotSupportedError == NULL) {
+        // NotSupportedError derives from both NotImplementedError and ValueError,
+        // for compatibility with `except ValueError`.
+        PyObject *bases = PyTuple_Pack(2, PyExc_NotImplementedError, PyExc_ValueError);
+        if (bases == NULL) {
+            return -1;
+        }
+        ImagingNotSupportedError =
+            PyErr_NewException("PIL._imaging.NotSupportedError", bases, NULL);
+        Py_DECREF(bases);
+        if (ImagingNotSupportedError == NULL) {
+            return -1;
+        }
+    }
+    if (PyModule_AddObjectRef(m, "NotSupportedError", ImagingNotSupportedError) < 0) {
         return -1;
     }
 

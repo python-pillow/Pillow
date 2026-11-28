@@ -178,16 +178,21 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
 
     if (imIn->type == IMAGING_TYPE_UINT8) {
         if (imIn->mode != mode && !imIn->image8) {
-            goto mode_mismatch;
+            return (Imaging)ImagingError_ModeError(
+                "output mode must match input mode for multi-band images"
+            );
         }
     } else if (imIn->type == IMAGING_TYPE_INT32) {
         if (mode != IMAGING_MODE_L) {
-            // I images can only be used with L output mode
-            goto mode_mismatch;
+            return (Imaging)ImagingError_ModeError(
+                "output mode must be L for mode I images"
+            );
         }
     } else {
         // Reject F modes and modes based on I;16
-        goto mode_mismatch;
+        return (Imaging)ImagingError_NotSupportedError(
+            "point operation not supported for this mode"
+        );
     }
 
     imOut = ImagingNewDirty(mode, imIn->xsize, imIn->ysize);
@@ -229,11 +234,6 @@ ImagingPoint(Imaging imIn, ModeID mode, const void *table) {
     ImagingSectionLeave(&cookie);
 
     return imOut;
-
-mode_mismatch:
-    return (Imaging)ImagingError_ValueError(
-        "point operation not supported for this mode"
-    );
 }
 
 /**
@@ -252,9 +252,14 @@ ImagingPointTransform(Imaging imIn, double scale, double offset) {
     ImagingSectionCookie cookie;
     Imaging imOut;
 
-    if (!imIn || (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
-                  imIn->mode != IMAGING_MODE_F)) {
-        return (Imaging)ImagingError_ModeError();
+    if (!imIn) {
+        return (Imaging)ImagingError_ValueError(NULL);
+    }
+    if (imIn->mode != IMAGING_MODE_I && imIn->type != IMAGING_TYPE_I16 &&
+        imIn->mode != IMAGING_MODE_F) {
+        return (Imaging)ImagingError_NotSupportedError(
+            "only modes I, I;16 variants and F supported"
+        );
     }
 
     int xsize = imIn->xsize, ysize = imIn->ysize;

@@ -41,7 +41,7 @@ def test_promote() -> None:
     assert im.mode == "RGBA"
     assert im.getpixel((0, 0)) == (1, 2, 3, 4)
 
-    with pytest.raises(ValueError, match="image has wrong mode"):
+    with pytest.raises(ValueError, match="RGB"):
         im.im.setalpha()
 
 
