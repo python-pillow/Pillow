@@ -513,7 +513,7 @@ class PdfParser:
         for i, page_ref in enumerate(self.orig_pages):
             page_info = self.cached_objects[page_ref]
             del self.xref_table[page_ref.object_id]
-            pages_tree_nodes_to_delete.append(page_info[PdfName(b"Parent")])
+            pages_tree_nodes_to_delete.append(page_info.get(PdfName(b"Parent")))
             if page_ref not in self.pages:
                 # the page has been deleted
                 continue
@@ -533,7 +533,9 @@ class PdfParser:
             processed_refs = []
             while pages_tree_node_ref and pages_tree_node_ref not in processed_refs:
                 processed_refs.append(pages_tree_node_ref)
-                pages_tree_node = self.cached_objects[pages_tree_node_ref]
+                pages_tree_node = self.cached_objects.get(pages_tree_node_ref)
+                if pages_tree_node is None:
+                    break
                 if pages_tree_node_ref.object_id in self.xref_table:
                     del self.xref_table[pages_tree_node_ref.object_id]
                 pages_tree_node_ref = pages_tree_node.get(b"Parent", None)
