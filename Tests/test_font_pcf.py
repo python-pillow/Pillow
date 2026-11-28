@@ -139,3 +139,33 @@ def test_decompression_bomb() -> None:
     )
     with pytest.raises(Image.DecompressionBombError):
         PcfFontFile.PcfFontFile(b)
+
+
+def test_properties_exceed_string_table() -> None:
+    with open(fontname, "rb") as fp:
+        data = fp.read(152)  # up to the properties table
+    b = BytesIO(
+        data
+        + _binary.o32le(0)  # format
+        + _binary.o32le(1)  # number of properties
+        + _binary.o32le(0)  # name offset
+        + b"\x01"  # value is a string
+        + _binary.o32le(1)  # value offset
+        + b"\0" * 3  # pad
+        + _binary.o32le(4)  # string table size
+        + b"abc\0"
+    )
+    with pytest.raises(OSError):
+        PcfFontFile.PcfFontFile(b)
+
+
+def test_properties_exceed_table_size() -> None:
+    with open(fontname, "rb") as fp:
+        data = fp.read(152)  # up to the properties table
+    b = BytesIO(
+        data
+        + _binary.o32le(0)  # format
+        + _binary.o32le(1_000_000)  # number of properties
+    )
+    with pytest.raises(OSError, match="exceeds table size"):
+        PcfFontFile.PcfFontFile(b)
