@@ -457,7 +457,7 @@ class PngStream(ChunkStream):
         # Compression method    1 byte (0)
         # Compressed profile    n bytes (zlib with deflate compression)
         i = s.find(b"\0")
-        if i == -1 or i + 1 >= len(s):
+        if i == -1 or i + 1 == len(s):
             if ImageFile.LOAD_TRUNCATED_IMAGES:
                 return s
             msg = "Truncated iCCP chunk"

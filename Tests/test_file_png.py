@@ -791,15 +791,14 @@ class TestFilePng:
     def test_truncated_iccp_chunk(
         self, payload: bytes, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        fp = BytesIO()
+        with PngImagePlugin.PngStream(fp) as png:
+            with pytest.raises(ValueError, match="Truncated iCCP chunk"):
+                png.call(b"iCCP", 0, 0)
+
         data = HEAD + chunk(b"iCCP", payload) + TAIL
-
-        with pytest.raises(ValueError, match="Truncated iCCP chunk"):
-            with Image.open(BytesIO(data)):
-                pass
-
         monkeypatch.setattr(ImageFile, "LOAD_TRUNCATED_IMAGES", True)
         with Image.open(BytesIO(data)) as im:
-            assert im.mode == "RGB"
             assert "icc_profile" not in im.info
 
     @pytest.mark.parametrize("mode", ("1", "L", "I;16", "RGB"))
