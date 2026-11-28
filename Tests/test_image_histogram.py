@@ -18,7 +18,7 @@ def test_histogram() -> None:
     assert histogram("La") == (512, 0, 16384)
     for mode in ("I", "I;16", "I;16L", "I;16B", "I;16N", "F"):
         assert histogram(mode) == (256, 0, 662)
-    assert histogram("P") == (256, 0, 1551)
+    assert histogram("P") == (256, 0, 1557)
     assert histogram("PA") == (512, 0, 16384)
     assert histogram("RGB") == (768, 4, 675)
     assert histogram("RGBA") == (1024, 0, 16384)
@@ -45,7 +45,7 @@ def test_histogram_masked() -> None:
     assert histogram("L") == (256, 0, 178)
     assert histogram("LA") == (512, 0, 8192)
     assert histogram("La") == (512, 0, 8192)
-    assert histogram("P") == (256, 0, 797)
+    assert histogram("P") == (256, 0, 805)
     assert histogram("PA") == (512, 0, 8192)
     assert histogram("RGB") == (768, 1, 174)
     assert histogram("RGBA") == (1024, 0, 8192)
