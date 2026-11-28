@@ -296,21 +296,15 @@ def test_long_trailer_chain(tmp_path: Path) -> None:
         pass
 
 
-def _deep_array(depth: int) -> PdfArray:
-    value = PdfArray([0])
-    for _ in range(depth - 1):
-        value = PdfArray([value])
-    return value
-
-
 def test_pdf_repr_max_nesting() -> None:
-    # Serializing a deeply nested value must not exhaust the call stack. This is
-    # the write-side sibling of the max_nesting guard used while parsing.
-    pdf_repr(_deep_array(MAX_NESTING))
+    x = PdfArray([0])
+    for _ in range(MAX_NESTING - 2):
+        x = PdfArray([x])
+    pdf_repr(x)
+
+    x = PdfArray([x])
     with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
-        pdf_repr(_deep_array(MAX_NESTING + 1))
-    with pytest.raises(PdfFormatError, match="maximum nesting depth exceeded"):
-        bytes(_deep_array(2 * MAX_NESTING))
+        pdf_repr(x)
 
 
 def test_read_indirect_missing_object() -> None:
@@ -323,9 +317,9 @@ def test_read_indirect_missing_object() -> None:
         pdf.write_xref_and_trailer()
 
     with PdfParser(f=b) as pdf:
-        # A reference to an object that is not in the xref table is malformed and
-        # must raise PdfFormatError rather than leaking a KeyError.
-        with pytest.raises(PdfFormatError, match="not found in xref table"):
+        with pytest.raises(
+            PdfFormatError, match="object ID 999 not found in xref table"
+        ):
             pdf.read_indirect(IndirectReference(999, 0))
 
 

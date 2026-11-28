@@ -11,7 +11,7 @@ import re
 import sys
 import time
 import zlib
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 from . import ImageFile
 
@@ -337,8 +337,10 @@ class PdfStream:
             raise NotImplementedError(msg)
 
 
-def pdf_repr(x: Any, depth: int = 0) -> bytes:
-    if depth > MAX_NESTING:
+def pdf_repr(x: Any, max_nesting: int | None = None) -> bytes:
+    if max_nesting is None:
+        max_nesting = MAX_NESTING
+    if max_nesting == 0:
         msg = "maximum nesting depth exceeded"
         raise PdfFormatError(msg)
     if x is True:
@@ -349,16 +351,18 @@ def pdf_repr(x: Any, depth: int = 0) -> bytes:
         return b"null"
     elif isinstance(x, (PdfName, PdfBinary)):
         return bytes(x)
-    elif isinstance(x, (PdfDict, dict)):
-        return _pdf_dict_repr(x, depth)
-    elif isinstance(x, (PdfArray, list)):
-        return _pdf_array_repr(x, depth)
+    elif isinstance(x, PdfDict):
+        return _pdf_dict_repr(x, max_nesting)
+    elif isinstance(x, dict):
+        return _pdf_dict_repr(cast("dict[PdfName | bytes | str, Any]", x), max_nesting)
+    elif isinstance(x, list):
+        return _pdf_array_repr(x, max_nesting)
     elif isinstance(x, (int, float)):
         return str(x).encode("us-ascii")
     elif isinstance(x, time.struct_time):
         return b"(D:" + time.strftime("%Y%m%d%H%M%SZ", x).encode("us-ascii") + b")"
     elif isinstance(x, str):
-        return pdf_repr(encode_text(x), depth)
+        return pdf_repr(encode_text(x), max_nesting)
     elif isinstance(x, bytes):
         # XXX escape more chars? handle binary garbage
         x = x.replace(b"\\", b"\\\\")
@@ -369,16 +373,18 @@ def pdf_repr(x: Any, depth: int = 0) -> bytes:
         return bytes(x)
 
 
-def _pdf_array_repr(x: Any, depth: int) -> bytes:
-    return b"[ " + b" ".join(pdf_repr(item, depth + 1) for item in x) + b" ]"
+def _pdf_array_repr(x: list[Any], max_nesting: int) -> bytes:
+    return b"[ " + b" ".join(pdf_repr(item, max_nesting - 1) for item in x) + b" ]"
 
 
-def _pdf_dict_repr(x: Any, depth: int) -> bytes:
+def _pdf_dict_repr(
+    x: PdfDict | dict[PdfName | bytes | str, Any], max_nesting: int
+) -> bytes:
     out = bytearray(b"<<")
     for key, value in x.items():
         if value is None:
             continue
-        value = pdf_repr(value, depth + 1)
+        value = pdf_repr(value, max_nesting - 1)
         out.extend(b"\n")
         out.extend(bytes(PdfName(key)))
         out.extend(b" ")
