@@ -190,3 +190,177 @@ def test_empty_palette() -> None:
 
     with pytest.raises(ValueError, match="empty palette"):
         im.quantize(palette=p)
+
+
+def test_octree_quantize_rgba_alpha_resolution() -> None:
+    base_colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+    palette = [(r, g, b, a) for a in range(128) for (r, g, b) in base_colors]
+    im = Image.new("RGBA", (64, 64))
+    im.putdata([palette[i % len(palette)] for i in range(64 * 64)])
+
+    q256 = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert q256.mode == "P"
+    assert q256.palette is not None
+    assert q256.palette.mode == "RGBA"
+    assert len(set(q256.tobytes())) == 256
+    assert_image_similar(q256.convert("RGBA").getchannel("A"), im.getchannel("A"), 1)
+    assert_image_similar(q256.convert("RGBA"), im, 4)
+
+    q64 = im.quantize(colors=64, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q64.tobytes())) == 64
+    assert_image_similar(q64.convert("RGBA").getchannel("A"), im.getchannel("A"), 3)
+
+
+def test_octree_quantize_close_rgb_with_alpha() -> None:
+    # All four base RGB colors fall in the same coarse 3/4/3-bit bucket
+    base_colors = [
+        (100, 102, 104),
+        (105, 102, 104),
+        (100, 107, 104),
+        (100, 102, 109),
+    ]
+    palette = [(r, g, b, a) for a in range(1, 129) for (r, g, b) in base_colors]
+    im = Image.new("RGBA", (64, 32))
+    im.putdata([palette[i % len(palette)] for i in range(64 * 32)])
+
+    q = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q.tobytes())) == 256
+    assert_image_similar(q.convert("RGBA"), im, 1)
+
+
+def test_octree_quantize_exact_colors() -> None:
+    im_rgba = Image.new("RGBA", (200, 1))
+    im_rgba.putdata([(255, 0, 0, a) for a in range(1, 201)])
+    q_rgba = im_rgba.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_rgba.tobytes())) == 200
+    assert q_rgba.convert("RGBA").tobytes() == im_rgba.tobytes()
+
+    im_rgb = Image.new("RGB", (256, 1))
+    im_rgb.putdata([(v, v, v) for v in range(256)])
+    q_rgb = im_rgb.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_rgb.tobytes())) == 256
+    assert q_rgb.convert("RGB").tobytes() == im_rgb.tobytes()
+
+
+def test_octree_quantize_rgba_gradient_and_pruning() -> None:
+    # 4 base RGB quadrants with a full 0..255 radial alpha gradient (~972 colors)
+    im = Image.new("RGBA", (64, 64))
+    base_colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+    alpha = Image.radial_gradient("L").resize((64, 64))
+    alpha_bytes = alpha.tobytes()
+    pixels = [
+        (*base_colors[(y // 32) * 2 + (x // 32)], alpha_bytes[y * 64 + x])
+        for y in range(64)
+        for x in range(64)
+    ]
+    im.putdata(pixels)
+
+    q = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q.tobytes())) == 256
+    assert_image_similar(q.convert("RGBA"), im, 2)
+
+    # 16,384 distinct colors confined to 64 fine buckets (exercises online pruning)
+    im_2d = Image.new("RGBA", (256, 64))
+    im_2d.putdata([(0, 0, x, y * 4 + 3) for y in range(64) for x in range(256)])
+    q_2d = im_2d.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_2d.tobytes())) == 256
+    assert_image_similar(q_2d.convert("RGBA"), im_2d, 9)
+
+
+def test_octree_quantize_single_channel_rgb() -> None:
+    im = Image.new("RGB", (256, 4))
+    im.putdata([(x, 0, 0) for _ in range(4) for x in range(256)])
+    q = im.quantize(colors=64, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q.tobytes())) == 64
+    assert_image_similar(q.convert("RGB"), im, 2)
+
+
+def test_octree_quantize_edge_cases() -> None:
+    empty = Image.new("RGBA", (0, 0))
+    q_empty = empty.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert q_empty.mode == "P"
+    assert q_empty.size == (0, 0)
+
+    solid = Image.new("RGBA", (16, 16), (12, 34, 56, 78))
+    q_solid = solid.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_solid.tobytes())) == 1
+    assert q_solid.convert("RGBA").tobytes() == solid.tobytes()
+
+    q_one = solid.quantize(colors=1, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_one.tobytes())) == 1
+    assert q_one.convert("RGBA").tobytes() == solid.tobytes()
+
+
+def test_octree_quantize_rgb_adaptive_pruning() -> None:
+    # 16,384 distinct RGB colors across 64 fine buckets (exercises 24-bit RGB pruning)
+    im = Image.new("RGB", (256, 64))
+    im.putdata([(x, y, 0) for y in range(64) for x in range(256)])
+    q = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert q.mode == "P"
+    assert q.palette is not None
+    assert q.palette.mode == "RGB"
+    assert len(set(q.tobytes())) == 256
+    assert_image_similar(q.convert("RGB"), im, 5)
+
+
+def test_octree_quantize_rgba_weighted_reduction_and_transparency() -> None:
+    frequent = [(100, 100, 100, a) for a in range(40, 256, 32)]
+    rare = [(100, 100, 100, a) for a in range(1, 25)]
+    pixels = [c for c in frequent for _ in range(64)] + rare
+    im = Image.new("RGBA", (len(pixels), 1))
+    im.putdata(pixels)
+
+    q = im.quantize(colors=16, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q.tobytes())) == 16
+    q_rgba = q.convert("RGBA")
+    for idx, color in enumerate(frequent):
+        assert q_rgba.getpixel((idx * 64, 0)) == color
+
+    # Fully transparent pixels with differing RGB still collapse to one entry
+    trans_pixels = [(255, 0, 0, 0), (0, 255, 0, 0), (0, 0, 255, 0)] + [
+        (255, 0, 0, a) for a in range(1, 65)
+    ]
+    im_trans = Image.new("RGBA", (len(trans_pixels), 1))
+    im_trans.putdata(trans_pixels)
+    q_trans = im_trans.quantize(colors=128, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_trans.tobytes())) == 65
+    assert (
+        q_trans.getpixel((0, 0)) == q_trans.getpixel((1, 0)) == q_trans.getpixel((2, 0))
+    )
+    assert (
+        q_trans.convert("RGBA").getchannel("A").tobytes()
+        == im_trans.getchannel("A").tobytes()
+    )
+
+
+def test_octree_quantize_grayscale_and_small_palettes() -> None:
+    gray = Image.new("L", (256, 1))
+    gray.putdata(list(range(256)))
+
+    q_gray_256 = gray.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_gray_256.tobytes())) == 256
+    assert q_gray_256.convert("L").tobytes() == gray.tobytes()
+
+    q_gray_64 = gray.quantize(colors=64, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_gray_64.tobytes())) == 64
+    assert_image_similar(q_gray_64.convert("L"), gray, 2)
+
+    tiny = Image.new("RGBA", (4, 1))
+    tiny.putdata(
+        [
+            (10, 20, 30, 40),
+            (10, 20, 30, 48),
+            (10, 20, 30, 56),
+            (10, 20, 30, 62),
+        ]
+    )
+    q_tiny = tiny.quantize(colors=16, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_tiny.tobytes())) == 4
+    assert q_tiny.convert("RGBA").tobytes() == tiny.tobytes()
+
+    q_two = tiny.quantize(colors=2, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_two.tobytes())) == 2
+    assert_image_similar(q_two.convert("RGBA"), tiny, 5)
+
+    q_one = tiny.quantize(colors=1, method=Image.Quantize.FASTOCTREE)
+    assert len(set(q_one.tobytes())) == 1
