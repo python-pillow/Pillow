@@ -269,3 +269,32 @@ rectangle. Previously, if ``width`` was more than the size of the rectangle, the
 outline could extend outside it, drawing a larger rectangle than requested. The
 rectangle is now filled with the outline color instead. Wide outlines are also drawn
 faster.
+
+Fractional variation axis values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:py:meth:`~PIL.ImageFont.FreeTypeFont.set_variation_by_axes` truncated each value to a
+whole number before applying it. Fractional values are now used as given.
+
+Text is placed at sub-pixel horizontal positions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When drawing horizontal text, each glyph was previously snapped to a whole pixel
+independently of its neighbours. Since a glyph's advance is rarely a whole number of
+pixels, the distance between two glyphs could be off by up to a full pixel, which reads
+as uneven kerning. Glyphs are now shifted by the fractional part of their pen position
+before they are rasterized, so they land where the font's metrics say they should.
+
+This affects anti-aliased horizontal text. Vertical text, 1-bit text and text drawn with
+a bitmap font are unchanged, since none of them can represent a sub-pixel shift.
+
+Spacing in the basic layout engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The basic layout engine now uses more precise (non-grid-fitted) metrics,
+so error accumulates less with longer strings.
+
+Text measured with :py:meth:`~PIL.ImageFont.FreeTypeFont.getlength` may now be narrower,
+and is no longer necessarily a whole number of pixels.
+
+1-bit text and text drawn with a bitmap font keep the grid-fitted metrics.
