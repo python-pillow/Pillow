@@ -1712,22 +1712,13 @@ ImagingConvertUsingAllocator(
         return (Imaging)ImagingError_ModeError();
     }
 
-    if (mode == IMAGING_MODE_UNKNOWN) {
-        /* Map palette image to full depth */
-        if (!imIn->palette) {
-            return (Imaging)ImagingError_ModeError();
+    if (imIn->mode == mode) {
+        imOut = new_image(mode, imIn->xsize, imIn->ysize);
+        if (imOut && !ImagingCopyInto(imOut, imIn)) {
+            ImagingDelete(imOut);
+            return NULL;
         }
-        mode = imIn->palette->mode;
-    } else {
-        /* Same mode? */
-        if (imIn->mode == mode) {
-            imOut = new_image(mode, imIn->xsize, imIn->ysize);
-            if (imOut && !ImagingCopyInto(imOut, imIn)) {
-                ImagingDelete(imOut);
-                return NULL;
-            }
-            return imOut;
-        }
+        return imOut;
     }
 
     /* test for special conversions */
