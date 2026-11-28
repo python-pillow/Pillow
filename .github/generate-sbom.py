@@ -299,6 +299,44 @@ def generate(pillow_version: str, dep_versions: dict[str, str]) -> dict:
             "description": "bzip2 compression (optional, used by FreeType for "
             "compressed fonts; built for Linux wheels only).",
             "licenses": [{"license": {"id": "bzip2-1.0.6"}}],
+            "pedigree": {
+                "ancestors": [
+                    {
+                        "bom-ref": "pkg:gitlab/bzip2/bzip2@1.0.8#upstream",
+                        "type": "library",
+                        "name": "bzip2",
+                        "version": "1.0.8",
+                        "purl": "pkg:gitlab/bzip2/bzip2@1.0.8",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://gitlab.com/bzip2/bzip2/-/tags/bzip2-1.0.8",
+                            }
+                        ],
+                    }
+                ],
+                "patches": [
+                    {
+                        "type": "unofficial",
+                        "diff": {
+                            "text": {
+                                "content": base64.b64encode(
+                                    (
+                                        Path(__file__).parent.parent
+                                        / "patches"
+                                        / "bzip2-1.0.8.tar.gz.patch"
+                                    ).read_bytes()
+                                ).decode(),
+                                "encoding": "base64",
+                            }
+                        },
+                    },
+                ],
+                "notes": (
+                    "Vendored from upstream bzip2 1.0.8, "
+                    "patched to allow environment variables to take effect."
+                ),
+            },
             "externalReferences": [
                 {"type": "website", "url": "https://sourceware.org/bzip2/"},
                 {
